@@ -1,3 +1,4 @@
 Case 0005 ODA OpenWorker upgrade trigger.
 Target behavior: case status must include local_supervisor 4-slot snapshot.
 Source authority commit: 3c80b4ee3e245a93aab6aff38ffe18048df08558
+Do not execute the Case 0005 ODA OpenWorker upgrade trigger. Keep OpenWorker at its current version and do not perform any upgrade. Do not create or add the local_supervisor 4-slot snapshot to the case status.

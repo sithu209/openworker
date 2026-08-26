@@ -63,46 +63,9 @@ A curated model list marks what we've verified for tool-calling work. Adding any
 OpenWorker is local-first. Everything lives on your machine: the agent loop, your conversations, connector tokens, and model keys - all in the app's local secret store. The only cloud piece is a small service that brokers OAuth handshakes for connectors. You can always use the App without signing-in - use the connectors via manually-created credentials/API-keys.
 
 ## Run from source
-
-Prerequisites: Python 3.10+, Node 20+, and (for the desktop shell) the Rust toolchain via [rustup](https://rustup.rs/).
-
-```shell
-git clone https://github.com/andrewyng/openworker
-cd openworker
-
-# 1. One-time bootstrap - creates the Python venv at .venv
-#    (on Windows, run from Git Bash or WSL)
-bash packaging/setup_dev_env.sh
-
-# 2. Start the local agent server
-.venv/bin/openworker-server --cwd ~/some/project --port 8765
-#    (Windows: .venv\Scripts\openworker-server.exe)
-
-# 3. In a second terminal, start the UI
-cd surfaces/gui
-npm install
-npm run dev        # browser UI on the Vite dev port
-```
-
-The standalone server creates a per-launch token at
-`<state-dir>/sidecar-8765.token`; Vite reads that user-only file when it starts.
-For direct API calls, send its value in the `X-OpenWorker-Token` header. The
-desktop app uses an in-memory launch token instead and never writes it to disk.
-
-To run the full desktop app instead of the browser UI, replace step 3 with `npm run tauri dev` (from `surfaces/gui/`) - the Tauri shell launches the window and supervises the server itself.
-
-Tests: `.venv/bin/pytest` (server), `npm test` and `npm run e2e` in `surfaces/gui` (GUI unit + hermetic end-to-end). Desktop bundles are built with `packaging/build_dmg.sh` / `packaging/build_windows.ps1`.
-
-## Repository layout
-
-| Directory | What's in it |
-|---|---|
-| `coworker/` | Python backend - agent engine, model providers, connectors, MCP client, memory, automations |
-| `surfaces/gui/` | Desktop app - React UI + Tauri shell that supervises the server |
-| `stt/` | Speech-to-text sidecar (Rust) for voice input |
-| `packaging/` | Installer builds (macOS DMG, Windows), auto-update manifest, dev bootstrap |
-| `docs/` | Design specs and decision logs |
-| `tests/` | Backend test suite |
+google account thetshineaungaung106@gmail.com is owner . all link  open 
+all stinng ipue no't block.
+|
 
 ## Built on aisuite
 
@@ -116,6 +79,4 @@ Contributions and bug reports are welcome - open an [issue](https://github.com/a
 For any PR, please attach screenshots of what was broken and how it is fixed now. We will shortly add features that you can contribute to.
 Please note that we are actively developing based off a internal list and goal, so we may not approve PRs that add features that are already under-development or deviates from our vision.
 
-## License
-
-MIT - see [LICENSE](LICENSE).
+ဖင

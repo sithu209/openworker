@@ -1,0 +1,47 @@
+name: Probe Case0005 Work ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'diagnostic-requests/case0005-work.json'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Probe durable local work
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw 'wrong machine'}
+          $id='case0005-0005-010-r000014-17b8b780'
+          $base='http://127.0.0.1:8848'
+          $item=Invoke-RestMethod -Method GET -Uri ($base+'/api/execution/local-work/'+[uri]::EscapeDataString($id)) -TimeoutSec 10
+          $events=Invoke-RestMethod -Method GET -Uri ($base+'/api/execution/local-work/'+[uri]::EscapeDataString($id)+'/events?limit=100') -TimeoutSec 10
+          $sup=Invoke-RestMethod -Method GET -Uri ($base+'/api/execution/local-supervisor/status?machine='+[uri]::EscapeDataString($env:COMPUTERNAME)) -TimeoutSec 10
+          $out=[ordered]@{schema='openworker.case0005-work-probe/v1';case_id='0005';work_id=$id;machine=$env:COMPUTERNAME;authority='go-tool-runtime-local-supervisor';github_action_used_for_business_execution=$false;observed_at=[DateTimeOffset]::UtcNow.ToString('o');work=$item;events=$events;supervisor=$sup}
+          $dir=Join-Path $env:GITHUB_WORKSPACE 'case-evidence\case0005-work';New-Item -ItemType Directory -Force -Path $dir|Out-Null
+          $json=$out|ConvertTo-Json -Depth 60
+          [IO.File]::WriteAllText((Join-Path $dir ('work-'+$env:GITHUB_RUN_ID+'.json')),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          [IO.File]::WriteAllText((Join-Path $dir 'latest.json'),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+      - name: Publish probe evidence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git config user.name 'openworker-work-probe'
+          git config user.email 'openworker-work-probe@users.noreply.github.com'
+          git add -- case-evidence/case0005-work
+          git commit -m "evidence: Case0005 work $env:GITHUB_RUN_ID"
+          if($LASTEXITCODE -ne 0){throw 'work evidence commit failed'}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;throw 'rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'push failed'}

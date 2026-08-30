@@ -1,3 +1,4 @@
+# trigger: 2026-08-18 case0003 exact connector review apply
 name: Case 0003 Connector Review Apply UL7
 on:
   workflow_dispatch:

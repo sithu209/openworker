@@ -1,0 +1,105 @@
+name: REAL Verify Runner Administrator Authority
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-runner-admin.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  oda:
+    name: Verify ODA LocalSystem runner
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify ODA administrator authority and publish evidence
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
+          $principal=[Security.Principal.WindowsPrincipal]::new($identity)
+          $isAdmin=$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          if(-not $isAdmin){throw "Action token is not administrator: $($identity.Name)"}
+          $services=Get-CimInstance Win32_Service | Where-Object {$_.Name -like 'actions.runner.*'}
+          $runnerSvc=$services | Where-Object {$_.Name -like "*.$env:RUNNER_NAME.service"} | Select-Object -First 1
+          if(-not $runnerSvc){$runnerSvc=$services | Where-Object {$_.DisplayName -like "*$env:RUNNER_NAME*"} | Select-Object -First 1}
+          if(-not $runnerSvc){throw "Cannot resolve runner service for RUNNER_NAME=$env:RUNNER_NAME"}
+          if($runnerSvc.StartName -notin @('LocalSystem','NT AUTHORITY\SYSTEM')){throw "runner service account=$($runnerSvc.StartName)"}
+          if($runnerSvc.State -ne 'Running'){throw "runner service state=$($runnerSvc.State)"}
+          $ow=Get-CimInstance Win32_Service -Filter "Name='OpenWorkerNode'" -ErrorAction SilentlyContinue
+          $e=[ordered]@{schema='openworker.runner-admin-authority/v1';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;windows_identity=$identity.Name;is_administrator=$isAdmin;runner_service=$runnerSvc.Name;runner_service_account=$runnerSvc.StartName;runner_service_state=$runnerSvc.State;runner_service_start_mode=$runnerSvc.StartMode;openworker_service_present=($null-ne $ow);openworker_service_state=if($ow){$ow.State}else{$null};openworker_service_account=if($ow){$ow.StartName}else{$null};openworker_service_path=if($ow){$ow.PathName}else{$null};github_run_id=$env:GITHUB_RUN_ID;verified_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          git config user.name 'openworker-admin-verify'
+          git config user.email 'openworker-admin-verify@users.noreply.github.com'
+          git fetch origin main
+          git reset --hard origin/main
+          $rel='evidence/runner-admin/ODA.json'; New-Item -ItemType Directory -Force -Path (Split-Path $rel)|Out-Null
+          [IO.File]::WriteAllText($rel,($e|ConvertTo-Json -Depth 8)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git add -- $rel
+          git commit -m "evidence: ODA runner LocalSystem authority"
+          if($LASTEXITCODE -ne 0){throw 'failed to commit ODA evidence'}
+          for($i=0;$i -lt 5;$i++){git pull --rebase origin main;if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;Start-Sleep 2;continue};git push origin HEAD:main;if($LASTEXITCODE -eq 0){exit 0};Start-Sleep 2}
+          throw 'failed to push ODA evidence'
+
+  o87:
+    name: Verify O87 LocalSystem runner
+    needs: oda
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify O87 administrator authority and publish evidence
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $identity=[Security.Principal.WindowsIdentity]::GetCurrent(); $principal=[Security.Principal.WindowsPrincipal]::new($identity); $isAdmin=$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          if(-not $isAdmin){throw "Action token is not administrator: $($identity.Name)"}
+          $services=Get-CimInstance Win32_Service | Where-Object {$_.Name -like 'actions.runner.*'}
+          $runnerSvc=$services | Where-Object {$_.Name -like "*.$env:RUNNER_NAME.service"} | Select-Object -First 1
+          if(-not $runnerSvc){$runnerSvc=$services | Where-Object {$_.DisplayName -like "*$env:RUNNER_NAME*"} | Select-Object -First 1}
+          if(-not $runnerSvc){throw "Cannot resolve runner service for RUNNER_NAME=$env:RUNNER_NAME"}
+          if($runnerSvc.StartName -notin @('LocalSystem','NT AUTHORITY\SYSTEM')){throw "runner service account=$($runnerSvc.StartName)"}; if($runnerSvc.State -ne 'Running'){throw "runner service state=$($runnerSvc.State)"}
+          $ow=Get-CimInstance Win32_Service -Filter "Name='OpenWorkerNode'" -ErrorAction SilentlyContinue
+          $e=[ordered]@{schema='openworker.runner-admin-authority/v1';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;windows_identity=$identity.Name;is_administrator=$isAdmin;runner_service=$runnerSvc.Name;runner_service_account=$runnerSvc.StartName;runner_service_state=$runnerSvc.State;runner_service_start_mode=$runnerSvc.StartMode;openworker_service_present=($null-ne $ow);openworker_service_state=if($ow){$ow.State}else{$null};openworker_service_account=if($ow){$ow.StartName}else{$null};openworker_service_path=if($ow){$ow.PathName}else{$null};github_run_id=$env:GITHUB_RUN_ID;verified_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          git config user.name 'openworker-admin-verify'; git config user.email 'openworker-admin-verify@users.noreply.github.com'; git fetch origin main; git reset --hard origin/main
+          $rel='evidence/runner-admin/O87.json'; New-Item -ItemType Directory -Force -Path (Split-Path $rel)|Out-Null; [IO.File]::WriteAllText($rel,($e|ConvertTo-Json -Depth 8)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false)); git add -- $rel; git commit -m "evidence: O87 runner LocalSystem authority"; if($LASTEXITCODE -ne 0){throw 'failed to commit O87 evidence'}
+          for($i=0;$i -lt 5;$i++){git pull --rebase origin main;if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;Start-Sleep 2;continue};git push origin HEAD:main;if($LASTEXITCODE -eq 0){exit 0};Start-Sleep 2}; throw 'failed to push O87 evidence'
+
+  ul7:
+    name: Verify UL7 LocalSystem runner
+    needs: o87
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify UL7 administrator authority and publish evidence
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-UL7V2VV'){throw "wrong host $env:COMPUTERNAME"}
+          $identity=[Security.Principal.WindowsIdentity]::GetCurrent(); $principal=[Security.Principal.WindowsPrincipal]::new($identity); $isAdmin=$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          if(-not $isAdmin){throw "Action token is not administrator: $($identity.Name)"}
+          $services=Get-CimInstance Win32_Service | Where-Object {$_.Name -like 'actions.runner.*'}
+          $runnerSvc=$services | Where-Object {$_.Name -like "*.$env:RUNNER_NAME.service"} | Select-Object -First 1
+          if(-not $runnerSvc){$runnerSvc=$services | Where-Object {$_.DisplayName -like "*$env:RUNNER_NAME*"} | Select-Object -First 1}
+          if(-not $runnerSvc){throw "Cannot resolve runner service for RUNNER_NAME=$env:RUNNER_NAME"}
+          if($runnerSvc.StartName -notin @('LocalSystem','NT AUTHORITY\SYSTEM')){throw "runner service account=$($runnerSvc.StartName)"}; if($runnerSvc.State -ne 'Running'){throw "runner service state=$($runnerSvc.State)"}
+          $ow=Get-CimInstance Win32_Service -Filter "Name='OpenWorkerNode'" -ErrorAction SilentlyContinue
+          $e=[ordered]@{schema='openworker.runner-admin-authority/v1';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;windows_identity=$identity.Name;is_administrator=$isAdmin;runner_service=$runnerSvc.Name;runner_service_account=$runnerSvc.StartName;runner_service_state=$runnerSvc.State;runner_service_start_mode=$runnerSvc.StartMode;openworker_service_present=($null-ne $ow);openworker_service_state=if($ow){$ow.State}else{$null};openworker_service_account=if($ow){$ow.StartName}else{$null};openworker_service_path=if($ow){$ow.PathName}else{$null};github_run_id=$env:GITHUB_RUN_ID;verified_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          git config user.name 'openworker-admin-verify'; git config user.email 'openworker-admin-verify@users.noreply.github.com'; git fetch origin main; git reset --hard origin/main
+          $rel='evidence/runner-admin/UL7.json'; New-Item -ItemType Directory -Force -Path (Split-Path $rel)|Out-Null; [IO.File]::WriteAllText($rel,($e|ConvertTo-Json -Depth 8)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false)); git add -- $rel; git commit -m "evidence: UL7 runner LocalSystem authority"; if($LASTEXITCODE -ne 0){throw 'failed to commit UL7 evidence'}
+          for($i=0;$i -lt 5;$i++){git pull --rebase origin main;if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;Start-Sleep 2;continue};git push origin HEAD:main;if($LASTEXITCODE -eq 0){exit 0};Start-Sleep 2}; throw 'failed to push UL7 evidence'
+
+# rerun-trigger: 2026-08-19T23:54:30+08:00 after user label correction

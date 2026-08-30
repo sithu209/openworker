@@ -1,0 +1,67 @@
+name: Case 0004 Diagnose O87 Runner
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0004-diagnose-o87-runner.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: case0004-diagnose-o87-runner
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TARGET_COMPUTER: DESKTOP-O87PJNR
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Query repository self-hosted runners
+        id: probe
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/case0004
+          gh api --paginate "repos/${GH_REPO}/actions/runners?per_page=100" > "$RUNNER_TEMP/runners.json"
+          python - <<'PY'
+          import json, os, pathlib
+          raw=json.load(open(os.path.join(os.environ['RUNNER_TEMP'],'runners.json'),encoding='utf-8'))
+          pages=raw if isinstance(raw,list) else [raw]
+          runners=[]
+          for page in pages:
+              if isinstance(page,dict): runners.extend(page.get('runners',[]))
+          target=os.environ['TARGET_COMPUTER'].lower()
+          matches=[]
+          for r in runners:
+              name=str(r.get('name',''))
+              labels=[str(x.get('name','')) for x in r.get('labels',[]) if isinstance(x,dict)]
+              hay=' '.join([name,*labels]).lower()
+              if target in hay or 'o87' in hay:
+                  matches.append({'id':r.get('id'),'name':name,'os':r.get('os'),'status':r.get('status'),'busy':r.get('busy'),'labels':labels})
+          payload={'schema':'case0004.o87-runner-diagnostic.v1','case_id':'0004','run_id':os.environ['GITHUB_RUN_ID'],'source_commit':os.environ['GITHUB_SHA'],'target_computer':os.environ['TARGET_COMPUTER'],'repository_runner_count':len(runners),'matches':matches,'target_seen':bool(matches),'target_online':any(str(x.get('status','')).lower()=='online' for x in matches),'target_busy':any(bool(x.get('busy')) for x in matches)}
+          pathlib.Path('evidence/case0004/latest-o87-runner-diagnostic.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(payload,ensure_ascii=False))
+          PY
+
+      - name: Publish runner diagnostic authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'openworker-case0004-diagnostic'
+          git config user.email 'actions@users.noreply.github.com'
+          git add evidence/case0004/latest-o87-runner-diagnostic.json
+          git diff --cached --quiet && exit 0
+          git commit -m "evidence(case0004): publish O87 runner diagnostic ${GITHUB_RUN_ID}"
+          git pull --rebase origin main
+          git push origin HEAD:main

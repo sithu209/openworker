@@ -1,0 +1,4455 @@
+{
+  "schema": "openworker.command-result.v1",
+  "phase": "o87_accepted",
+  "request_id": "pr-49-32238979366",
+  "command": "supervisor_status",
+  "machine": "DESKTOP-O87PJNR",
+  "case_id": null,
+  "transport": "github_actions_transient_dispatch",
+  "accepted": true,
+  "transport_ok": true,
+  "exit_code": 0,
+  "error": "",
+  "github_run_id": "32238979366",
+  "github_run_attempt": "1",
+  "runner_name": "DESKTOP-O87PJNR-R003",
+  "runner_machine": "DESKTOP-O87PJNR",
+  "github_action_used_for_command_transport": true,
+  "github_action_used_for_business_execution": false,
+  "business_completion_claimed": false,
+  "authoritative_business_state": "openworker",
+  "completed_at": "2026-08-19T09:42:43.4641782+00:00",
+  "receipt": {
+    "schema": "openworker.command-transport.v1",
+    "transport": "github_actions_transient_dispatch",
+    "request_id": "pr-49-32238979366",
+    "command": "supervisor_status",
+    "case_id": null,
+    "machine": "DESKTOP-O87PJNR",
+    "accepted": true,
+    "exit_code": 0,
+    "error": "",
+    "github_run_id": "32238979366",
+    "github_run_attempt": "1",
+    "runner_name": "DESKTOP-O87PJNR-R003",
+    "runner_machine": "DESKTOP-O87PJNR",
+    "github_action_used_for_command_transport": true,
+    "github_action_used_for_business_execution": false,
+    "business_completion_claimed": false,
+    "authoritative_business_state": "openworker",
+    "started_at": "2026-08-19T09:42:43.3401842+00:00",
+    "dispatched_at": "2026-08-19T09:42:43.4448676+00:00",
+    "result": {
+      "active_slots": 0,
+      "business_execution_authority": "go-tool-runtime-local-work-queue",
+      "capability_authority_known": true,
+      "capability_authority_machine": "DESKTOP-O87PJNR",
+      "capability_authority_matches_machine": true,
+      "capability_authority_reason": "",
+      "claim_slots": [
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.0181114Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.0181114Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.0181114Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-01",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:39.0144062Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:09.0144062Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:39.0144062Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-02",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.4928878Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.4928878Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.4928878Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-03",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:39.0139025Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:09.0139025Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:39.0139025Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-04",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        }
+      ],
+      "claimed": 0,
+      "completed": 126,
+      "execution_route": "local_supervisor",
+      "executor_slots": [
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.6784738Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.6784738Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.6784738Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-01",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:41.288671Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:11.288671Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:41.288671Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-02",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:41.2823356Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:11.2823356Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:41.2823356Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-03",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.4819589Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.4819589Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.4819589Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        }
+      ],
+      "failed": 38,
+      "free_slots": 4,
+      "fresh_claim_slot_count": 4,
+      "fresh_executor_slot_count": 4,
+      "fresh_supervisor_heartbeats": [
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.0181114Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.0181114Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.0181114Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-01",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:39.0144062Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:09.0144062Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:39.0144062Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-02",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.4928878Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.4928878Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.4928878Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-03",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:39.0139025Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:09.0139025Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "claim-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:39.0139025Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-74220-slot-04",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.6784738Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.6784738Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.6784738Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-01",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:41.288671Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:11.288671Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:41.288671Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-02",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:41.2823356Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:11.2823356Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:41.2823356Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-03",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        },
+        {
+          "busy": false,
+          "checked_at": "2026-08-19T09:42:40.4819589Z",
+          "cpu": {
+            "logical_cores": 0
+          },
+          "fresh_until": "2026-08-19T09:44:10.4819589Z",
+          "hostname": "DESKTOP-O87PJNR",
+          "installed": false,
+          "labels": [
+            "executor-slot",
+            "go-tool-local-supervisor"
+          ],
+          "last_seen": "2026-08-19T09:42:40.4819589Z",
+          "machine_id": "DESKTOP-O87PJNR",
+          "memory": {},
+          "online": true,
+          "runner_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+          "source": "runner_heartbeat",
+          "state": "online_heartbeat"
+        }
+      ],
+      "github_action_used_for_business_execution": false,
+      "inflight": [],
+      "machine": "DESKTOP-O87PJNR",
+      "max_parallel_actions": 4,
+      "observed_at": "2026-08-19T09:42:43.3765272Z",
+      "operational": true,
+      "pending": 0,
+      "queued": [],
+      "recent_event_count": 200,
+      "recent_events": [
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "expired_lease_until": "2026-08-19T06:09:26.4729793Z"
+          },
+          "event_id": 662,
+          "event_type": "lease_reclaimed",
+          "occurred_at": "2026-08-19T06:09:28.6508946Z",
+          "status": "pending",
+          "work_id": "work_19de2ee3f6c416039258f919511c55a7",
+          "worker_id": "DESKTOP-O87PJNR-pid-91780-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:10:58.6508946Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-84456-slot-01"
+          },
+          "event_id": 663,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:09:28.6508946Z",
+          "status": "claimed",
+          "work_id": "work_19de2ee3f6c416039258f919511c55a7",
+          "worker_id": "DESKTOP-O87PJNR-pid-84456-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-84456-slot-01"
+          },
+          "event_id": 664,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:09:28.704362Z",
+          "status": "failed",
+          "work_id": "work_19de2ee3f6c416039258f919511c55a7",
+          "worker_id": "DESKTOP-O87PJNR-pid-84456-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "inputs": {
+              "probe": true
+            }
+          },
+          "event_id": 665,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:10:47.8865841Z",
+          "status": "pending",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:12:20.668989Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-90156-slot-01"
+          },
+          "event_id": 666,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:10:50.668989Z",
+          "status": "claimed",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-56548-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 56548,
+            "started_at": "2026-08-19T06:10:51.8533043Z"
+          },
+          "event_id": 667,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:10:51.8538677Z",
+          "status": "claimed",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "executor_id": "DESKTOP-O87PJNR-pid-56548-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T06:10:51.8672353Z",
+            "pid": 56548,
+            "started_at": "2026-08-19T06:10:51.8533043Z"
+          },
+          "event_id": 668,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T06:10:51.8679068Z",
+          "status": "claimed",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "expired_lease_until": "2026-08-19T06:10:53.5822735Z"
+          },
+          "event_id": 669,
+          "event_type": "lease_reclaimed",
+          "occurred_at": "2026-08-19T06:10:55.8783325Z",
+          "status": "pending",
+          "work_id": "work_b326fe2f6c10ff72b2e771b6734c881f",
+          "worker_id": "DESKTOP-O87PJNR-pid-84456-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:12:25.8783325Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-90156-slot-03"
+          },
+          "event_id": 670,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:10:55.8783325Z",
+          "status": "claimed",
+          "work_id": "work_b326fe2f6c10ff72b2e771b6734c881f",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-90156-slot-03"
+          },
+          "event_id": 671,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:10:55.924985Z",
+          "status": "failed",
+          "work_id": "work_b326fe2f6c10ff72b2e771b6734c881f",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "inputs": {
+              "probe": true
+            }
+          },
+          "event_id": 672,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:12:13.5930086Z",
+          "status": "pending",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:13:46.6162503Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-1600-slot-03"
+          },
+          "event_id": 673,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:12:16.6162503Z",
+          "status": "claimed",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-95484-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 95484,
+            "started_at": "2026-08-19T06:12:17.698902Z"
+          },
+          "event_id": 674,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:12:17.7003911Z",
+          "status": "claimed",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "executor_id": "DESKTOP-O87PJNR-pid-95484-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T06:12:17.7104185Z",
+            "pid": 95484,
+            "started_at": "2026-08-19T06:12:17.698902Z"
+          },
+          "event_id": 675,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T06:12:17.7109212Z",
+          "status": "claimed",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "expired_lease_until": "2026-08-19T06:12:20.668989Z"
+          },
+          "event_id": 676,
+          "event_type": "lease_reclaimed",
+          "occurred_at": "2026-08-19T06:12:21.6513199Z",
+          "status": "pending",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-90156-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:13:51.6513199Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-1600-slot-02"
+          },
+          "event_id": 677,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:12:21.6513199Z",
+          "status": "claimed",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-1600-slot-02"
+          },
+          "event_id": 678,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:12:21.6806798Z",
+          "status": "failed",
+          "work_id": "work_5d717e75628f07b2bd231d88e2ca72a3",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "inputs": {
+              "probe": true
+            }
+          },
+          "event_id": 679,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:13:39.4936577Z",
+          "status": "pending",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:15:12.3948611Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+          },
+          "event_id": 680,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:13:42.3948611Z",
+          "status": "claimed",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-84084-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 84084,
+            "started_at": "2026-08-19T06:13:43.6837029Z"
+          },
+          "event_id": 681,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:13:43.6837029Z",
+          "status": "claimed",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "executor_id": "DESKTOP-O87PJNR-pid-84084-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T06:13:43.6946627Z",
+            "pid": 84084,
+            "started_at": "2026-08-19T06:13:43.6837029Z"
+          },
+          "event_id": 682,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T06:13:43.6951653Z",
+          "status": "claimed",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "expired_lease_until": "2026-08-19T06:13:46.6162503Z"
+          },
+          "event_id": 683,
+          "event_type": "lease_reclaimed",
+          "occurred_at": "2026-08-19T06:13:47.428134Z",
+          "status": "pending",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-1600-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:15:17.428134Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-73816-slot-04"
+          },
+          "event_id": 684,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:13:47.428134Z",
+          "status": "claimed",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 2,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-73816-slot-04"
+          },
+          "event_id": 685,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:13:47.4709138Z",
+          "status": "failed",
+          "work_id": "work_0a82756fa4682c71610ca7e8910d8125",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:15:42.4624037Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+          },
+          "event_id": 686,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:14:12.4624037Z",
+          "status": "claimed",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+          },
+          "event_id": 687,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:14:12.483213Z",
+          "status": "failed",
+          "work_id": "work_b342a8c37d1fe9fa4bcacbbe77f19fd1",
+          "worker_id": "DESKTOP-O87PJNR-pid-73816-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819061604327-01"
+            }
+          },
+          "event_id": 688,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:16:04.3459058Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819061604327-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819061604327-02"
+            }
+          },
+          "event_id": 689,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:16:04.357393Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819061604327-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819061604327-03"
+            }
+          },
+          "event_id": 690,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:16:04.3646181Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819061604327-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819061604327-04"
+            }
+          },
+          "event_id": 691,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:16:04.3719029Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819061604327-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819061604327-05"
+            }
+          },
+          "event_id": 692,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:16:04.3793205Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819061604327-05"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:17:36.8632028Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 693,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:16:06.8632028Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:17:36.8676879Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+          },
+          "event_id": 694,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:16:06.8676879Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:17:36.8818169Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+          },
+          "event_id": 695,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:16:06.8818169Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:17:36.8909462Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+          },
+          "event_id": 696,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:16:06.8909462Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 88952,
+            "started_at": "2026-08-19T06:16:08.0501865Z"
+          },
+          "event_id": 697,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:16:08.0501865Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 88952,
+            "started_at": "2026-08-19T06:16:08.1110814Z"
+          },
+          "event_id": 698,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:16:08.1110814Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 88952,
+            "started_at": "2026-08-19T06:16:08.1290042Z"
+          },
+          "event_id": 699,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:16:08.1316682Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 88952,
+            "started_at": "2026-08-19T06:16:08.1466626Z"
+          },
+          "event_id": 700,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:16:08.1472478Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8012,
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T06:16:16.1233692Z",
+            "pid": 88952,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:16:08.1110814Z"
+          },
+          "event_id": 701,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:16:16.1243522Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8074,
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T06:16:16.1249366Z",
+            "pid": 88952,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:16:08.0501865Z"
+          },
+          "event_id": 702,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:16:16.1273365Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8031,
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T06:16:16.1600326Z",
+            "pid": 88952,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:16:08.1290042Z"
+          },
+          "event_id": 703,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:16:16.1608193Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8019,
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T06:16:16.1658453Z",
+            "pid": 88952,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:16:08.1466626Z"
+          },
+          "event_id": 704,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:16:16.1671305Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:06.9014247Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 705,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:16:36.9014247Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:16:16.1249366Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819061604327-01",
+                "started_at": "2026-08-19T06:16:08.124241Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819061604327-01"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 706,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:16:36.920783Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819061604327-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:06.9312945Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+          },
+          "event_id": 707,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:16:36.9312945Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:06.9567112Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 708,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:16:36.9567112Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:06.9697333Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+          },
+          "event_id": 709,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:16:36.9697333Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:16:16.1233692Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819061604327-02",
+                "started_at": "2026-08-19T06:16:08.1232194Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819061604327-02"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+          },
+          "event_id": 710,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:16:36.9726444Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819061604327-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:06.9919998Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+          },
+          "event_id": 711,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:16:36.9919998Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:16:16.1652126Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819061604327-04",
+                "started_at": "2026-08-19T06:16:08.1645888Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819061604327-04"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+          },
+          "event_id": 712,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:16:37.0300725Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819061604327-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:16:16.1600326Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819061604327-03",
+                "started_at": "2026-08-19T06:16:08.1590871Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819061604327-03"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+          },
+          "event_id": 713,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:16:37.0448975Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819061604327-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 88952,
+            "started_at": "2026-08-19T06:16:37.387036Z"
+          },
+          "event_id": 714,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:16:37.3874477Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8039,
+            "executor_id": "DESKTOP-O87PJNR-pid-88952-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T06:16:45.4270077Z",
+            "pid": 88952,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:16:37.387036Z"
+          },
+          "event_id": 715,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:16:45.4273167Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:18:36.9904781Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 716,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:17:06.9904781Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819061604327-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:16:45.4270077Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819061604327-05",
+                "started_at": "2026-08-19T06:16:37.4266437Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819061604327-05"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+          },
+          "event_id": 717,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:17:07.0141815Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819061604327-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-65428-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "inputs": {
+              "probe": true
+            }
+          },
+          "event_id": 718,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:30:53.1975947Z",
+          "status": "pending",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:32:26.027849Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+          },
+          "event_id": 719,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:30:56.027849Z",
+          "status": "claimed",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1",
+          "worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-76340-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 76340,
+            "started_at": "2026-08-19T06:30:57.2322361Z"
+          },
+          "event_id": 720,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:30:57.2327403Z",
+          "status": "claimed",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1",
+          "worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "executor_id": "DESKTOP-O87PJNR-pid-76340-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T06:30:57.2420975Z",
+            "pid": 76340,
+            "started_at": "2026-08-19T06:30:57.2322361Z"
+          },
+          "event_id": 721,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T06:30:57.2427039Z",
+          "status": "claimed",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1",
+          "worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "lease_until": "2026-08-19T06:32:56.0421782Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+          },
+          "event_id": 722,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:31:26.0421782Z",
+          "status": "claimed",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1",
+          "worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "openworker.case.bootstrap-local",
+          "detail": {
+            "error": "decode bounded Go-native inputs: json: unknown field \"probe\"",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+          },
+          "event_id": 723,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T06:31:26.0516599Z",
+          "status": "failed",
+          "work_id": "work_a84d64997682971b1fc6426db60fbad1",
+          "worker_id": "DESKTOP-O87PJNR-pid-95932-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819063316197-01"
+            }
+          },
+          "event_id": 724,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:33:16.2151331Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819063316197-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819063316197-02"
+            }
+          },
+          "event_id": 725,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:33:16.2309513Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819063316197-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819063316197-03"
+            }
+          },
+          "event_id": 726,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:33:16.2521208Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819063316197-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819063316197-04"
+            }
+          },
+          "event_id": 727,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:33:16.2669811Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819063316197-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819063316197-05"
+            }
+          },
+          "event_id": 728,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T06:33:16.2959061Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819063316197-05"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:34:48.5694355Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 729,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:33:18.5694355Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:34:48.5926759Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+          },
+          "event_id": 730,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:33:18.5926759Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:34:48.5995813Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+          },
+          "event_id": 731,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:33:18.5995813Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:34:48.6286864Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+          },
+          "event_id": 732,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:33:18.6286864Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 66608,
+            "started_at": "2026-08-19T06:33:19.7377012Z"
+          },
+          "event_id": 733,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:33:19.7385397Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 66608,
+            "started_at": "2026-08-19T06:33:19.808061Z"
+          },
+          "event_id": 734,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:33:19.809144Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 66608,
+            "started_at": "2026-08-19T06:33:19.8161768Z"
+          },
+          "event_id": 735,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:33:19.8167549Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 66608,
+            "started_at": "2026-08-19T06:33:19.8399536Z"
+          },
+          "event_id": 736,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:33:19.8399536Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8071,
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T06:33:27.8092649Z",
+            "pid": 66608,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:33:19.7377012Z"
+          },
+          "event_id": 737,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:33:27.8092649Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8020,
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T06:33:27.8366075Z",
+            "pid": 66608,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:33:19.8161768Z"
+          },
+          "event_id": 738,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:33:27.8376129Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8028,
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T06:33:27.8366075Z",
+            "pid": 66608,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:33:19.808061Z"
+          },
+          "event_id": 739,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:33:27.8402158Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8018,
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T06:33:27.8588601Z",
+            "pid": 66608,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:33:19.8399536Z"
+          },
+          "event_id": 740,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:33:27.8620513Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:18.6204066Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 741,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:33:48.6204066Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:33:27.8092649Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819063316197-01",
+                "started_at": "2026-08-19T06:33:19.809144Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819063316197-01"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 742,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:33:48.6389017Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819063316197-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:18.6507622Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+          },
+          "event_id": 743,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:33:48.6507622Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:18.6724473Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+          },
+          "event_id": 744,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:33:48.6724473Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:18.6747111Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 745,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T06:33:48.6747111Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:18.6982957Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+          },
+          "event_id": 746,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:33:48.6982957Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8004,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:33:27.8366075Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819063316197-03",
+                "started_at": "2026-08-19T06:33:19.8322208Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819063316197-03"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+          },
+          "event_id": 747,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:33:48.7143629Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819063316197-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8004,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:33:27.8366075Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819063316197-02",
+                "started_at": "2026-08-19T06:33:19.8322208Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819063316197-02"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+          },
+          "event_id": 748,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:33:48.6879186Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819063316197-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:33:27.8588601Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819063316197-04",
+                "started_at": "2026-08-19T06:33:19.8586896Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819063316197-04"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+          },
+          "event_id": 749,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:33:48.758545Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819063316197-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 66608,
+            "started_at": "2026-08-19T06:33:49.0353841Z"
+          },
+          "event_id": 750,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T06:33:49.0364101Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8035,
+            "executor_id": "DESKTOP-O87PJNR-pid-66608-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T06:33:57.0707002Z",
+            "pid": 66608,
+            "result_status": "completed",
+            "started_at": "2026-08-19T06:33:49.0353841Z"
+          },
+          "event_id": 751,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T06:33:57.0713774Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T06:35:48.725562Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 752,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T06:34:18.725562Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819063316197-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T06:33:57.0707002Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819063316197-05",
+                "started_at": "2026-08-19T06:33:49.0702284Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819063316197-05"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+          },
+          "event_id": 753,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T06:34:18.7540198Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819063316197-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-72148-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819071238310-01"
+            }
+          },
+          "event_id": 754,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T07:12:38.3194475Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819071238310-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819071238310-02"
+            }
+          },
+          "event_id": 755,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T07:12:38.3333933Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819071238310-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819071238310-03"
+            }
+          },
+          "event_id": 756,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T07:12:38.3425457Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819071238310-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819071238310-04"
+            }
+          },
+          "event_id": 757,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T07:12:38.3478719Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819071238310-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819071238310-05"
+            }
+          },
+          "event_id": 758,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T07:12:38.3546795Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819071238310-05"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:11.7351902Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+          },
+          "event_id": 759,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T07:12:41.7351902Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:11.7421906Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 760,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T07:12:41.7421906Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:11.7258848Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+          },
+          "event_id": 761,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T07:12:41.7258848Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:11.7648804Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+          },
+          "event_id": 762,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T07:12:41.7648804Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 96380,
+            "started_at": "2026-08-19T07:12:42.7304614Z"
+          },
+          "event_id": 763,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T07:12:42.7311063Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 96380,
+            "started_at": "2026-08-19T07:12:42.7465215Z"
+          },
+          "event_id": 764,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T07:12:42.7472989Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 96380,
+            "started_at": "2026-08-19T07:12:42.7589219Z"
+          },
+          "event_id": 765,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T07:12:42.7594239Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 96380,
+            "started_at": "2026-08-19T07:12:42.780117Z"
+          },
+          "event_id": 766,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T07:12:42.780117Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8016,
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T07:12:50.7752572Z",
+            "pid": 96380,
+            "result_status": "completed",
+            "started_at": "2026-08-19T07:12:42.7589219Z"
+          },
+          "event_id": 767,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T07:12:50.7773455Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8028,
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T07:12:50.7752572Z",
+            "pid": 96380,
+            "result_status": "completed",
+            "started_at": "2026-08-19T07:12:42.7465215Z"
+          },
+          "event_id": 768,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T07:12:50.7773455Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8046,
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T07:12:50.7764658Z",
+            "pid": 96380,
+            "result_status": "completed",
+            "started_at": "2026-08-19T07:12:42.7304614Z"
+          },
+          "event_id": 769,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T07:12:50.7796872Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8005,
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T07:12:50.7853684Z",
+            "pid": 96380,
+            "result_status": "completed",
+            "started_at": "2026-08-19T07:12:42.780117Z"
+          },
+          "event_id": 770,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T07:12:50.7874599Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:41.8290067Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+          },
+          "event_id": 771,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T07:13:11.8290067Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:41.8383804Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 772,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T07:13:11.8383804Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:41.8784523Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+          },
+          "event_id": 773,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T07:13:11.8784523Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8001,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T07:12:50.7764658Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819071238310-02",
+                "started_at": "2026-08-19T07:12:42.7745538Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819071238310-02"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 774,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T07:13:11.8745998Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819071238310-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:41.8891992Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+          },
+          "event_id": 775,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T07:13:11.8891992Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T07:12:50.7752572Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819071238310-01",
+                "started_at": "2026-08-19T07:12:42.7745538Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819071238310-01"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+          },
+          "event_id": 776,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T07:13:11.887407Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819071238310-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T07:12:50.7853684Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819071238310-04",
+                "started_at": "2026-08-19T07:12:42.7851316Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819071238310-04"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+          },
+          "event_id": 777,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T07:13:11.9417554Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819071238310-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T07:12:50.7752572Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819071238310-03",
+                "started_at": "2026-08-19T07:12:42.7751908Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819071238310-03"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+          },
+          "event_id": 778,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T07:13:11.9444716Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819071238310-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:14:41.9635711Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 779,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T07:13:11.9635711Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 96380,
+            "started_at": "2026-08-19T07:13:12.1640195Z"
+          },
+          "event_id": 780,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T07:13:12.1640195Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8069,
+            "executor_id": "DESKTOP-O87PJNR-pid-96380-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T07:13:20.2338696Z",
+            "pid": 96380,
+            "result_status": "completed",
+            "started_at": "2026-08-19T07:13:12.1640195Z"
+          },
+          "event_id": 781,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T07:13:20.234397Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T07:15:12.0003007Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 782,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T07:13:42.0003007Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819071238310-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T07:13:20.2338696Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819071238310-05",
+                "started_at": "2026-08-19T07:13:12.233311Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819071238310-05"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+          },
+          "event_id": 783,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T07:13:42.0432244Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819071238310-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-31320-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085105426-01"
+            }
+          },
+          "event_id": 784,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:51:05.4369416Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085105426-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085105426-02"
+            }
+          },
+          "event_id": 785,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:51:05.4858572Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085105426-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085105426-03"
+            }
+          },
+          "event_id": 786,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:51:05.5145701Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085105426-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085105426-04"
+            }
+          },
+          "event_id": 787,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:51:05.5445833Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085105426-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085105426-05"
+            }
+          },
+          "event_id": 788,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:51:05.5573709Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085105426-05"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:52:38.9505365Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 789,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:51:08.9505365Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:52:38.9768925Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+          },
+          "event_id": 790,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:51:08.9768925Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:52:38.9673077Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+          },
+          "event_id": 791,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:51:08.9673077Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:52:38.9702296Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+          },
+          "event_id": 792,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:51:08.9702296Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 70024,
+            "started_at": "2026-08-19T08:51:10.1001226Z"
+          },
+          "event_id": 793,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:51:10.1013371Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 70024,
+            "started_at": "2026-08-19T08:51:10.1106664Z"
+          },
+          "event_id": 794,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:51:10.1111806Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 70024,
+            "started_at": "2026-08-19T08:51:10.1388347Z"
+          },
+          "event_id": 795,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:51:10.1395143Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 70024,
+            "started_at": "2026-08-19T08:51:10.1599706Z"
+          },
+          "event_id": 796,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:51:10.1606034Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8030,
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T08:51:18.1308568Z",
+            "pid": 70024,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:51:10.1001226Z"
+          },
+          "event_id": 797,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:51:18.131329Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8023,
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T08:51:18.1340204Z",
+            "pid": 70024,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:51:10.1106664Z"
+          },
+          "event_id": 798,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:51:18.1346731Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8012,
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T08:51:18.1517154Z",
+            "pid": 70024,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:51:10.1388347Z"
+          },
+          "event_id": 799,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:51:18.1556946Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8006,
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T08:51:18.1663521Z",
+            "pid": 70024,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:51:10.1599706Z"
+          },
+          "event_id": 800,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:51:18.1686633Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:09.0062732Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 801,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:51:39.0062732Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:09.0224494Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+          },
+          "event_id": 802,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:51:39.0224494Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:51:18.1308568Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085105426-01",
+                "started_at": "2026-08-19T08:51:10.1305606Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085105426-01"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 803,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:51:39.0264954Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085105426-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:09.0358957Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+          },
+          "event_id": 804,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:51:39.0358957Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:09.048234Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+          },
+          "event_id": 805,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:51:39.048234Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:51:18.1340204Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085105426-02",
+                "started_at": "2026-08-19T08:51:10.1335686Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085105426-02"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+          },
+          "event_id": 806,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:51:39.0668598Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085105426-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:51:18.1663521Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085105426-04",
+                "started_at": "2026-08-19T08:51:10.1655239Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085105426-04"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+          },
+          "event_id": 807,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:51:39.0907375Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085105426-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:09.0964542Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 808,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:51:39.0964542Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:51:18.1517154Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085105426-03",
+                "started_at": "2026-08-19T08:51:10.1514188Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085105426-03"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+          },
+          "event_id": 809,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:51:39.1138666Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085105426-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 70024,
+            "started_at": "2026-08-19T08:51:39.4742225Z"
+          },
+          "event_id": 810,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:51:39.4757403Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8036,
+            "executor_id": "DESKTOP-O87PJNR-pid-70024-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T08:51:47.5103859Z",
+            "pid": 70024,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:51:39.4742225Z"
+          },
+          "event_id": 811,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:51:47.5107061Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:53:39.1422313Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 812,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:52:09.1422313Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085105426-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:51:47.5103859Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085105426-05",
+                "started_at": "2026-08-19T08:51:39.5103196Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085105426-05"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+          },
+          "event_id": 813,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:52:09.1576605Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085105426-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-50028-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085713594-01"
+            }
+          },
+          "event_id": 814,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:57:13.6057956Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085713594-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085713594-02"
+            }
+          },
+          "event_id": 815,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:57:13.6492185Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085713594-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085713594-03"
+            }
+          },
+          "event_id": 816,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:57:13.6718147Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085713594-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085713594-04"
+            }
+          },
+          "event_id": 817,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:57:13.680525Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085713594-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "hold_ms": 8000,
+              "probe_id": "supervisor-smoke-20260819085713594-05"
+            }
+          },
+          "event_id": 818,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:57:13.6914342Z",
+          "status": "pending",
+          "work_id": "supervisor-smoke-20260819085713594-05"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:58:47.1914791Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 819,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:57:17.1914791Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:58:47.1971138Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+          },
+          "event_id": 820,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:57:17.1971138Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:58:47.1722914Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 821,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:57:17.1722914Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:58:47.1794389Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+          },
+          "event_id": 822,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:57:17.1794389Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:57:17.9594265Z"
+          },
+          "event_id": 823,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:57:17.9599378Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-02",
+            "executor_slot": 2,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:57:17.9941266Z"
+          },
+          "event_id": 824,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:57:17.9941266Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-01",
+            "executor_slot": 1,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:57:17.9784101Z"
+          },
+          "event_id": 825,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:57:17.9791389Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-03",
+            "executor_slot": 3,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:57:17.9895961Z"
+          },
+          "event_id": 826,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:57:17.9895961Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8053,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T08:57:26.0125868Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:57:17.9594265Z"
+          },
+          "event_id": 827,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:57:26.0141314Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8037,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-01",
+            "executor_slot": 1,
+            "finished_at": "2026-08-19T08:57:26.0157098Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:57:17.9784101Z"
+          },
+          "event_id": 828,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:57:26.0160531Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8034,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-03",
+            "executor_slot": 3,
+            "finished_at": "2026-08-19T08:57:26.0238201Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:57:17.9895961Z"
+          },
+          "event_id": 829,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:57:26.0255276Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8021,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-02",
+            "executor_slot": 2,
+            "finished_at": "2026-08-19T08:57:26.0157098Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:57:17.9941266Z"
+          },
+          "event_id": 830,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:57:26.0169301Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:17.2328045Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 831,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:57:47.2328045Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:57:26.0157098Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085713594-01",
+                "started_at": "2026-08-19T08:57:18.0153166Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085713594-01"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 832,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:57:47.2419042Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085713594-01",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:17.2513257Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 833,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:57:47.2513257Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:17.2943551Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+          },
+          "event_id": 834,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:57:47.2943551Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:57:26.0157098Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085713594-04",
+                "started_at": "2026-08-19T08:57:18.0153166Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085713594-04"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+          },
+          "event_id": 835,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:57:47.3056132Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085713594-04",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-03"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:17.3161542Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 836,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:57:47.3161542Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:17.3408875Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+          },
+          "event_id": 837,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:57:47.3408875Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:57:26.0238201Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085713594-03",
+                "started_at": "2026-08-19T08:57:18.0234325Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085713594-03"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 838,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:57:47.4178204Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085713594-03",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:57:47.4111862Z"
+          },
+          "event_id": 839,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:57:47.4117298Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:57:26.0125868Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085713594-02",
+                "started_at": "2026-08-19T08:57:18.011973Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085713594-02"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+          },
+          "event_id": 840,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:57:47.4249904Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085713594-02",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-04"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "duration_ms": 8034,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T08:57:55.4456083Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:57:47.4111862Z"
+          },
+          "event_id": 841,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:57:55.4469002Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "lease_until": "2026-08-19T08:59:47.263283Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 842,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:58:17.263283Z",
+          "status": "claimed",
+          "work_id": "supervisor-smoke-20260819085713594-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "go-tool.local-supervisor.smoke",
+          "detail": {
+            "result": {
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "evidence": {
+                "actual_host": "DESKTOP-O87PJNR",
+                "assigned_host": "DESKTOP-O87PJNR",
+                "duration_ms": 8000,
+                "execution_route": "local_supervisor",
+                "finished_at": "2026-08-19T08:57:55.4456083Z",
+                "github_action_used": false,
+                "hold_ms": 8000,
+                "probe_id": "supervisor-smoke-20260819085713594-05",
+                "started_at": "2026-08-19T08:57:47.4453554Z"
+              },
+              "status": "completed",
+              "work_id": "supervisor-smoke-20260819085713594-05"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 843,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:58:17.2767988Z",
+          "status": "completed",
+          "work_id": "supervisor-smoke-20260819085713594-05",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "case_step": "0004-045",
+              "method": "cad.build_story_index",
+              "params_json": "{\"camera_bounds\":{\"max_x\":117008.65481692566,\"max_y\":92030.00566073845,\"min_x\":44443.25117281456,\"min_y\":35301.305011156095},\"fail_closed_note\":\"Only 1F has promotion-grade viewport evidence at migration time. Unresolved stories must remain unresolved and must not be guessed.\",\"image_height\":800,\"image_width\":1200,\"name\":\"case0004-story-index\",\"overview_png\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\dwg\\\\exports\\\\default\\\\visual-search\\\\case0004-overview.png\",\"stories\":[{\"confidence\":0.97,\"pixel_bounds\":[101,533,291,666],\"story_id\":\"1F\",\"visual_basis\":\"2026-08-18 REAL overview round-2 left-side floor-plan region; world bounds were independently promoted by multimodal review and query evidence\"}],\"unresolved_story_ids\":[\"2F\",\"3F\",\"4F\",\"R1F\"]}",
+              "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+            }
+          },
+          "event_id": 844,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T08:59:18.5445985Z",
+          "status": "pending",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:00:52.4764702Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 845,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T08:59:22.4764702Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 79668,
+            "started_at": "2026-08-19T08:59:23.2715505Z"
+          },
+          "event_id": 846,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T08:59:23.2715505Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "duration_ms": 15277,
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T08:59:38.5491867Z",
+            "pid": 79668,
+            "result_status": "completed",
+            "started_at": "2026-08-19T08:59:23.2715505Z"
+          },
+          "event_id": 847,
+          "event_type": "execution_finished",
+          "occurred_at": "2026-08-19T08:59:38.5501596Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:01:22.5060543Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 848,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T08:59:52.5060543Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "result": {
+              "capability_id": "dwg.story_index.execute.case-worklist",
+              "evidence": {
+                "assigned_host": "DESKTOP-O87PJNR",
+                "camera_bounds": {
+                  "max_x": 117008.65481692566,
+                  "max_y": 92030.00566073845,
+                  "min_x": 44443.25117281456,
+                  "min_y": 35301.305011156095
+                },
+                "dwg_todo_root": "C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-94e227cee54a",
+                "evidence_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\dwg-cad-local\\case0004-0004-045-r000147-ee6e6a0b",
+                "image_height": 800,
+                "image_width": 1200,
+                "label_layer": "AI-STORY-LABEL",
+                "layout_id": "layout-story-index-case0004-story-index",
+                "method": "cad.build_story_index",
+                "name": "case0004-story-index",
+                "next_gate": "render annotated CAD state and visually verify all story frames before cad.set_story_region",
+                "receipt": {
+                  "evidence_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\dwg-cad-local\\case0004-0004-045-r000147-ee6e6a0b",
+                  "method": "cad.build_story_index",
+                  "result": {
+                    "camera_bounds": {
+                      "max_x": 117008.65481692566,
+                      "max_y": 92030.00566073845,
+                      "min_x": 44443.25117281456,
+                      "min_y": 35301.305011156095
+                    },
+                    "image_height": 800,
+                    "image_width": 1200,
+                    "label_layer": "AI-STORY-LABEL",
+                    "layout_id": "layout-story-index-case0004-story-index",
+                    "name": "case0004-story-index",
+                    "next_gate": "render annotated CAD state and visually verify all story frames before cad.set_story_region",
+                    "review_required": true,
+                    "revision": 8,
+                    "scope": "default",
+                    "stories": [
+                      {
+                        "confidence": 0.97,
+                        "label_entity_id": "story-index-label-1f",
+                        "pixel_bounds": [
+                          101,
+                          533,
+                          291,
+                          666
+                        ],
+                        "rectangle_entity_id": "story-index-rect-1f",
+                        "story_id": "1F",
+                        "viewport_entity_id": "story-index-viewport-1f",
+                        "visual_basis": "2026-08-18 REAL overview round-2 left-side floor-plan region; world bounds were independently promoted by multimodal review and query evidence",
+                        "world_bounds": {
+                          "max_x": 58252.66004522787,
+                          "max_y": 53992.68458415951,
+                          "min_x": 44443.25117281456,
+                          "min_y": 44319.71383237175
+                        }
+                      }
+                    ],
+                    "story_count": 1,
+                    "viewport_layer": "AI-STORY-VIEWPORT"
+                  },
+                  "schema": "dwg-cad-local-execution/v1",
+                  "state": {
+                    "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\dwg\\agent-cad-state.json",
+                    "sha256": "f229577b2d0d7266ff30e401d68a8898c24f5d1f4fa517f0d6ad7a657b306166",
+                    "size": 3380
+                  },
+                  "status": "succeeded",
+                  "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+                },
+                "review_required": true,
+                "revision": 8,
+                "scope": "default",
+                "state": {
+                  "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\dwg\\agent-cad-state.json",
+                  "sha256": "f229577b2d0d7266ff30e401d68a8898c24f5d1f4fa517f0d6ad7a657b306166",
+                  "size": 3380
+                },
+                "stories": [
+                  {
+                    "confidence": 0.97,
+                    "label_entity_id": "story-index-label-1f",
+                    "pixel_bounds": [
+                      101,
+                      533,
+                      291,
+                      666
+                    ],
+                    "rectangle_entity_id": "story-index-rect-1f",
+                    "story_id": "1F",
+                    "viewport_entity_id": "story-index-viewport-1f",
+                    "visual_basis": "2026-08-18 REAL overview round-2 left-side floor-plan region; world bounds were independently promoted by multimodal review and query evidence",
+                    "world_bounds": {
+                      "max_x": 58252.66004522787,
+                      "max_y": 53992.68458415951,
+                      "min_x": 44443.25117281456,
+                      "min_y": 44319.71383237175
+                    }
+                  }
+                ],
+                "story_count": 1,
+                "viewport_layer": "AI-STORY-VIEWPORT",
+                "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+              },
+              "status": "completed",
+              "work_id": "case0004-0004-045-r000147-ee6e6a0b"
+            },
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 849,
+          "event_type": "completed",
+          "occurred_at": "2026-08-19T08:59:52.5234612Z",
+          "status": "completed",
+          "work_id": "case0004-0004-045-r000147-ee6e6a0b",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "case_step": "0004-047",
+              "method": "cad.render_story_viewports",
+              "params_json": "{\"height_px\":1600,\"name\":\"case0004-story-index\",\"story_ids\":[\"1F\"],\"width_px\":2400}",
+              "story_id": "1F",
+              "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+            }
+          },
+          "event_id": 850,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T09:02:47.5067739Z",
+          "status": "pending",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:04:17.9496361Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 851,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T09:02:47.9496361Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 79668,
+            "started_at": "2026-08-19T09:02:49.3199883Z"
+          },
+          "event_id": 852,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T09:02:49.3199883Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "error": "DWG CAD local execution failed: exit status 1; output=git.exe : fatal: not a git repository (or any of the parent directories): .git\r\n���� C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-94e227cee54a\\scripts\\invoke-agent-cad-local.ps1:77 \r\n�r��:16\r\n+ ...    $commit = (& git -C $RepositoryRoot rev-parse HEAD 2>$null).Trim()\r\n+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: not a gi...ectories): .git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError",
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T09:02:54.3863897Z",
+            "pid": 79668,
+            "started_at": "2026-08-19T09:02:49.3199883Z"
+          },
+          "event_id": 853,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T09:02:54.3871564Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:04:47.9861155Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 854,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T09:03:17.9861155Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "error": "DWG CAD local execution failed: exit status 1; output=git.exe : fatal: not a git repository (or any of the parent directories): .git\r\n���� C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-94e227cee54a\\scripts\\invoke-agent-cad-local.ps1:77 \r\n�r��:16\r\n+ ...    $commit = (& git -C $RepositoryRoot rev-parse HEAD 2>$null).Trim()\r\n+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: not a gi...ectories): .git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+          },
+          "event_id": 855,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T09:03:18.0082275Z",
+          "status": "failed",
+          "work_id": "case0004-0004-047-1F-r000147-57cc86c5",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-01"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 0,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "inputs": {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "case_step": "0004-048",
+              "method": "cad.render_story_viewports",
+              "params_json": "{\"height_px\":1600,\"name\":\"case0004-story-index\",\"story_ids\":[\"1F\"],\"width_px\":2400}",
+              "story_id": "1F",
+              "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+            }
+          },
+          "event_id": 856,
+          "event_type": "submitted",
+          "occurred_at": "2026-08-19T09:34:34.6629146Z",
+          "status": "pending",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:36:07.1261757Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 857,
+          "event_type": "claimed",
+          "occurred_at": "2026-08-19T09:34:37.1261757Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "pid": 79668,
+            "started_at": "2026-08-19T09:34:37.1795767Z"
+          },
+          "event_id": 858,
+          "event_type": "execution_started",
+          "occurred_at": "2026-08-19T09:34:37.1807727Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "error": "DWG CAD local execution failed: exit status 1; output=git.exe : fatal: not a git repository (or any of the parent directories): .git\r\n���� C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-94e227cee54a\\scripts\\invoke-agent-cad-local.ps1:77 \r\n�r��:16\r\n+ ...    $commit = (& git -C $RepositoryRoot rev-parse HEAD 2>$null).Trim()\r\n+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: not a gi...ectories): .git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError",
+            "executor_id": "DESKTOP-O87PJNR-pid-79668-exec-slot-04",
+            "executor_slot": 4,
+            "finished_at": "2026-08-19T09:34:42.0299339Z",
+            "pid": 79668,
+            "started_at": "2026-08-19T09:34:37.1795767Z"
+          },
+          "event_id": 859,
+          "event_type": "execution_failed",
+          "occurred_at": "2026-08-19T09:34:42.0307971Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "lease_until": "2026-08-19T09:36:37.1471124Z",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 860,
+          "event_type": "heartbeat",
+          "occurred_at": "2026-08-19T09:35:07.1471124Z",
+          "status": "claimed",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        },
+        {
+          "assigned_host": "DESKTOP-O87PJNR",
+          "attempt": 1,
+          "capability_id": "dwg.story_index.execute.case-worklist",
+          "detail": {
+            "error": "DWG CAD local execution failed: exit status 1; output=git.exe : fatal: not a git repository (or any of the parent directories): .git\r\n���� C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-94e227cee54a\\scripts\\invoke-agent-cad-local.ps1:77 \r\n�r��:16\r\n+ ...    $commit = (& git -C $RepositoryRoot rev-parse HEAD 2>$null).Trim()\r\n+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (fatal: not a gi...ectories): .git:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError",
+            "slot_worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+          },
+          "event_id": 861,
+          "event_type": "failed",
+          "occurred_at": "2026-08-19T09:35:07.1599059Z",
+          "status": "failed",
+          "work_id": "case0004-0004-048-1F-r000148-d9b0f2ff",
+          "worker_id": "DESKTOP-O87PJNR-pid-74220-slot-02"
+        }
+      ],
+      "registered_capabilities": [
+        "comfyx-studio.director.preproduction",
+        "comfyx-studio.finalize",
+        "comfyx-studio.storyboard.bind",
+        "comfyx-studio.storyboard.plan",
+        "comfyx-studio.storyboard.real-bind",
+        "comfyx.production.video.real",
+        "drive.review.publish",
+        "dwg.cad.execute",
+        "dwg.cad.execute.case-worklist",
+        "dwg.story_index.execute.case-worklist",
+        "go-tool.local-supervisor.smoke",
+        "go-tool.runtime.update-local",
+        "go-tool.supervisor.probe",
+        "image.comfyx.storyboard-real",
+        "openworker.case.bootstrap-local",
+        "openworker.case.bootstrap-profile",
+        "openworker.case.publish-artifacts",
+        "openworker.case0003.final_acceptance",
+        "openworker.workledger.revision",
+        "presentation.openmaic"
+      ],
+      "registered_capability_count": 20,
+      "required_claim_slots": 4,
+      "required_executor_slots": 4,
+      "route_label": "LOCAL_SUPERVISOR",
+      "schema": "gtr-local-supervisor-status/v4",
+      "status": "OPERATIONAL",
+      "verification": {
+        "authority": {
+          "agent_pid": 93356,
+          "agent_task": "GoToolRuntime-LocalWorkAgent",
+          "claim_workers": 4,
+          "configured_at": "2026-08-19T08:57:12.330209Z",
+          "credential_db_path": "C:\\ProgramData\\go-tool-runtime\\work-agent\\runtime.db",
+          "db_path": "C:\\ProgramData\\go-tool-runtime\\work-agent\\runtime.db",
+          "execution_workers": 4,
+          "executor_pid": 91612,
+          "executor_task": "GoToolRuntime-LocalWorkExecutor",
+          "github_action_used_for_business_execution": false,
+          "machine": "DESKTOP-O87PJNR",
+          "machine_environment_required": false,
+          "max_parallel_actions": 4,
+          "queue_pid": 11284,
+          "queue_task": "GoToolRuntime-LocalWorkQueue",
+          "queue_url": "http://127.0.0.1:8848",
+          "runtime_mode": "detached-wmi-process",
+          "schema_version": "gtr-local-queue-authority/v8",
+          "spool": "C:\\ProgramData\\go-tool-runtime\\work-agent\\spool",
+          "target_queue_url": "http://DESKTOP-O87PJNR:8848",
+          "tool_roots": {
+            "comfyui_output": "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+            "comfyx": "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+            "comfyx_studio": "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+            "engineering_os": "C:\\github-runners\\AI-Engineering-OS\\_work\\AI-Engineering-OS\\AI-Engineering-OS",
+            "openmaic": "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+            "openworker": "C:\\github-runners\\openworker\\_work\\openworker\\openworker"
+          }
+        },
+        "github_action_used_for_business_execution": false,
+        "observed_at": "2026-08-19T09:42:43.3828641Z",
+        "reason": "",
+        "receipt": {
+          "authority_receipt": "C:\\ProgramData\\go-tool-runtime\\work-agent\\local-queue-authority.json",
+          "base_url": "http://127.0.0.1:8848",
+          "distinct_claim_worker_count": 4,
+          "distinct_claim_workers": [
+            "DESKTOP-O87PJNR-pid-74220-slot-01",
+            "DESKTOP-O87PJNR-pid-74220-slot-02",
+            "DESKTOP-O87PJNR-pid-74220-slot-03",
+            "DESKTOP-O87PJNR-pid-74220-slot-04"
+          ],
+          "distinct_executor_slot_count": 4,
+          "distinct_executor_slots": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "duration_ms": 64096,
+          "execution_route": "local_supervisor",
+          "finished_at": "2026-08-19T08:58:17.5886084Z",
+          "fresh_claim_slot_count": 4,
+          "fresh_executor_slot_count": 4,
+          "github_action_used_for_business_execution": false,
+          "machine": "DESKTOP-O87PJNR",
+          "max_parallel_actions": 4,
+          "operational_check_pending": false,
+          "operational_observed_at": "2026-08-19T08:58:17.7591362Z",
+          "operational_status": "OPERATIONAL",
+          "parallel_snapshot": {
+            "machine_active_slots": 4,
+            "machine_free_slots": 0,
+            "observed_at": "2026-08-19T08:57:17.532711Z",
+            "smoke_active": [
+              "supervisor-smoke-20260819085713594-01",
+              "supervisor-smoke-20260819085713594-02",
+              "supervisor-smoke-20260819085713594-03",
+              "supervisor-smoke-20260819085713594-04"
+            ],
+            "smoke_queued": [
+              "supervisor-smoke-20260819085713594-05"
+            ]
+          },
+          "per_work_ledger": [
+            {
+              "event_count": 6,
+              "event_types": [
+                "submitted",
+                "claimed",
+                "execution_started",
+                "execution_finished",
+                "heartbeat",
+                "completed"
+              ],
+              "work_id": "supervisor-smoke-20260819085713594-01"
+            },
+            {
+              "event_count": 6,
+              "event_types": [
+                "submitted",
+                "claimed",
+                "execution_started",
+                "execution_finished",
+                "heartbeat",
+                "completed"
+              ],
+              "work_id": "supervisor-smoke-20260819085713594-02"
+            },
+            {
+              "event_count": 6,
+              "event_types": [
+                "submitted",
+                "claimed",
+                "execution_started",
+                "execution_finished",
+                "heartbeat",
+                "completed"
+              ],
+              "work_id": "supervisor-smoke-20260819085713594-03"
+            },
+            {
+              "event_count": 6,
+              "event_types": [
+                "submitted",
+                "claimed",
+                "execution_started",
+                "execution_finished",
+                "heartbeat",
+                "completed"
+              ],
+              "work_id": "supervisor-smoke-20260819085713594-04"
+            },
+            {
+              "event_count": 6,
+              "event_types": [
+                "submitted",
+                "claimed",
+                "execution_started",
+                "execution_finished",
+                "heartbeat",
+                "completed"
+              ],
+              "work_id": "supervisor-smoke-20260819085713594-05"
+            }
+          ],
+          "probe_count": 5,
+          "receipt_path": "C:\\ProgramData\\go-tool-runtime\\work-agent\\true-local-supervisor-real-verification.json",
+          "required_parallel_slots": 4,
+          "route_label": "LOCAL_SUPERVISOR",
+          "routes": [
+            {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "attempts": 1,
+              "business_execution_authority": "go-tool-runtime-local-work-queue",
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "claimed_by": "DESKTOP-O87PJNR-pid-74220-slot-01",
+              "evidence_source": "runtime_work_items",
+              "execution_id": "",
+              "github_action_used_for_business_execution": false,
+              "github_run_id": 0,
+              "observed_at": "2026-08-19T08:57:17.5492952Z",
+              "resolved": true,
+              "route": "local_supervisor",
+              "route_label": "LOCAL_SUPERVISOR",
+              "routing_reason": "durable work_id exists in the local :8848 runtime_work_items queue",
+              "schema": "gtr-execution-route/v2",
+              "status": "claimed",
+              "work_id": "supervisor-smoke-20260819085713594-01"
+            },
+            {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "attempts": 1,
+              "business_execution_authority": "go-tool-runtime-local-work-queue",
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "claimed_by": "DESKTOP-O87PJNR-pid-74220-slot-04",
+              "evidence_source": "runtime_work_items",
+              "execution_id": "",
+              "github_action_used_for_business_execution": false,
+              "github_run_id": 0,
+              "observed_at": "2026-08-19T08:57:17.5587767Z",
+              "resolved": true,
+              "route": "local_supervisor",
+              "route_label": "LOCAL_SUPERVISOR",
+              "routing_reason": "durable work_id exists in the local :8848 runtime_work_items queue",
+              "schema": "gtr-execution-route/v2",
+              "status": "claimed",
+              "work_id": "supervisor-smoke-20260819085713594-02"
+            },
+            {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "attempts": 1,
+              "business_execution_authority": "go-tool-runtime-local-work-queue",
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "claimed_by": "DESKTOP-O87PJNR-pid-74220-slot-02",
+              "evidence_source": "runtime_work_items",
+              "execution_id": "",
+              "github_action_used_for_business_execution": false,
+              "github_run_id": 0,
+              "observed_at": "2026-08-19T08:57:17.5611319Z",
+              "resolved": true,
+              "route": "local_supervisor",
+              "route_label": "LOCAL_SUPERVISOR",
+              "routing_reason": "durable work_id exists in the local :8848 runtime_work_items queue",
+              "schema": "gtr-execution-route/v2",
+              "status": "claimed",
+              "work_id": "supervisor-smoke-20260819085713594-03"
+            },
+            {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "attempts": 1,
+              "business_execution_authority": "go-tool-runtime-local-work-queue",
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "claimed_by": "DESKTOP-O87PJNR-pid-74220-slot-03",
+              "evidence_source": "runtime_work_items",
+              "execution_id": "",
+              "github_action_used_for_business_execution": false,
+              "github_run_id": 0,
+              "observed_at": "2026-08-19T08:57:17.5643911Z",
+              "resolved": true,
+              "route": "local_supervisor",
+              "route_label": "LOCAL_SUPERVISOR",
+              "routing_reason": "durable work_id exists in the local :8848 runtime_work_items queue",
+              "schema": "gtr-execution-route/v2",
+              "status": "claimed",
+              "work_id": "supervisor-smoke-20260819085713594-04"
+            },
+            {
+              "assigned_host": "DESKTOP-O87PJNR",
+              "attempts": 0,
+              "business_execution_authority": "go-tool-runtime-local-work-queue",
+              "capability_id": "go-tool.local-supervisor.smoke",
+              "claimed_by": "",
+              "evidence_source": "runtime_work_items",
+              "execution_id": "",
+              "github_action_used_for_business_execution": false,
+              "github_run_id": 0,
+              "observed_at": "2026-08-19T08:57:17.5670484Z",
+              "resolved": true,
+              "route": "local_supervisor",
+              "route_label": "LOCAL_SUPERVISOR",
+              "routing_reason": "durable work_id exists in the local :8848 runtime_work_items queue",
+              "schema": "gtr-execution-route/v2",
+              "status": "pending",
+              "work_id": "supervisor-smoke-20260819085713594-05"
+            }
+          ],
+          "schema": "gtr-true-local-supervisor-real-verification/v2",
+          "started_at": "2026-08-19T08:57:13.4927653Z",
+          "status": "REAL_VERIFIED",
+          "total_event_count": 30,
+          "work_ids": [
+            "supervisor-smoke-20260819085713594-01",
+            "supervisor-smoke-20260819085713594-02",
+            "supervisor-smoke-20260819085713594-03",
+            "supervisor-smoke-20260819085713594-04",
+            "supervisor-smoke-20260819085713594-05"
+          ]
+        },
+        "receipt_path": "C:\\ProgramData\\go-tool-runtime\\work-agent\\true-local-supervisor-real-verification.json",
+        "schema": "gtr-local-supervisor-verification-status/v2",
+        "status": "REAL_VERIFIED"
+      }
+    }
+  }
+}

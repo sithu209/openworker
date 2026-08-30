@@ -1,0 +1,9 @@
+﻿{
+    "schema_version":  "openworker-oda-runner-probe/v1",
+    "run_id":  "32326797516",
+    "source_sha":  "b1f914247052cf8262d18362bdffe5774f5bd55a",
+    "hostname":  "DESKTOP-ODAQN0D",
+    "computername":  "DESKTOP-ODAQN0D",
+    "runner_name":  "DESKTOP-ODAQN0D-R002",
+    "verified_at":  "2026-08-20T03:02:39.2724739+00:00"
+}

@@ -1,0 +1,82 @@
+name: Case 0005 Read-Only ODA Status
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0005-status-oda.yml'
+      - 'status-requests/case-0005-oda.trigger'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case0005-status-oda
+  cancel-in-progress: true
+
+jobs:
+  status:
+    strategy:
+      fail-fast: false
+      max-parallel: 24
+      matrix:
+        slot: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Claim ODA read-only status slot
+        id: claim
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){
+            "claimed=false" >> $env:GITHUB_OUTPUT
+            Write-Host "CASE0005_STATUS_SKIP machine=$env:COMPUTERNAME slot=${{ matrix.slot }}"
+            exit 0
+          }
+          $lock='C:\ProgramData\OpenWorker\case0005-status-readonly.lock'
+          if(Test-Path -LiteralPath $lock -PathType Leaf){
+            try{
+              $age=[DateTimeOffset]::UtcNow-(Get-Item -LiteralPath $lock).LastWriteTimeUtc
+              if($age.TotalMinutes -ge 1){
+                Remove-Item -LiteralPath $lock -Force -ErrorAction SilentlyContinue
+                Write-Host "CASE0005_STATUS_STALE_LOCK_CLEARED age_minutes=$([Math]::Round($age.TotalMinutes,2))"
+              }
+            }catch{}
+          }
+          $claimed=$false
+          try{$fs=[IO.File]::Open($lock,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$fs.Dispose();$claimed=$true}catch{}
+          if(-not $claimed){"claimed=false" >> $env:GITHUB_OUTPUT;exit 0}
+          "claimed=true" >> $env:GITHUB_OUTPUT
+
+      - name: Publish authoritative local status
+        if: steps.claim.outputs.claimed == 'true'
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $worklistPath=Join-Path $workspace '.openworker\case-worklist.json'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $bootstrapReceipt=Join-Path $workspace 'evidence\case0005-resident-bootstrap.json'
+          $worklist=$null;$controller=$null;$bootstrap=$null;$bootstrapExplain=$null
+          if(Test-Path -LiteralPath $worklistPath -PathType Leaf){$worklist=Get-Content -Raw -LiteralPath $worklistPath|ConvertFrom-Json}
+          if(Test-Path -LiteralPath $controllerPath -PathType Leaf){$controller=Get-Content -Raw -LiteralPath $controllerPath|ConvertFrom-Json}
+          if(Test-Path -LiteralPath $bootstrapReceipt -PathType Leaf){$bootstrap=Get-Content -Raw -LiteralPath $bootstrapReceipt|ConvertFrom-Json}
+          $bootstrapID=''
+          if($bootstrap -and $bootstrap.ack -and $bootstrap.ack.job){$bootstrapID=[string]$bootstrap.ack.job.job_id}
+          if($bootstrapID){try{$bootstrapExplain=Invoke-RestMethod "http://127.0.0.1:8787/v1/jobs/$bootstrapID/explain" -TimeoutSec 10}catch{$bootstrapExplain=[ordered]@{error=$_.Exception.Message}}}
+          $jobs=Invoke-RestMethod 'http://127.0.0.1:8787/v1/jobs?limit=200' -TimeoutSec 10
+          $caseJobs=@($jobs.jobs|Where-Object{([string]$_.job_id -like 'case0005-*') -or ([string]$_.workspace_root -ieq $workspace)})
+          $payload=[ordered]@{schema='openworker/case0005-local-status/v2';case_id='0005';machine=$env:COMPUTERNAME;workspace_root=$workspace;observed_at=[DateTimeOffset]::UtcNow.ToString('o');authority='openworker-local-durable-ledger';worklist=$worklist;controller=$controller;bootstrap_job_id=$bootstrapID;bootstrap_explain=$bootstrapExplain;case_jobs=$caseJobs;github_action_used_for_business_execution=$false}
+          $json=$payload|ConvertTo-Json -Depth 50
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $path='evidence/case0005/latest-local-status.json';$uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path";$readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME);$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          for($i=1;$i -le 10;$i++){$sha=$null;try{$e=Invoke-RestMethod -Uri $readUri -Headers $headers;$sha=$e.sha}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 404){throw}};$body=@{message='case0005: publish read-only ODA status';content=$b64;branch=$env:GITHUB_REF_NAME};if($sha){$body.sha=$sha};try{Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress)|Out-Null;break}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 409 -or $i -eq 10){throw};Start-Sleep -Milliseconds (250*$i)}}
+
+      - name: Release read-only claim
+        if: always() && steps.claim.outputs.claimed == 'true'
+        shell: powershell
+        run: Remove-Item 'C:\ProgramData\OpenWorker\case0005-status-readonly.lock' -Force -ErrorAction SilentlyContinue

@@ -1,0 +1,12 @@
+{
+  "schema": "openworker.control-envelope.v1",
+  "request_id": "case0005-status-after-a6-20260820",
+  "command": "CASE.STATUS",
+  "machine": "DESKTOP-ODAQN0D",
+  "case_id": "0005",
+  "policy": {
+    "max_parallel": 4,
+    "join": "case-defined",
+    "fail_closed": true
+  }
+}

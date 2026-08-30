@@ -1,0 +1,7 @@
+request=deploy-go-native-oda-node-and-bootstrap-case0005
+machine=DESKTOP-ODAQN0D
+case_id=0005
+worklist_revision=14
+controller=openworker-go-case-engine/v1
+python_controller_allowed=false
+requested_at=2026-08-19T12:15:00+08:00

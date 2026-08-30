@@ -1,0 +1,7 @@
+{
+  "schema": "openworker.generic-case-verification/v1",
+  "machine": "DESKTOP-ODAQN0D",
+  "purpose": "run full Go suite for manifest-driven Case registry, action aliases, and durable fanout runtime",
+  "business_execution": false,
+  "requested_at": "2026-08-19T14:21:00+08:00"
+}

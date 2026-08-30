@@ -1,0 +1,2 @@
+Cloud-side emergency queue drain.
+Runs on GitHub-hosted ubuntu-latest and cancels queued/in-progress OpenWorker Actions runs without depending on any local self-hosted runner.

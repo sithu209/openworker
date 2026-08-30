@@ -1,0 +1,97 @@
+name: Retire OpenWorker ODA to DirectWork UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/retire-openworker-oda-to-directwork-ui-trigger.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  retire-oda:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 30
+    env:
+      DIRECTWORK_REPO: https://github.com/liuxb99/DirectWork.git
+      DIRECTWORK_COMMIT: b81d1b2a28cec2ed34ce6e27d625623594c108a9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify ODA SYSTEM runner
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D'){throw "wrong computer: $env:COMPUTERNAME"}
+          $id=[Security.Principal.WindowsIdentity]::GetCurrent().Name
+          Write-Host "identity=$id runner=$env:RUNNER_NAME machine=$env:COMPUTERNAME"
+
+      - name: Acquire and compile DirectWork UI before touching OpenWorker
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:GIT_TERMINAL_PROMPT='0'
+          $dst=Join-Path $env:RUNNER_TEMP 'DirectWork-ui-cutover'
+          Remove-Item $dst -Recurse -Force -ErrorAction SilentlyContinue
+          git clone --no-tags $env:DIRECTWORK_REPO $dst
+          if($LASTEXITCODE-ne0){throw "DirectWork clone failed exit=$LASTEXITCODE"}
+          Set-Location $dst
+          git checkout $env:DIRECTWORK_COMMIT
+          if($LASTEXITCODE-ne0){throw "checkout failed exit=$LASTEXITCODE"}
+          if((git rev-parse HEAD).Trim() -ne $env:DIRECTWORK_COMMIT){throw 'DirectWork commit mismatch'}
+          go test ./... -count=1
+          if($LASTEXITCODE-ne0){throw "DirectWork tests failed exit=$LASTEXITCODE; OpenWorker untouched"}
+          go build -buildvcs=false -trimpath -ldflags "-X github.com/liuxb99/DirectWork/internal/buildinfo.Version=p1 -X github.com/liuxb99/DirectWork/internal/buildinfo.Commit=$env:DIRECTWORK_COMMIT -X github.com/liuxb99/DirectWork/internal/buildinfo.TargetCommit=$env:DIRECTWORK_COMMIT" -o directwork-node.exe ./cmd/directwork-node
+          if($LASTEXITCODE-ne0){throw "DirectWork build failed exit=$LASTEXITCODE; OpenWorker untouched"}
+          "DIRECTWORK_SOURCE=$dst" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: One-way cutover and retire OpenWorker
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-Location $env:DIRECTWORK_SOURCE
+          .\scripts\deploy-and-smoke.ps1 -Binary .\directwork-node.exe -ExpectedMachine 'DESKTOP-ODAQN0D' -NodeKey 'oda' -TargetCommit $env:DIRECTWORK_COMMIT -RunId '${{ github.run_id }}' -Peers 'http://DESKTOP-O87PJNR:8787,http://DESKTOP-UL7V2VV:8787'
+          $old=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue
+          if($old){
+            Stop-Service OpenWorkerNode -Force -ErrorAction SilentlyContinue
+            sc.exe config OpenWorkerNode start= disabled | Out-Null
+            sc.exe delete OpenWorkerNode | Out-Null
+          }
+          Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.ProcessName -match '^openworker'} | Stop-Process -Force -ErrorAction SilentlyContinue
+          Start-Sleep -Seconds 2
+
+      - name: Verify DirectWork UI owns 8787 and OpenWorker is retired
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $ow=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue
+          if($ow){throw "OpenWorkerNode still present status=$($ow.Status)"}
+          $owp=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.ProcessName -match '^openworker'})
+          if($owp.Count-gt0){throw 'OpenWorker process still running'}
+          $dw=Get-Service DirectWorkNode -ErrorAction Stop
+          if($dw.Status-ne 'Running'){throw "DirectWorkNode not running: $($dw.Status)"}
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 5
+          if(-not $s.online){throw 'DirectWork node offline'}
+          if([string]$s.commit-ne$env:DIRECTWORK_COMMIT){throw "running commit mismatch: $($s.commit)"}
+          $ui=(Invoke-WebRequest 'http://127.0.0.1:8787/ui/' -UseBasicParsing -TimeoutSec 5).Content
+          if($ui-notmatch 'DirectWork 工作總控'){throw 'DirectWork workbench UI marker missing'}
+          if($ui-match 'OpenWorker 工作總控'){throw 'legacy OpenWorker UI still serving on 8787'}
+          $tcp=(Get-NetTCPConnection -LocalPort 8787 -State Listen -ErrorAction Stop | Select-Object -First 1)
+          $owner=Get-Process -Id $tcp.OwningProcess -ErrorAction Stop
+          if($owner.ProcessName-notmatch 'directwork'){throw "8787 owner is not DirectWork: $($owner.ProcessName)"}
+          $out='retirement-receipts/${{ github.run_id }}';New-Item -ItemType Directory -Force -Path $out|Out-Null
+          [ordered]@{schema='directwork/openworker-retirement-ui/v1';verified=$true;machine=$env:COMPUTERNAME;runner=$env:RUNNER_NAME;directwork_commit=$env:DIRECTWORK_COMMIT;directwork_service=$dw.Status.ToString();openworker_service_present=$false;openworker_process_count=0;port=8787;port_owner=$owner.ProcessName;ui='DirectWork 工作總控';observed_at=[DateTimeOffset]::UtcNow.ToString('o')}|ConvertTo-Json -Depth 8|Set-Content "$out/oda-ui-retirement.json" -Encoding UTF8
+
+      - name: Persist retirement receipt
+        shell: powershell
+        run: |
+          git config user.name 'directwork-retirement'
+          git config user.email 'directwork-retirement@users.noreply.github.com'
+          git add retirement-receipts/${{ github.run_id }}/oda-ui-retirement.json
+          git commit -m 'receipt: ODA OpenWorker retired to DirectWork UI run ${{ github.run_id }}'
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -1,0 +1,41 @@
+name: Drive Ingress CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'coworker/drive_ingress.py'
+      - 'scripts/download_drive_file_atomic.py'
+      - 'scripts/resolve_drive_credential_store.py'
+      - 'tests/test_drive_ingress.py'
+      - '.github/workflows/drive-ingress-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drive-ingress-ci-main
+  cancel-in-progress: true
+
+jobs:
+  drive-ingress:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project and dev test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Compile owning modules and scripts
+        run: |
+          python -m py_compile \
+            coworker/drive_ingress.py \
+            scripts/download_drive_file_atomic.py \
+            scripts/resolve_drive_credential_store.py
+      - name: Run Drive ingress blocking tests
+        run: python -m pytest tests/test_drive_ingress.py -q

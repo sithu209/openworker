@@ -1,0 +1,9 @@
+{
+  "schema": "openworker.case-diagnose-request.v1",
+  "case_id": "0005",
+  "machine": "DESKTOP-ODAQN0D",
+  "requested_by": "chatgpt",
+  "requested_at": "2026-08-19T22:35:00+08:00",
+  "revision": 5,
+  "purpose": "locate dispatch-gap REAL verifier pickup failure after e01e6d68a03eb723e2bd7521879e6352f2882d17"
+}

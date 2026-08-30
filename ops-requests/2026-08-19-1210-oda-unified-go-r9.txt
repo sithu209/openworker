@@ -1,0 +1,5 @@
+request=install-openworkerctl-oda
+machine=DESKTOP-ODAQN0D
+reason=unified-go-control-r9-terminal-cleanup-barrier
+source_commit=df1c9cc8907867dfa2df49d6b2d3ff5404f3cddd
+requested_at=2026-08-19T12:10:00+08:00

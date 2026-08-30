@@ -1,0 +1,1 @@
+Trigger latest OpenWorker upgrade on UL7, O87, ODA after cloud queue drain.

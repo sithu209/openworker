@@ -1,0 +1,6 @@
+request=install-unified-go-openworker
+machine=DESKTOP-ODAQN0D
+canonical_binary=openworker.exe
+compatibility_binary=openworkerctl.exe
+reason=case0005-single-go-controller-migration
+requested_at=2026-08-19T11:29:00+08:00

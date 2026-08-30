@@ -1,0 +1,18 @@
+{
+  "schema": "openworkerctl-oda-install/v3",
+  "succeeded": false,
+  "status": "QUEUED_FOR_ODA",
+  "phase": "queued_for_oda",
+  "machine": "DESKTOP-ODAQN0D",
+  "runner_name": "",
+  "executable": "",
+  "supervisor_status": "",
+  "route_label": "",
+  "error": "",
+  "github_run_id": "32219688038",
+  "github_run_attempt": "1",
+  "request_sha": "31878db0c47099060c2373ce7532b84b2cd36a6f",
+  "github_action_used_for_command_transport": true,
+  "github_action_used_for_business_execution": false,
+  "observed_at": "2026-08-19T09:44:32.5656538+00:00"
+}

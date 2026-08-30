@@ -1,0 +1,11 @@
+{
+  "schema": "openworker.case0005-runtime-probe-queued/v1",
+  "case_id": "0005",
+  "machine": "DESKTOP-ODAQN0D",
+  "phase": "queued_for_oda",
+  "github_run_id": "32211950465",
+  "github_run_attempt": "1",
+  "request_sha": "92134027b7008766c8d87731d9faee56cdd442aa",
+  "github_action_used_for_business_execution": false,
+  "observed_at": "2026-08-19T03:24:35.3301992+00:00"
+}

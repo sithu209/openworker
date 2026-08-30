@@ -1,0 +1,5 @@
+OpenWorker direct three-node local Action upgrade trigger
+Time: 2026-08-18 17:02 +08:00
+Target: UL7 / O87 / ODA
+Method: existing per-node local Actions -> build latest main -> install_openworker_node_service.ps1 -> live node status verification
+This trigger intentionally uses the existing simple local Action upgrade path.

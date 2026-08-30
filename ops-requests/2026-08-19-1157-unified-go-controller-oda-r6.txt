@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r6
+machine=DESKTOP-ODAQN0D
+reason=verify-go-native-continue-and-clean-windows-runtime-tests
+requested_at=2026-08-19T11:57:00+08:00

@@ -24,7 +24,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
-        choices=["ensure", "show", "add-repair", "start", "complete-action", "record", "pass", "block-active"],
+        choices=["ensure", "show", "add-repair", "start", "complete-action", "retry-stale-active", "record", "pass", "block-active"],
     )
     parser.add_argument("--workspace-root", required=True)
     parser.add_argument("--manifest")
@@ -69,33 +69,23 @@ def main() -> int:
             raise CaseWorklistError("--title is required for add-repair")
         if not args.allowed_action:
             raise CaseWorklistError("at least one --allowed-action is required for add-repair")
-        worklist = runtime.add_repair(
-            parent_step_id=args.parent_step_id,
-            step_id=args.step_id,
-            title=args.title,
-            allowed_actions=args.allowed_action,
-            acceptance=args.acceptance,
-        )
+        worklist = runtime.add_repair(parent_step_id=args.parent_step_id, step_id=args.step_id, title=args.title, allowed_actions=args.allowed_action, acceptance=args.acceptance)
     elif args.command == "start":
         if not args.action_id:
             raise CaseWorklistError("--action-id is required for start")
         if not args.execution_id:
             raise CaseWorklistError("--execution-id is required for start")
-        worklist = runtime.start_action(
-            args.step_id,
-            args.action_id,
-            execution_id=args.execution_id,
-        )
+        worklist = runtime.start_action(args.step_id, args.action_id, execution_id=args.execution_id)
     elif args.command == "complete-action":
         if not args.action_id:
             raise CaseWorklistError("--action-id is required for complete-action")
         if not args.execution_id:
             raise CaseWorklistError("--execution-id is required for complete-action")
-        worklist = runtime.complete_action(
-            args.step_id,
-            args.action_id,
-            execution_id=args.execution_id,
-        )
+        worklist = runtime.complete_action(args.step_id, args.action_id, execution_id=args.execution_id)
+    elif args.command == "retry-stale-active":
+        if not args.execution_id:
+            raise CaseWorklistError("--execution-id is required for retry-stale-active")
+        worklist = runtime.retry_stale_active(args.step_id, execution_id=args.execution_id)
     elif args.command == "record":
         if not args.key:
             raise CaseWorklistError("--key is required for record")
@@ -112,10 +102,7 @@ def main() -> int:
         raise CaseWorklistError(f"unsupported command: {args.command}")
 
     print(json.dumps(worklist.as_dict(), ensure_ascii=False, indent=2))
-    print(
-        f"CASE_WORKLIST_UPDATED command={args.command} step={args.step_id} "
-        f"next={worklist.as_dict()['canonical_next_step_id']}"
-    )
+    print(f"CASE_WORKLIST_UPDATED command={args.command} step={args.step_id} next={worklist.as_dict()['canonical_next_step_id']}")
     return 0
 
 

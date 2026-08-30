@@ -1,0 +1,73 @@
+name: Case0004 Overview Evidence PR
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    if: github.event.pull_request.title == '[openworker-control] case0004_overview_evidence' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 8
+    steps:
+      - name: Collect REAL Case0004 overview evidence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'
+          $stage=Join-Path $env:RUNNER_TEMP 'case0004-overview-evidence'
+          Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+
+          # Prefer DirectWork 055 diagnostics / column-candidate / candidate zoom /
+          # relocalization / Story Index evidence before generic overview copies.
+          # Read-only evidence transport only.
+          $all=@(Get-ChildItem -LiteralPath $workspace -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            $_.Extension -match '^\.(png|json)$' -and $_.Length -le 25MB
+          })
+          $columnDiagnostics=@($all | Where-Object {
+            $_.Name -match '(?i)query-bounds|column-candidate|column_candidates|column-candidates' -or
+            $_.FullName -match '(?i)query-bounds|column-candidate|column_candidates|column-candidates|directwork\\pr-13[789]-'
+          } | Sort-Object LastWriteTimeUtc -Descending)
+          $candidateZoom=@($all | Where-Object {
+            $_.Name -match '(?i)(1f|2f|3f-4f|r1f)-candidate|candidate-pr-130-32346888039' -or
+            $_.FullName -match '(?i)pr-130-32346888039.*candidate|candidate.*pr-130-32346888039'
+          } | Sort-Object LastWriteTimeUtc -Descending)
+          $relocalize=@($all | Where-Object {
+            $_.Name -match '(?i)relocalize|story-relocalize' -or
+            $_.FullName -match '(?i)relocalize|story-relocalize'
+          } | Sort-Object LastWriteTimeUtc -Descending)
+          $priority=@($all | Where-Object {
+            $_.Name -match '(?i)floor-label|story-index|story-viewport|render-manifest|candidate-overview' -or
+            $_.FullName -match '(?i)story-index|story.*localization|floor.*label'
+          } | Sort-Object LastWriteTimeUtc -Descending)
+          $overview=@($all | Where-Object {
+            $_.Name -match '(?i)overview' -or $_.FullName -match '(?i)case0004.*overview'
+          } | Sort-Object LastWriteTimeUtc -Descending)
+          $candidates=@($columnDiagnostics + $candidateZoom + $relocalize + $priority + $overview)
+
+          $manifest=@(); $n=0
+          $seen=New-Object 'System.Collections.Generic.HashSet[string]'
+          foreach($f in $candidates){
+            if($n -ge 120){break}
+            $sha=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            if(-not $seen.Add($sha)){continue}
+            $n++
+            $safe=('{0:D3}-{1}' -f $n,($f.Name -replace '[^A-Za-z0-9._-]','_'))
+            $dest=Join-Path $stage $safe
+            Copy-Item -LiteralPath $f.FullName -Destination $dest -Force
+            $manifest += [ordered]@{artifact_name=$safe;source_path=$f.FullName;bytes=$f.Length;sha256=$sha;last_write_utc=$f.LastWriteTimeUtc.ToString('o')}
+          }
+          if($manifest.Count -eq 0){throw 'no Case0004 overview evidence found'}
+          $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $stage 'manifest.json') -Encoding UTF8
+          Write-Host ($manifest|ConvertTo-Json -Depth 10 -Compress)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: case0004-overview-evidence
+          path: ${{ runner.temp }}\case0004-overview-evidence
+          if-no-files-found: error
+          retention-days: 7

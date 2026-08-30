@@ -1,0 +1,49 @@
+name: Case 0005 Local Parallel Bootstrap ODA v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  dispatch-local-parallel:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-parallel-v2]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - name: Verify fixed ODA host
+        shell: powershell
+        run: |
+          if (-not $env:COMPUTERNAME.Equals('DESKTOP-ODAQN0D',[StringComparison]::OrdinalIgnoreCase)) { throw "wrong host actual=$env:COMPUTERNAME" }
+      - uses: actions/checkout@v4
+      - name: Submit four durable local jobs then return
+        shell: powershell
+        run: |
+          ./scripts/case0005_parallel_bootstrap.ps1
+      - name: Persist durable ACK receipt into repository
+        shell: powershell
+        run: |
+          $src='D:\AI-Work\jobs\0005-SNOW-WHITE\evidence\case0005-parallel-bootstrap.json'
+          if(-not (Test-Path -LiteralPath $src -PathType Leaf)){throw 'missing durable ACK receipt'}
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005' | Out-Null
+          Copy-Item -LiteralPath $src -Destination 'case-evidence/0005/local-parallel-bootstrap.json' -Force
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005/local-parallel-bootstrap.json
+          git diff --cached --quiet
+          if($LASTEXITCODE -eq 0){Write-Host 'receipt unchanged'; exit 0}
+          git commit -m 'evidence(case0005): record ODA durable parallel ACKs'
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Upload transport receipt when quota permits
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case0005-local-parallel-bootstrap-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          path: D:/AI-Work/jobs/0005-SNOW-WHITE/evidence/case0005-parallel-bootstrap.json
+          if-no-files-found: warn
+          retention-days: 7

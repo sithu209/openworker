@@ -1,0 +1,7 @@
+{
+  "schema": "openworker.generic-case-verification/v1",
+  "machine": "DESKTOP-ODAQN0D",
+  "purpose": "full Go gate for generic Case registry, durable fanout, and storyboard REAL-bind mapper through step 050",
+  "business_execution": false,
+  "requested_at": "2026-08-19T14:32:00+08:00"
+}

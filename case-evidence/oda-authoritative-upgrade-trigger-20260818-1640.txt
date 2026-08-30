@@ -1,0 +1,1 @@
+Trigger ODA OpenWorkerNode upgrade using authoritative running_commit == target_commit == workflow SHA verification. Git trigger alone is not success.

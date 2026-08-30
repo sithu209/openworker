@@ -1,7 +1,9 @@
 """Durable, fail-closed case worklist for long-running OpenWorker cases.
 
-The worklist is the job-scoped authority for *execution order only*. It does not
-replace product lifecycle, WorkLedger, go-tool-runtime, or case docs.
+The worklist is the job-scoped authority for execution order and DAG readiness.
+It does not replace product lifecycle, WorkLedger, go-tool-runtime, or case docs.
+Multiple independent READY/RUNNING work steps are allowed; process scheduling
+remains the responsibility of the OpenWorker Go execution kernel.
 """
 from __future__ import annotations
 
@@ -72,11 +74,14 @@ class CaseWorklist:
     steps: list[CaseStep]
     schema_version: str = "openworker-case-worklist/v1"
     revision: int = 1
+    parallel_policy: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.case_id = self.case_id.strip()
         self.workspace_root = str(Path(self.workspace_root).expanduser().resolve())
         self.assigned_host = self.assigned_host.strip()
+        if not isinstance(self.parallel_policy, dict):
+            raise CaseWorklistError("parallel_policy must be an object")
         if not self.case_id:
             raise CaseWorklistError("case_id is required")
         if not self.assigned_host:
@@ -84,9 +89,6 @@ class CaseWorklist:
         if not self.steps:
             raise CaseWorklistError("at least one case step is required")
         self._validate_graph()
-        running = [step.step_id for step in self.steps if step.status == StepStatus.RUNNING]
-        if len(running) > 1:
-            raise CaseWorklistError(f"multiple RUNNING steps are not allowed: {', '.join(running)}")
         self.refresh()
 
     def _validate_graph(self) -> None:
@@ -145,7 +147,12 @@ class CaseWorklist:
         ]
 
     def refresh(self) -> None:
-        """Recompute READY/PENDING without changing RUNNING/BLOCKED/terminal states."""
+        """Recompute READY/PENDING without changing RUNNING/BLOCKED/terminal states.
+
+        Repairs retain fail-closed precedence: while an unfinished repair exists,
+        no new non-repair work becomes READY. Already RUNNING jobs are not
+        rewritten here; their process lifecycle is authoritative in OpenWorker.
+        """
         active_repairs = self._active_repairs()
         active_repair_ids = {step.step_id for step in active_repairs}
         blocked_parents = {step.repair_parent_step for step in active_repairs}
@@ -167,46 +174,67 @@ class CaseWorklist:
                 continue
             step.status = StepStatus.READY if self._dependencies_satisfied(step) else StepStatus.PENDING
 
-    def next_step(self) -> CaseStep | None:
-        """Return the single canonical current/next step in manifest order."""
+    def ready_steps(self) -> list[CaseStep]:
+        """Return the complete executable DAG frontier in manifest order.
+
+        When repairs are READY, only repair steps are returned. Otherwise all
+        independent READY work/approval steps are returned so the local
+        controller can fan them out concurrently without creating a scheduler.
+        """
         self.refresh()
-        running = [step for step in self.steps if step.status == StepStatus.RUNNING]
-        if len(running) > 1:
-            raise CaseWorklistError(
-                "multiple RUNNING steps are not allowed: " + ", ".join(step.step_id for step in running)
-            )
-        if running:
-            return running[0]
         repairs = [step for step in self.steps if step.kind == "repair" and step.status == StepStatus.READY]
         if repairs:
-            return repairs[0]
-        for step in self.steps:
-            if step.kind != "repair" and step.status == StepStatus.READY:
-                return step
-        return None
+            return repairs
+        return [step for step in self.steps if step.kind != "repair" and step.status == StepStatus.READY]
+
+    def running_steps(self) -> list[CaseStep]:
+        """Return all currently RUNNING DAG nodes in manifest order."""
+        return [step for step in self.steps if step.status == StepStatus.RUNNING]
+
+    def next_step(self) -> CaseStep | None:
+        """Compatibility view returning one representative current/next step.
+
+        New controllers must use :meth:`ready_steps` / :meth:`running_steps`.
+        Older clients still receive the first RUNNING step, then first READY
+        repair, then first READY work step in manifest order.
+        """
+        self.refresh()
+        running = self.running_steps()
+        if running:
+            return running[0]
+        ready = self.ready_steps()
+        return ready[0] if ready else None
 
     def assert_action_allowed(self, step_id: str, action_id: str) -> CaseStep:
+        """Validate an action against the current DAG frontier.
+
+        Unlike the legacy single-canonical-step rule, any READY frontier node
+        may start independently, and an already RUNNING node may continue its
+        exact action ownership lifecycle.
+        """
+        self.refresh()
         step = self.step(step_id)
-        canonical = self.next_step()
-        if canonical is None:
-            raise CaseWorklistError("no READY or RUNNING worklist step is available")
-        if canonical.step_id != step.step_id:
-            raise CaseWorklistError(
-                f"case drift blocked: canonical current step is {canonical.step_id!r}, not {step.step_id!r}"
-            )
         action = action_id.strip()
         if not action:
             raise CaseWorklistError("action_id is required")
         if action not in step.allowed_actions:
             raise CaseWorklistError(
-                f"action {action!r} is not allowed for canonical step {step.step_id!r}"
+                f"action {action!r} is not allowed for step {step.step_id!r}"
             )
         if not self._dependencies_satisfied(step):
             raise CaseWorklistError(f"dependencies are not satisfied for step {step.step_id!r}")
         if step.status not in {StepStatus.READY, StepStatus.RUNNING}:
+            frontier = [item.step_id for item in self.ready_steps()]
             raise CaseWorklistError(
-                f"canonical step {step.step_id!r} cannot execute action from {step.status.value}"
+                f"case drift blocked: step {step.step_id!r} is {step.status.value}; "
+                f"ready frontier={frontier!r}"
             )
+        if step.status == StepStatus.READY:
+            frontier = {item.step_id for item in self.ready_steps()}
+            if step.step_id not in frontier:
+                raise CaseWorklistError(
+                    f"case drift blocked: step {step.step_id!r} is outside ready frontier"
+                )
         return step
 
     def start(self, step_id: str, action_id: str) -> CaseStep:
@@ -328,6 +356,8 @@ class CaseWorklist:
             raw["status"] = raw["status"].value if isinstance(raw["status"], StepStatus) else raw["status"]
         canonical = self.next_step()
         payload["canonical_next_step_id"] = canonical.step_id if canonical else None
+        payload["ready_step_ids"] = [step.step_id for step in self.ready_steps()]
+        payload["running_step_ids"] = [step.step_id for step in self.running_steps()]
         return payload
 
     @classmethod
@@ -341,11 +371,18 @@ class CaseWorklist:
                 raise CaseWorklistError("each step must be an object")
             data = dict(raw)
             data.pop("canonical_next_step_id", None)
+            data.pop("ready_step_ids", None)
+            data.pop("running_step_ids", None)
             try:
                 data["status"] = StepStatus(str(data.get("status", StepStatus.PENDING.value)))
             except ValueError as exc:
                 raise CaseWorklistError(f"invalid step status {data.get('status')!r}") from exc
             steps.append(CaseStep(**data))
+        parallel_policy = payload.get("parallel_policy", {})
+        if parallel_policy is None:
+            parallel_policy = {}
+        if not isinstance(parallel_policy, Mapping):
+            raise CaseWorklistError("parallel_policy must be an object")
         return cls(
             case_id=str(payload.get("case_id", "")),
             workspace_root=str(payload.get("workspace_root", "")),
@@ -353,6 +390,7 @@ class CaseWorklist:
             steps=steps,
             schema_version=str(payload.get("schema_version", "openworker-case-worklist/v1")),
             revision=int(payload.get("revision", 1)),
+            parallel_policy=dict(parallel_policy),
         )
 
 

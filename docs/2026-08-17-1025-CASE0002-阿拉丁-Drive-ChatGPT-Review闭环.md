@@ -1,46 +1,74 @@
-# CASE 0002 阿拉丁 — Google Drive → ChatGPT 成果审查闭环
+# CASE 0002 阿拉丁 — Google Drive → ChatGPT 成果審查閉環
 
-时间：2026-08-17 10:25（Asia/Taipei）  
-状态：IMPLEMENTED；OpenWorker CI VERIFYING；真实阿拉丁 Review Bundle 待 Studio/ComfyX/OpenMAIC 同工作目录成果完成后 handoff
+時間：2026-08-17 10:25（Asia/Taipei）  
+現行契約更正：2026-08-20（Asia/Taipei）
 
-## 目标
+> **2026-08-20 現行操作規則**：本文 2026-08-17 的 run、commit、失敗/成功證據保留為歷史事實；涉及「現在怎麼 dispatch、handoff、上傳 Drive、判斷完成」時，一律以 **go-tool + DirectWork durable work** 為準。OpenWorker 舊腳本、Drive Desktop atomic copy、GitHub Action success 都不再是 canonical business path。
 
-让 Case 0002 不再以 Action `success`、文件非空或 SHA 一致作为最终质量结论。机械验证继续负责 provenance / reopen / decode / SHA；OpenWorker 将不可变成果包复制到 Google Drive 临时审查区，再由 ChatGPT 实际查看图片、PPTX、影片和 evidence，返回结构化 PASS / TUNE / TOOL_GAP / FAIL。
+## 目標
 
-Google Drive 只作为临时 review exchange；`WorkLedger` 仍是 revision / artifact SHA / review verdict / parameter delta / owning-repo rework 的 durable authority。
+Case 0002 不以 Action `success`、文件非空或 SHA 一致作為最終品質結論。機械驗證仍負責 provenance / reopen / decode / SHA；需要 ChatGPT 審查時，先由 go-tool 選擇現行 capability，再由 DirectWork 建 durable work，把成果透過 Google Drive 真實發布與遠端驗證後交給 ChatGPT 審查，返回 PASS / TUNE / TOOL_GAP / FAIL。
 
-## 新增接口
+## 現行權威鏈
+
+```text
+ChatGPT / LLM
+  -> go-tool 查 capability / inputs / guidance / negative knowledge
+  -> DirectWork durable work
+  -> 本機 executor / localexec
+  -> REAL storyboard / PPTX / video / evidence
+  -> drive.chatgpt.review.publish
+  -> drive.file.publish-verified
+  -> Google Drive upload + independent remote verification
+  -> exact Drive revision identity
+  -> ChatGPT physical artifact inspection
+  -> review receipt / decision
+  -> PASS 才可 delivery
+```
+
+Google Drive 只作 review exchange；durable work/evidence、artifact SHA、review verdict、parameter delta 與 owning-repo rework 必須可追溯。GitHub Actions 若被使用，只能作短密語/transport，不是 business scheduler 或 completion authority。
+
+## 2026-08-17 歷史實作（保留作證據，不作現行預設操作）
 
 ### `scripts/case0002_review_handoff.py`
+
+歷史 wrapper：
 
 - work code：`CASE-0002-ALADDIN`
 - assigned host：`DESKTOP-ODAQN0D`
 - 支持 `--phase storyboard|final`
-- 默认 Drive root 来自 `OPENWORKER_REVIEW_DRIVE_ROOT`
-- 使用通用 `ReviewCycle`，不复制 Case 0003 的核心实现
+- storyboard 要求 PPTX、manifest、視覺資產與 evidence
+- final phase 強制至少一個非空 `.mp4`
 
-Storyboard phase 必需：
+歷史流程曾使用 immutable bundle、WorkLedger 與 Drive sync folder atomic copy。這些紀錄保留用來解釋當時的證據與治理設計；**新執行不得把 Drive Desktop/sync copy 當 publication authority**。
 
-- `presentation/storyboard-request.bound.json`
-- `presentation/storyboard.pptx`
-- `presentation/storyboard.manifest.json`
-- 至少一张 `visual-assets/**/*.png|jpg|jpeg`
-- `evidence/*.json` 自动加入 bundle
+## 現行 Drive / ChatGPT Review 規則
 
-Final phase 在上述基础上强制至少一个非空 `.mp4`。
+普通成果要交給 ChatGPT 審查時，模型不得重新研究 OAuth、另寫 uploader、猜 rclone、或把檔案複製到 Drive Desktop 後就宣稱完成。
 
-Handoff 前：
+現行高層 capability：
 
-1. 每个物理文件先登记到 WorkLedger。
-2. 创建 required `LLM Semantic Review = pending` check。
-3. ReviewCycle 建 immutable bundle。
-4. bundle 内每个 artifact 记录 SHA256 / size。
-5. atomic copy 到 Drive sync folder。
-6. copy 后整棵文件树重新 SHA 比对。
-7. revision 进入 `blocked / WAITING_LLM_REVIEW`。
-8. accepted/delivered pointer 都保持空。
+```text
+drive.chatgpt.review.publish
+```
 
-## 审查维度
+canonical primitive：
+
+```text
+drive.file.publish-verified
+```
+
+完成至少要求：
+
+1. source artifact 存在且符合案例 gate；
+2. DirectWork durable work 有 received / queued / claimed / running / completed 或 blocked 證據；
+3. Google Drive 真實 upload；
+4. independent remote metadata verification；
+5. exact Drive revision/file identity；
+6. ChatGPT 審查的是該 exact revision；
+7. review receipt 綁定該成果身份。
+
+## 審查維度
 
 - story / storyboard semantic correctness
 - Aladdin / Genie character consistency
@@ -53,9 +81,9 @@ Handoff 前：
 - parameter tuning opportunities
 - real tool gaps requiring owning-repository repair
 
-## 参数治理
+## 參數治理
 
-LLM 只能对 allowlist 参数返回 TUNE：
+LLM 只能對 allowlist 參數返回 TUNE：
 
 - `video.duration_sec`
 - `video.width`
@@ -64,66 +92,56 @@ LLM 只能对 allowlist 参数返回 TUNE：
 - `video.seed`
 - `presentation.image_scale`
 
-模型路径、workflow ID、ComfyUI node、checkpoint 等不属于可自由调参项；若审查发现缺能力，应返回 TOOL_GAP 并指定 owning repo / capability / verification plan。
+模型路徑、workflow ID、ComfyUI node、checkpoint 等不屬於可自由調參項；若審查發現缺能力，返回 TOOL_GAP 並指定 owning repo / capability / verification plan。
 
-## `scripts/case0002_apply_llm_review.py`
+## Review decision
 
-读取 ChatGPT review receipt，并经过 `review_gap.apply_review_finding(...)`：
+歷史 `scripts/case0002_apply_llm_review.py` 的 PASS/TUNE/TOOL_GAP/FAIL 語意仍可作治理參考：
 
-- PASS → required LLM check passed → accept revision → deliver revision
-- TUNE → 当前 revision blocked → 新开 tuning child revision，记录 parameter delta
-- TOOL_GAP → 归一化为 governed FAIL → `REWORK_REQUIRED`，保留 owning repo / gap capability / verification plan
-- FAIL → `REWORK_REQUIRED`
+- PASS → reviewed revision 才可進 delivery gate
+- TUNE → 建新 revision / parameter delta，再 REAL rerun + review
+- TOOL_GAP → owning repo repair + verification plan
+- FAIL → REWORK_REQUIRED
 
-因此不能用手动状态修改绕过 LLM review gate。
+但新執行應由 DirectWork durable work 驅動相應 capability，不把手動執行舊 OpenWorker wrapper 當 canonical 路徑。
 
-## 永久测试
+## 歷史永久測試與 commits
 
-`tests/test_case0002_review.py` 锁住：
-
-1. storyboard handoff 后 accepted/delivered pointer 必须仍为空。
-2. revision 必须是 blocked / waiting LLM review。
-3. Drive 目标必须实际出现 `review-request.json`。
-4. PASS receipt 才能 accept + deliver 同一 reviewed revision。
-5. final phase 没有实体 MP4 必须 fail-closed。
-
-实现 commits：
+以下仍是有效歷史證據：
 
 - `bf1078543e6cd01e3ede9a2795842162057eac7d` — Case 0002 Drive handoff wrapper
 - `ebab68bdf7f29da65791ac898e5ed1806525393b` — ChatGPT review receipt apply
 - `29478b8d9b0ad461c19176f4560d16f5eb9f6675` — governance regression tests
+- 歷史 OpenWorker CI `31987877806` 僅代表當時 CI 狀態，不代表今天的 business completion。
 
-最新 OpenWorker CI：`31987877806`，当前 pytest / GUI jobs 正在执行；未提前标绿。
-
-## Case 0002 正式闭环
+## Case 0002 現行閉環
 
 ```text
-Comfyx-Studio DirectorProjectPlan
-  ↓
-ComfyX IMAGE reference/storyboard assets
-  ↓
-Studio receipt revalidation + stable-ID binding
-  ↓
-OpenMAIC editable storyboard.pptx
-  ↓
-ComfyX VIDEO + final assembly
+ComfyX / Studio / OpenMAIC REAL artifacts
   ↓
 mechanical QC / reopen / SHA / provenance
   ↓
-OpenWorker immutable Review Bundle
+go-tool 查現行 review publication capability
   ↓
-Google Drive temporary review exchange
+DirectWork durable work
+  ↓
+drive.chatgpt.review.publish
+  ↓
+drive.file.publish-verified
+  ↓
+Google Drive remote verification + exact revision identity
   ↓
 ChatGPT physical artifact inspection
-  ├─ PASS → accept/deliver
-  ├─ TUNE → child revision → rerun → review again
+  ├─ PASS → delivery gate
+  ├─ TUNE → child/new revision → REAL rerun → review again
   └─ TOOL_GAP/FAIL → owning repo repair → REAL rerun → review again
 ```
 
-## 下一步
+## 下一步規則
 
-1. 等 Case 0002 同工作目录至少形成一张 REAL storyboard/reference image + image-bound PPTX。
-2. 先执行 `--phase storyboard` handoff，让 ChatGPT 检查分镜与人物/场景连续性。
-3. 分镜 PASS 后才继续 VIDEO 主线；若 TUNE/TOOL_GAP，先修再生成，避免错误视觉资产扩散到所有视频镜头。
-4. final MP4、字幕、QC 完成后执行 `--phase final` 第二次审查。
-5. 只有 final review PASS 才推进 OpenWorker accepted/delivered pointer。
+1. 形成 REAL storyboard/reference image + image-bound PPTX 後，不直接跑舊 handoff script；先問 go-tool。
+2. 由 DirectWork 建立 storyboard review durable work。
+3. 使用 `drive.chatgpt.review.publish -> drive.file.publish-verified` 發布並取得 exact Drive identity。
+4. ChatGPT 審查分鏡；TUNE/TOOL_GAP 先修再擴散到影片。
+5. final MP4、字幕、QC 完成後，以同一現行 contract 做第二次審查。
+6. 只有 final review PASS 才進 delivery gate。

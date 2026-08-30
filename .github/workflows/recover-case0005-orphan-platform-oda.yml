@@ -1,0 +1,37 @@
+name: Recover Case0005 Orphan Platform ODA
+
+on:
+  workflow_dispatch:
+    inputs:
+      pid:
+        description: Exact orphan comfyx-studio-platform PID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - name: Fail-closed orphan recovery
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        env:
+          TARGET_PID: ${{ inputs.pid }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $pidValue=0
+          if(-not [int]::TryParse($env:TARGET_PID,[ref]$pidValue)){throw 'pid must be an integer'}
+          $proc=Get-CimInstance Win32_Process -Filter "ProcessId=$pidValue"
+          if(-not $proc){throw "PID $pidValue does not exist"}
+          if($proc.Name -ine 'comfyx-studio-platform.exe'){throw "unexpected process $($proc.Name)"}
+          $listener=Get-NetTCPConnection -LocalPort 18082 -State Listen -ErrorAction Stop
+          if(@($listener|Where-Object OwningProcess -eq $pidValue).Count -ne 1){throw "PID $pidValue is not the sole :18082 listener"}
+          if(Get-Process -Id $proc.ParentProcessId -ErrorAction SilentlyContinue){throw "parent PID $($proc.ParentProcessId) is still alive"}
+          Stop-Process -Id $pidValue -Force -ErrorAction Stop
+          Start-Sleep -Seconds 1
+          if(Get-Process -Id $pidValue -ErrorAction SilentlyContinue){throw "PID $pidValue survived termination"}
+          [ordered]@{machine=$env:COMPUTERNAME;pid=$pidValue;name=$proc.Name;orphan_parent_pid=$proc.ParentProcessId;port=18082;recovered_at=[DateTimeOffset]::UtcNow.ToString('o');business_execution=$false}|ConvertTo-Json

@@ -1,0 +1,4 @@
+OpenWorker three-node authoritative install/upgrade V2 trigger.
+Nodes: UL7 / O87 / ODA.
+Each node must emit ACCEPTED and VERIFIED receipts under case-evidence/node-upgrade/<target-sha>/.
+Triggered at 2026-08-18 16:50 Asia/Taipei.

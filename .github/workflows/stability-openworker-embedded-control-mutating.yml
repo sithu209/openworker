@@ -1,0 +1,26 @@
+name: Stability OpenWorker Embedded Control Mutating
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/hook-mutating-stability-marker.txt'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/hook-mutating-stability-marker.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  mutating-stability:
+    name: ODA embedded-control mutating stability
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run queue-clear + idempotent continue stability
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\test-openworker-embedded-control-mutating-stability.ps1" -CaseId 0005 -ExpectedMachine DESKTOP-ODAQN0D

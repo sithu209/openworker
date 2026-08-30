@@ -1,0 +1,61 @@
+name: Diagnose Case0005 ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'diagnostic-requests/case0005.json'
+
+permissions:
+  contents: write
+
+jobs:
+  ingress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish queued diagnosis receipt
+        shell: pwsh
+        run: |
+          $result=[ordered]@{
+            schema='openworker.case0005-diagnose-queued/v1'
+            case_id='0005'
+            machine='DESKTOP-ODAQN0D'
+            phase='queued_for_oda'
+            github_run_id=$env:GITHUB_RUN_ID
+            github_run_attempt=$env:GITHUB_RUN_ATTEMPT
+            request_sha=$env:GITHUB_SHA
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          New-Item -ItemType Directory -Force -Path 'case-evidence/case0005-diagnose'|Out-Null
+          $json=$result|ConvertTo-Json -Depth 20
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE 'case-evidence\case0005-diagnose\queued.json'),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-case-diagnose-ingress'
+          git config user.email 'openworker-case-diagnose-ingress@users.noreply.github.com'
+          git add -- 'case-evidence/case0005-diagnose/queued.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m "receipt: Case0005 diagnose queued $env:GITHUB_RUN_ID"
+            if($LASTEXITCODE -ne 0){throw 'failed to commit diagnose queued receipt'}
+            git pull --rebase origin main
+            if($LASTEXITCODE -ne 0){throw 'failed to rebase diagnose queued receipt'}
+            git push origin HEAD:main
+            if($LASTEXITCODE -ne 0){throw 'failed to push diagnose queued receipt'}
+          }
+
+  diagnose:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read latest Case0005 failure logs with bounded fixed command
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\run-case0005-diagnose-oda.ps1"

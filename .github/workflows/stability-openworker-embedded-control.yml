@@ -1,0 +1,26 @@
+name: Stability OpenWorker Embedded Control
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/hook-stability-marker.txt'
+      - 'scripts/openworker-job-started-hook.ps1'
+      - 'scripts/invoke-openworker-control-envelope-v1.ps1'
+      - 'scripts/test-openworker-embedded-control-stability.ps1'
+      - '.github/workflows/stability-openworker-embedded-control.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  stability:
+    name: ODA embedded-control 9-round stability
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run 5 case + 2 supervisor + 2 idempotency rounds
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\test-openworker-embedded-control-stability.ps1" -CaseStatusRounds 5 -SupervisorStatusRounds 2 -CaseId 0005 -ExpectedMachine DESKTOP-ODAQN0D

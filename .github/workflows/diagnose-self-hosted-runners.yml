@@ -1,0 +1,55 @@
+name: Diagnose Self Hosted Runners
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-self-hosted-runners.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  diagnose:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Query repository self-hosted runners
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $uri="https://api.github.com/repos/${{ github.repository }}/actions/runners?per_page=100"
+          $r=Invoke-RestMethod -Headers $headers -Uri $uri
+          $rows=@()
+          foreach($runner in @($r.runners)){
+            $rows += [ordered]@{id=$runner.id;name=$runner.name;os=$runner.os;status=$runner.status;busy=$runner.busy;labels=@($runner.labels|ForEach-Object{$_.name})}
+          }
+          $oda=@($rows|Where-Object{($_.name -match 'ODAQN0D|ODA') -or ($_.labels -contains 'ODA')})
+          $o87=@($rows|Where-Object{($_.name -match 'O87PJNR|O87') -or ($_.labels -contains 'O87')})
+          $ul7=@($rows|Where-Object{($_.name -match 'UL7V2VV|UL7') -or ($_.labels -contains 'UL7')})
+          $online=@($rows|Where-Object{$_.status -eq 'online'})
+          $receipt=[ordered]@{schema='openworker/self-hosted-runner-diagnostic/v1';observed_at=[DateTimeOffset]::UtcNow.ToString('o');repository='${{ github.repository }}';total_count=$r.total_count;online_count=$online.Count;runners=$rows;oda=$oda;o87=$o87;ul7=$ul7}
+          New-Item -ItemType Directory -Force -Path 'case-evidence/ops'|Out-Null
+          $receipt|ConvertTo-Json -Depth 20|Set-Content 'case-evidence/ops/self-hosted-runners.json' -Encoding utf8
+      - name: Commit diagnostic evidence
+        shell: powershell
+        run: |
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/ops/self-hosted-runners.json
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'evidence(ops): record self-hosted runner status'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }
+
+# diagnose trigger: 2026-08-20T00:01+08:00 explicit inventory

@@ -1,0 +1,8 @@
+[local_supervisor]
+base_url = "http://127.0.0.1:8080/v1"
+api_key = "sk-local"
+model = "local-coder"
+supervisor_id = "ODA-CODER-01"
+openworker_url = "http://127.0.0.1:8787"
+max_tool_rounds = 16
+heartbeat_interval_sec = 10

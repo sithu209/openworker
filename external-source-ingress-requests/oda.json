@@ -1,0 +1,12 @@
+{
+  "schema_version": "openworker-external-source-ingress-request/v1",
+  "request_id": "standards-corpus-20260818-oda-003",
+  "target_machine": "DESKTOP-ODAQN0D",
+  "transport": "google-drive-api",
+  "google_drive_file_id": "1tDuIxI_bTd19o3qK48OBePzfiESSo5DN",
+  "expected_sha256": "9bd159e9dc625efd35fd48f13da724d35dc83458557661255d9063406287a702",
+  "expected_size_bytes": 1719409,
+  "destination": "D:\\AI-Work\\knowledge\\standards\\knowgraph-standards-source-bundle-deterministic.zip",
+  "receipt": "D:\\AI-Work\\knowledge\\standards\\openworker-drive-ingress-receipt.json",
+  "purpose": "KnowGraphGo engineering standards corpus fixed-machine acceptance input"
+}

@@ -1,0 +1,103 @@
+name: Case 0004 O87 Worklist State
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0004-o87-worklist-state.yml'
+      - 'case-worklists/0004.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case0004-o87-worklist-state
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
+    steps:
+      - name: Route only by fixed computer name
+        id: route
+        shell: cmd
+        run: |
+          @echo off
+          if /I not "%COMPUTERNAME%"=="DESKTOP-O87PJNR" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_WORKLIST_SKIP slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+            exit /b 0
+          )
+          set "WORKSPACE=D:\AI-Work\jobs\0004-DWG-TO-3D"
+          if not exist "%WORKSPACE%" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_WORKLIST_WORKSPACE_MISSING path=%WORKSPACE%
+            exit /b 0
+          )
+          if not exist "%WORKSPACE%\.locks" mkdir "%WORKSPACE%\.locks"
+          mkdir "%WORKSPACE%\.locks\worklist-state-%GITHUB_RUN_ID%-%GITHUB_RUN_ATTEMPT%" 2>nul
+          if errorlevel 1 (
+            echo run=false>>"%GITHUB_OUTPUT%"
+          ) else (
+            echo run=true>>"%GITHUB_OUTPUT%"
+          )
+
+      - name: Checkout OpenWorker
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Ensure without overwriting existing worklist and inspect state
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts\case_worklist_action.py ensure --workspace-root $workspace --manifest case-worklists\0004.json | Tee-Object -FilePath $env:RUNNER_TEMP\case0004-worklist-ensure.txt
+          if($LASTEXITCODE -ne 0){throw 'Case 0004 Worklist ensure failed'}
+          python scripts\case_worklist_action.py show --workspace-root $workspace | Set-Content -LiteralPath $env:RUNNER_TEMP\case0004-worklist-show.json -Encoding utf8
+          if($LASTEXITCODE -ne 0){throw 'Case 0004 Worklist show failed'}
+          $raw=Get-Content -Raw -LiteralPath $env:RUNNER_TEMP\case0004-worklist-show.json
+          $obj=$raw|ConvertFrom-Json
+          if($obj.case_id -ne '0004'){throw "wrong case_id=$($obj.case_id)"}
+          if($obj.workspace_root -ne $workspace){throw "workspace mismatch=$($obj.workspace_root)"}
+          $out=[ordered]@{
+            schema='openworker-case0004-o87-worklist-state/v1'
+            case_id='0004'
+            run_id=$env:GITHUB_RUN_ID
+            run_attempt=$env:GITHUB_RUN_ATTEMPT
+            machine=$env:COMPUTERNAME
+            runner=$env:RUNNER_NAME
+            workspace_root=$workspace
+            worklist_revision=$obj.revision
+            canonical_next_step_id=$obj.canonical_next_step_id
+            steps=$obj.steps
+          }
+          $path=Join-Path $env:GITHUB_WORKSPACE 'evidence\case0004\latest-o87-worklist-state.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $path -Parent)|Out-Null
+          [IO.File]::WriteAllText($path,($out|ConvertTo-Json -Depth 50),(New-Object Text.UTF8Encoding($false)))
+
+      - name: Publish local worklist state evidence
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          git config user.name 'openworker-case0004-worklist-state'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- evidence/case0004/latest-o87-worklist-state.json
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0004): publish O87 worklist state $env:GITHUB_RUN_ID"}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'push failed'}
+
+      - name: Non-O87 candidate exits cleanly
+        if: steps.route.outputs.run != 'true'
+        shell: cmd
+        run: echo CASE0004_WORKLIST_NOT_EXECUTED slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%

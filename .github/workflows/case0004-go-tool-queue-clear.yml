@@ -1,0 +1,132 @@
+name: Case 0004 Go Tool Queue Clear
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0004-go-tool-queue-clear.yml'
+      - 'control-triggers/queue-clear-case0005-*.txt'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: case0004-go-tool-queue-clear
+  cancel-in-progress: true
+
+jobs:
+  clear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout OpenWorker for evidence
+        uses: actions/checkout@v4
+        with:
+          path: openworker
+
+      - name: Checkout latest go-tool-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/go-tool-runtime
+          ref: main
+          path: go-tool-runtime
+
+      - name: Write bounded queue-admin config
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/queue-admin.yaml" <<'YAML'
+          actions:
+            enabled: true
+            api_base: https://api.github.com
+            auth_mode: token
+            token_env: GITHUB_TOKEN
+            capabilities:
+              - id: openworker.queue.admin
+                description: Administrative queue scope for OpenWorker only.
+                repository: liuxb99/openworker
+                workflow: case0004-go-tool-queue-clear.yml
+                ref: main
+                inputs: {}
+                artifacts: []
+                runner_labels: [ubuntu-latest]
+          YAML
+          echo "QUEUE_ADMIN_CONFIG=$RUNNER_TEMP/queue-admin.yaml" >> "$GITHUB_ENV"
+
+      - name: Clear OpenWorker repository queue with go tool
+        id: clear
+        working-directory: go-tool-runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$GITHUB_RUN_ID"
+          out="$RUNNER_TEMP/queue-clear.json"
+          set +e
+          go run ./cmd/gtr-actions-queue \
+            --config "$QUEUE_ADMIN_CONFIG" \
+            --capability openworker.queue.admin \
+            --cancel-active \
+            --workflow-scoped=false \
+            --exclude-run-id "$current" \
+            --verify-seconds 20 > "$out"
+          rc=$?
+          set -e
+          cat "$out"
+          clean=false
+          for attempt in $(seq 1 12); do
+            verify=$(go run ./cmd/gtr-actions-queue \
+              --config "$QUEUE_ADMIN_CONFIG" \
+              --capability openworker.queue.admin \
+              --workflow-scoped=false \
+              --exclude-run-id "$current")
+            echo "$verify"
+            clean=$(printf '%s' "$verify" | python -c "import json,sys; print(str(bool(json.load(sys.stdin).get('clean'))).lower())")
+            if [ "$clean" = true ]; then break; fi
+            sleep 5
+          done
+          if [ "$clean" != true ]; then
+            echo "go-tool queue clear did not converge; initial_rc=$rc" >&2
+            exit 1
+          fi
+          echo 'clean=true' >> "$GITHUB_OUTPUT"
+          cp "$RUNNER_TEMP/queue-clear.json" ../openworker/evidence-queue-clear-initial.json
+          printf '%s\n' "$verify" > ../openworker/evidence-queue-clear-final.json
+
+      - name: Publish machine-readable queue-clear evidence
+        working-directory: openworker
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/ops
+          python - <<'PY'
+          import json, os, pathlib
+          initial=json.load(open('evidence-queue-clear-initial.json',encoding='utf-8'))
+          final=json.load(open('evidence-queue-clear-final.json',encoding='utf-8'))
+          payload={
+            'schema_version':'openworker-go-tool-queue-clear-evidence/v1',
+            'case_id':'0005',
+            'run_id':os.environ['GITHUB_RUN_ID'],
+            'source_commit':os.environ['GITHUB_SHA'],
+            'tool':'cmd/gtr-actions-queue',
+            'capability':'openworker.queue.admin',
+            'initial':initial,
+            'final':final,
+            'clean':bool(final.get('clean')) and len(final.get('active',[]))==0,
+          }
+          pathlib.Path('evidence/ops/latest-go-tool-queue-clear.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          if not payload['clean']:
+              raise SystemExit('queue is not clean')
+          PY
+          rm -f evidence-queue-clear-initial.json evidence-queue-clear-final.json
+          git config user.name 'openworker-go-tool-queue-clear'
+          git config user.email 'actions@users.noreply.github.com'
+          git add evidence/ops/latest-go-tool-queue-clear.json
+          git commit -m "evidence(ops): go-tool queue clear ${GITHUB_RUN_ID}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+# case0005 dispatch-gap verification queue clear: 2026-08-19T22:10+08:00

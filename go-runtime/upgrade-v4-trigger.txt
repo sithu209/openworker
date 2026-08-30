@@ -1,0 +1,3 @@
+Upgrade OpenWorker Nodes V4 fixed-route verification trigger.
+Expected jobs: ODA, O87, UL7 exactly once each.
+Business execution: false.

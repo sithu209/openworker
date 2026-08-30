@@ -1,0 +1,46 @@
+name: Diagnose ODA Migration Live R01
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-oda-migration-live-r01.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read ODA migration state
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $who=[Security.Principal.WindowsIdentity]::GetCurrent().Name
+          $old=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue
+          $new=Get-Service DirectWorkNode -ErrorAction SilentlyContinue
+          $listeners=@(Get-NetTCPConnection -LocalPort 8787 -State Listen -ErrorAction SilentlyContinue|ForEach-Object{
+            $p=Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+            [ordered]@{pid=$_.OwningProcess;process=if($p){$p.ProcessName}else{$null};path=if($p){$p.Path}else{$null}}
+          })
+          $procs=@(Get-Process -ErrorAction SilentlyContinue|Where-Object{$_.ProcessName -match 'openworker|directwork'}|ForEach-Object{[ordered]@{pid=$_.Id;name=$_.ProcessName;path=$_.Path}})
+          $status=$null;try{$status=Invoke-RestMethod -Uri 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 4}catch{}
+          $o=[ordered]@{schema='openworker.oda-migration-live-diagnostic/v1';runner=$env:RUNNER_NAME;machine=$env:COMPUTERNAME;identity=$who;openworker_service=if($old){[ordered]@{status=$old.Status.ToString();name=$old.Name}}else{$null};directwork_service=if($new){[ordered]@{status=$new.Status.ToString();name=$new.Name}}else{$null};listeners_8787=$listeners;processes=$procs;node_status=$status;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $rel='control-results/node-migration/oda-migrate-directwork-20260821-r01-live-diagnostic.json'
+          $path=Join-Path $env:GITHUB_WORKSPACE ($rel-replace'/','\')
+          New-Item -ItemType Directory -Force -Path (Split-Path $path)|Out-Null
+          [IO.File]::WriteAllText($path,($o|ConvertTo-Json -Depth 20)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'oda-migration-diagnostic';git config user.email 'oda-migration-diagnostic@users.noreply.github.com'
+          git add -- $rel
+          git commit -m ('evidence: ODA migration live diagnostic '+$env:GITHUB_RUN_ID)
+          git pull --rebase origin main
+          git push origin HEAD:main

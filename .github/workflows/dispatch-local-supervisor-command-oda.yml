@@ -1,0 +1,126 @@
+name: Dispatch Local Supervisor Command ODA
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Fixed high-level local supervisor command
+        required: true
+        type: choice
+        options:
+          - supervisor_status
+          - case_status
+          - case_work_status
+          - case_bootstrap
+          - case_continue
+          - queue_clear
+  push:
+    branches: [main]
+    paths:
+      - 'command-requests/oda.json'
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - 'command-requests/oda.json'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  ingress:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      command: ${{ steps.request.outputs.command }}
+      request_id: ${{ steps.request.outputs.request_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref }}
+      - name: Validate request and publish immutable queued receipt
+        id: request
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_COMMAND: ${{ inputs.command }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:EVENT_NAME -eq 'workflow_dispatch'){
+            $command=$env:INPUT_COMMAND
+            $requestId="manual-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          }elseif($env:EVENT_NAME -in @('push','pull_request')){
+            $path=Join-Path $env:GITHUB_WORKSPACE 'command-requests\oda.json'
+            if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "request missing: $path"}
+            $req=Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -ErrorAction Stop
+            if($req.schema -ne 'openworker.command-request.v1'){throw "unsupported request schema=$($req.schema)"}
+            if($req.machine -ine 'DESKTOP-ODAQN0D'){throw "unsupported request machine=$($req.machine)"}
+            if($req.case_id -ne '0005'){throw "unsupported request case_id=$($req.case_id)"}
+            if($req.requested_by -ne 'chatgpt'){throw "unsupported requested_by=$($req.requested_by)"}
+            if(-not $req.request_id -or [string]$req.request_id -notmatch '^[A-Za-z0-9._-]{8,128}$'){throw 'invalid request_id'}
+            $command=[string]$req.command
+            $requestId=[string]$req.request_id
+          }else{throw "unsupported event=$env:EVENT_NAME"}
+          $allowed=@('supervisor_status','case_status','case_work_status','case_bootstrap','case_continue','queue_clear')
+          if($allowed -notcontains $command){throw "unsupported command=$command"}
+          "command=$command" >> $env:GITHUB_OUTPUT
+          "request_id=$requestId" >> $env:GITHUB_OUTPUT
+          $queued=[ordered]@{
+            schema='openworker.command-result.v1'
+            phase='queued_for_oda'
+            request_id=$requestId
+            command=$command
+            machine='DESKTOP-ODAQN0D'
+            case_id=if($command -in @('case_status','case_work_status','case_bootstrap','case_continue')){'0005'}else{$null}
+            transport='github_actions_transient_dispatch'
+            accepted=$false
+            transport_ok=$false
+            github_run_id=$env:GITHUB_RUN_ID
+            github_run_attempt=$env:GITHUB_RUN_ATTEMPT
+            github_action_used_for_command_transport=$true
+            github_action_used_for_business_execution=$false
+            business_completion_claimed=$false
+            authoritative_business_state='openworker'
+            queued_for_oda_at=[DateTimeOffset]::UtcNow.ToString('o')
+            note='GitHub ingress validated; waiting for ODA self-hosted runner. This is not local acceptance.'
+          }
+          $rel="command-results/oda/$requestId/queued.json"
+          $resultPath=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\')
+          New-Item -ItemType Directory -Force -Path (Split-Path $resultPath)|Out-Null
+          [IO.File]::WriteAllText($resultPath,($queued|ConvertTo-Json -Depth 20)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-command-ingress'
+          git config user.email 'openworker-command-ingress@users.noreply.github.com'
+          git add -- $rel
+          git commit -m "receipt: ODA queued $command $requestId"
+          if($LASTEXITCODE -ne 0){throw 'failed to commit immutable queued receipt'}
+          $pushed=$false
+          for($i=0;$i -lt 3;$i++){
+            git pull --rebase origin main
+            if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;Start-Sleep -Seconds 1;continue}
+            git push origin HEAD:main
+            if($LASTEXITCODE -eq 0){$pushed=$true;break}
+            Start-Sleep -Seconds 2
+          }
+          if(-not $pushed){throw 'failed to push immutable queued receipt'}
+
+  dispatch:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 2
+    concurrency:
+      group: openworker-command-transport-oda-dispatch
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Execute ODA transient command with PowerShell ExecutionPolicy bypass
+        shell: cmd
+        env:
+          COMMAND: ${{ needs.ingress.outputs.command }}
+          REQUEST_ID: ${{ needs.ingress.outputs.request_id }}
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\run-oda-transient-command.ps1" -Command "%COMMAND%" -RequestId "%REQUEST_ID%"

@@ -1,0 +1,1 @@
+{"schema":"openworker/node-upgrade-receipt/v5","target_commit":"685693590cb14835f5b9b00856de89ae41c4de43","run_id":"32319032211","accepted_at":"2026-08-20T00:54:12.8965965+00:00","runner_label":"ODA","phase":"ACCEPTED","routing_authority":"fixed-runner-label+COMPUTERNAME","node":"oda","machine":"DESKTOP-ODAQN0D","runner_name":"DESKTOP-ODAQN0D-R001"}

@@ -1,0 +1,76 @@
+name: Install OpenWorkerCTL ODA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  ingress:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[install-openworkerctl-oda]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish queued-for-ODA install receipt
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $result=[ordered]@{
+            schema='openworkerctl-oda-install/v3'
+            succeeded=$false
+            status='QUEUED_FOR_ODA'
+            phase='queued_for_oda'
+            machine='DESKTOP-ODAQN0D'
+            runner_name=''
+            executable=''
+            supervisor_status=''
+            route_label=''
+            error=''
+            github_run_id=$env:GITHUB_RUN_ID
+            github_run_attempt=$env:GITHUB_RUN_ATTEMPT
+            request_sha=$env:GITHUB_SHA
+            github_action_used_for_command_transport=$true
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          New-Item -ItemType Directory -Force -Path 'command-results'|Out-Null
+          $json=$result|ConvertTo-Json -Depth 20
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE 'command-results\oda-install.json'),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-control-plane-ingress'
+          git config user.email 'openworker-control-plane-ingress@users.noreply.github.com'
+          git add -- 'command-results/oda-install.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m "receipt: ODA openworkerctl install queued $env:GITHUB_RUN_ID"
+            if($LASTEXITCODE -ne 0){throw 'failed to commit queued install receipt'}
+            git pull --rebase origin main
+            if($LASTEXITCODE -ne 0){throw 'failed to rebase queued install receipt'}
+            git push origin HEAD:main
+            if($LASTEXITCODE -ne 0){throw 'failed to push queued install receipt'}
+          }
+
+  install:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+
+      - name: Install and verify openworkerctl with PowerShell ExecutionPolicy bypass
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\install-openworkerctl-oda-action.ps1"

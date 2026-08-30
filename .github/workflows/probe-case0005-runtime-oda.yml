@@ -1,0 +1,61 @@
+name: Probe Case0005 Runtime ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'diagnostic-requests/case0005-runtime.json'
+
+permissions:
+  contents: write
+
+jobs:
+  ingress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish queued runtime probe receipt
+        shell: pwsh
+        run: |
+          $result=[ordered]@{
+            schema='openworker.case0005-runtime-probe-queued/v1'
+            case_id='0005'
+            machine='DESKTOP-ODAQN0D'
+            phase='queued_for_oda'
+            github_run_id=$env:GITHUB_RUN_ID
+            github_run_attempt=$env:GITHUB_RUN_ATTEMPT
+            request_sha=$env:GITHUB_SHA
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          New-Item -ItemType Directory -Force -Path 'case-evidence/case0005-runtime-probe'|Out-Null
+          $json=$result|ConvertTo-Json -Depth 20
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE 'case-evidence\case0005-runtime-probe\queued.json'),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-runtime-probe-ingress'
+          git config user.email 'openworker-runtime-probe-ingress@users.noreply.github.com'
+          git add -- 'case-evidence/case0005-runtime-probe/queued.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m "receipt: Case0005 runtime probe queued $env:GITHUB_RUN_ID"
+            if($LASTEXITCODE -ne 0){throw 'failed to commit runtime probe queued receipt'}
+            git pull --rebase origin main
+            if($LASTEXITCODE -ne 0){throw 'failed to rebase runtime probe queued receipt'}
+            git push origin HEAD:main
+            if($LASTEXITCODE -ne 0){throw 'failed to push runtime probe queued receipt'}
+          }
+
+  probe:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Probe fixed Case0005 cwd and process startup
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\probe-case0005-runtime-oda.ps1"

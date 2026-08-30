@@ -1,0 +1,8 @@
+request=deploy-resident-go-case-startup-route-fix
+machine=DESKTOP-ODAQN0D
+required_commit_parent=dd085e99f7ec447d21e84188b21961ec4d4aacc8
+required_endpoint=/v1/cases/continue
+route_registration=resident-server-startup
+case_id=0005
+python_controller_allowed=false
+requested_at=2026-08-19T12:46:00+08:00

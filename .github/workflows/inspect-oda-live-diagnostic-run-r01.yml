@@ -1,0 +1,45 @@
+name: Inspect ODA Live Diagnostic Run R01
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-oda-live-diagnostic-run-r01.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Inspect diagnostic run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TARGET_SHA: a8b672027f1cd0aa419b769c46c6116f18c789e9
+        run: |
+          $ErrorActionPreference='Stop'
+          $headers=@{Authorization="Bearer $env:GITHUB_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $u="https://api.github.com/repos/$env:REPO/actions/runs?head_sha=$env:TARGET_SHA&per_page=50"
+          $r=Invoke-RestMethod -Method Get -Uri $u -Headers $headers
+          $runs=@($r.workflow_runs|ForEach-Object{[ordered]@{id=[int64]$_.id;status=$_.status;conclusion=$_.conclusion;name=$_.name;path=$_.path;created_at=$_.created_at;run_started_at=$_.run_started_at;updated_at=$_.updated_at}})
+          $o=[ordered]@{schema='openworker.oda-live-diagnostic-run-inspector/v1';target_sha=$env:TARGET_SHA;runner=$env:RUNNER_NAME;machine=$env:COMPUTERNAME;runs=$runs;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $rel='control-results/node-migration/oda-live-diagnostic-run-inspector-r01.json'
+          $path=Join-Path $env:GITHUB_WORKSPACE ($rel-replace'/','\')
+          New-Item -ItemType Directory -Force -Path (Split-Path $path)|Out-Null
+          [IO.File]::WriteAllText($path,($o|ConvertTo-Json -Depth 15)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'oda-live-diagnostic-inspector';git config user.email 'oda-live-diagnostic-inspector@users.noreply.github.com'
+          git add -- $rel
+          git commit -m ('evidence: ODA live diagnostic run inspector '+$env:GITHUB_RUN_ID)
+          git pull --rebase origin main
+          git push origin HEAD:main

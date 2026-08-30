@@ -1,0 +1,136 @@
+{
+  "schema": "case0004.directwork-055-terminal.v1",
+  "request_id": "pr-139-32352712608",
+  "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+  "durable_work": {
+    "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+    "dispatch_id": "pr-139-32352712608",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-055-column-candidates.ps1 -RequestId pr-139-32352712608",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "succeeded",
+    "slot": 2,
+    "pid": 18548,
+    "exit_code": 0,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T091317-9d0dcb2dd5f88b97.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T091317-9d0dcb2dd5f88b97.stderr.log",
+    "created_at": "2026-08-20T09:13:17.4042089Z",
+    "claimed_at": "2026-08-20T09:13:17.5976238Z",
+    "started_at": "2026-08-20T09:13:17.6299159Z",
+    "finished_at": "2026-08-20T09:15:28.0821177Z",
+    "heartbeat_at": "2026-08-20T09:15:27.6366599Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 81,
+        "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T09:13:17.4042089Z"
+      },
+      {
+        "seq": 82,
+        "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+        "type": "claimed",
+        "detail": "slot=2 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T09:13:17.5976238Z"
+      },
+      {
+        "seq": 83,
+        "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+        "type": "running",
+        "detail": "slot=2 pid=18548",
+        "created_at": "2026-08-20T09:13:17.6299159Z"
+      },
+      {
+        "seq": 84,
+        "work_id": "dw-20260820T091317-9d0dcb2dd5f88b97",
+        "type": "succeeded",
+        "detail": "process exited successfully",
+        "created_at": "2026-08-20T09:15:28.0821177Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "name": "1f-column-candidates.stdout.json",
+      "size": 925,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\1f-column-candidates.stdout.json",
+      "sha256": "eb59a98c73af03e9dbc7951d8030511c8fb2b2a082cf2e0df0c989018013ee84"
+    },
+    {
+      "name": "1f-query-bounds.stdout.json",
+      "size": 14564,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\1f-query-bounds.stdout.json",
+      "sha256": "e6b09f5885db954ee766862d8e9941306855aa5f0c70e3e243b48234e818427d"
+    },
+    {
+      "name": "2f-column-candidates.stdout.json",
+      "size": 925,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\2f-column-candidates.stdout.json",
+      "sha256": "6d6f4b2480456b6a83dc1299332a8d2a636654bfb8711452f9d2f4537f3c56dc"
+    },
+    {
+      "name": "2f-query-bounds.stdout.json",
+      "size": 13628,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\2f-query-bounds.stdout.json",
+      "sha256": "cf56ee931ab281df1e75077c4562db837b09b4e012648de9b5a4746bc9ca02a4"
+    },
+    {
+      "name": "3f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\3f-column-candidates.stdout.json",
+      "sha256": "157125c165ac2e78583332533013610ac48200ab9439c75b10279733cefc63bd"
+    },
+    {
+      "name": "3f-query-bounds.stdout.json",
+      "size": 18270,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\3f-query-bounds.stdout.json",
+      "sha256": "c13c35531efec285dd9429206be4337e397489aaef80f043673ea6882895324f"
+    },
+    {
+      "name": "4f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\4f-column-candidates.stdout.json",
+      "sha256": "636f412b5dba6bb7d8946c2f9828c6a8422fe7a6ad8fd632c2a5302501d4e0ec"
+    },
+    {
+      "name": "4f-query-bounds.stdout.json",
+      "size": 18270,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\4f-query-bounds.stdout.json",
+      "sha256": "c27e88136a2c78d2a546adba2942990195fb8c7918176dd53550c35784aa424c"
+    },
+    {
+      "name": "final.json",
+      "size": 84210,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\final.json",
+      "sha256": "3d82028792d1cd53c1ba1b7cc8a19ba723f00ccb8978a13287f041dddf4b52be"
+    },
+    {
+      "name": "go-tool-query.json",
+      "size": 12988,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\go-tool-query.json",
+      "sha256": "38e8b429c0df9b68876596f0e91f40dd9f6ef54f87b52c39564a22d6cefeeed3"
+    },
+    {
+      "name": "r1f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\r1f-column-candidates.stdout.json",
+      "sha256": "84fbc980d7c22e456de9448887e0c82c036c7cf70292291419b947c64413cb99"
+    },
+    {
+      "name": "r1f-query-bounds.stdout.json",
+      "size": 14535,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-139-32352712608\\r1f-query-bounds.stdout.json",
+      "sha256": "28e20c6417e1d9b70c9dc2b7bc0b950078babe0b7fdafe4bb3f5e25f69353702"
+    }
+  ],
+  "stdout": "DWG_OPENCAD_AUTHORITY_CACHE_HIT key=snapshot-447f62ca2f35 tree=snapshot:447f62ca2f35720dfa043bd636463ccd4c7ab5a1 commit=447f62ca2f35720dfa043bd636463ccd4c7ab5a1 path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe bytes=62279168\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\n{\"schema\":\"case0004.directwork.055.column-candidates.v2\",\"case_id\":\"0004\",\"step\":\"0004-055\",\"request_id\":\"pr-139-32352712608\",\"status\":\"succeeded\",\"machine\":\"DESKTOP-O87PJNR\",\"authority_root\":\"C:\\\\ProgramData\\\\go-tool-runtime\\\\work-agent\\\\authorities\\\\dwg-todo-447f62ca2f35\",\"authority_commit\":\"447f62ca2f35720dfa043bd636463ccd4c7ab5a1\",\"source_story_region_work_id\":\"dw-20260820T083831-efc1b644d6d5966c\",\"inventory_count\":5,\"inventories\":[{\"story_id\":\"1F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"1F\",\"name\":\"ground-floor-plan\",\"bounds\":{\"min_x\":48000,\"min_y\":57100,\"max_x\":50300,\"max_y\":60050},\"source_revision\":24,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\1f-column-candidates.stdout.json\",\"receipt_sha256\":\"eb59a98c73af03e9dbc7951d8030511c8fb2b2a082cf2e0df0c989018013ee84\"},{\"story_id\":\"2F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"2F\",\"name\":\"second-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":54200,\"max_x\":48400,\"max_y\":57300},\"source_revision\":25,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\2f-column-candidates.stdout.json\",\"receipt_sha256\":\"6d6f4b2480456b6a83dc1299332a8d2a636654bfb8711452f9d2f4537f3c56dc\"},{\"story_id\":\"3F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"3F\",\"name\":\"third-to-fourth-floor-plan-3F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"source_revision\":26,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\3f-column-candidates.stdout.json\",\"receipt_sha256\":\"157125c165ac2e78583332533013610ac48200ab9439c75b10279733cefc63bd\"},{\"story_id\":\"4F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"4F\",\"name\":\"third-to-fourth-floor-plan-4F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"source_revision\":27,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\4f-column-candidates.stdout.json\",\"receipt_sha256\":\"636f412b5dba6bb7d8946c2f9828c6a8422fe7a6ad8fd632c2a5302501d4e0ec\"},{\"story_id\":\"R1F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"R1F\",\"name\":\"penthouse-first-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":51050,\"max_x\":48450,\"max_y\":54400},\"source_revision\":28,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\r1f-column-candidates.stdout.json\",\"receipt_sha256\":\"84fbc980d7c22e456de9448887e0c82c036c7cf70292291419b947c64413cb99\"}],\"zero_candidate_diagnostics\":[{\"story_id\":\"1F\",\"query_receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\1f-query-bounds.stdout.json\",\"query_receipt_sha256\":\"e6b09f5885db954ee766862d8e9941306855aa5f0c70e3e243b48234e818427d\",\"diagnostic\":{\"entity_count\":12,\"positive_2d_bounds\":0,\"degenerate_2d_bounds\":12,\"missing_bounds\":0,\"type_counts\":[{\"type\":\"LINE\",\"count\":2},{\"type\":\"LWPOLYLINE\",\"count\":6},{\"type\":\"TEXT\",\"count\":4}],\"bounds_status_counts\":[{\"status\":\"anchor\",\"count\":4},{\"status\":\"finite\",\"count\":8}],\"samples\":[{\"handle\":\"8A83\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A84\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":12249.999999999884,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A85\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":12249.999999999913,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A86\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":12249.999999999927,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A87\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999956,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8AC9\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":3500.0000000000073,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8ACA\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B21\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B22\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8D8D\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999956,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8D97\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8D98\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"}]}},{\"story_id\":\"2F\",\"query_receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\2f-query-bounds.stdout.json\",\"query_receipt_sha256\":\"cf56ee931ab281df1e75077c4562db837b09b4e012648de9b5a4746bc9ca02a4\",\"diagnostic\":{\"entity_count\":11,\"positive_2d_bounds\":0,\"degenerate_2d_bounds\":11,\"missing_bounds\":0,\"type_counts\":[{\"type\":\"LINE\",\"count\":3},{\"type\":\"LWPOLYLINE\",\"count\":6},{\"type\":\"MTEXT\",\"count\":1},{\"type\":\"TEXT\",\"count\":1}],\"bounds_status_counts\":[{\"status\":\"anchor\",\"count\":2},{\"status\":\"finite\",\"count\":9}],\"samples\":[{\"handle\":\"8A87\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999956,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A88\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A89\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8A\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8B\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8C\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8D\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":0,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B09\",\"type\":\"MTEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B38\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3B\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B74\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"}]}},{\"story_id\":\"3F\",\"query_receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\3f-query-bounds.stdout.json\",\"query_receipt_sha256\":\"c13c35531efec285dd9429206be4337e397489aaef80f043673ea6882895324f\",\"diagnostic\":{\"entity_count\":15,\"positive_2d_bounds\":0,\"degenerate_2d_bounds\":15,\"missing_bounds\":0,\"type_counts\":[{\"type\":\"LINE\",\"count\":3},{\"type\":\"LWPOLYLINE\",\"count\":6},{\"type\":\"MTEXT\",\"count\":1},{\"type\":\"TEXT\",\"count\":5}],\"bounds_status_counts\":[{\"status\":\"anchor\",\"count\":6},{\"status\":\"finite\",\"count\":9}],\"samples\":[{\"handle\":\"8A87\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999956,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A88\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A89\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8A\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8B\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8C\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8ACA\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B10\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B19\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B36\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3B\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B73\",\"type\":\"MTEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B74\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8D9F\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8DA0\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"}]}},{\"story_id\":\"4F\",\"query_receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\4f-query-bounds.stdout.json\",\"query_receipt_sha256\":\"c27e88136a2c78d2a546adba2942990195fb8c7918176dd53550c35784aa424c\",\"diagnostic\":{\"entity_count\":15,\"positive_2d_bounds\":0,\"degenerate_2d_bounds\":15,\"missing_bounds\":0,\"type_counts\":[{\"type\":\"LINE\",\"count\":3},{\"type\":\"LWPOLYLINE\",\"count\":6},{\"type\":\"MTEXT\",\"count\":1},{\"type\":\"TEXT\",\"count\":5}],\"bounds_status_counts\":[{\"status\":\"anchor\",\"count\":6},{\"status\":\"finite\",\"count\":9}],\"samples\":[{\"handle\":\"8A87\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999956,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A88\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A89\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":13999.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8A\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8B\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999971,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8A8C\",\"type\":\"LWPOLYLINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8ACA\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B10\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B19\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B36\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3B\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B73\",\"type\":\"MTEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B74\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8D9F\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8DA0\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"}]}},{\"story_id\":\"R1F\",\"query_receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-139-32352712608\\\\r1f-query-bounds.stdout.json\",\"query_receipt_sha256\":\"28e20c6417e1d9b70c9dc2b7bc0b950078babe0b7fdafe4bb3f5e25f69353702\",\"diagnostic\":{\"entity_count\":13,\"positive_2d_bounds\":0,\"degenerate_2d_bounds\":13,\"missing_bounds\":0,\"type_counts\":[{\"type\":\"LINE\",\"count\":8},{\"type\":\"TEXT\",\"count\":5}],\"bounds_status_counts\":[{\"status\":\"anchor\",\"count\":5},{\"status\":\"finite\",\"count\":8}],\"samples\":[{\"handle\":\"8B38\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":1.4551915228366852E-11,\"depth\":2500,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B39\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":2.1827872842550278E-10,\"depth\":5000.0000000002765,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3A\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3B\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3C\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3D\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3E\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B3F\",\"type\":\"LINE\",\"bounds_status\":\"finite\",\"width\":14749.999999999985,\"depth\":0,\"block_name\":\"\",\"layer\":\"0\"},{\"handle\":\"8B5A\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B5C\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B5F\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B69\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"},{\"handle\":\"8B71\",\"type\":\"TEXT\",\"bounds_status\":\"anchor\",\"width\":0,\"depth\":0,\"block_name\":\"\",\"layer\":\"TEXT\"}]}}],\"column_authority\":\"none\",\"visual_review_required\":true,\"state_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\dwg\\\\agent-cad-state.json\",\"state_sha256\":\"6cb712b856121d83bf1bd969f01447bc40b1da41af254ede110408dbda645dec\",\"completed_at\":\"2026-08-20T09:15:28.0221116+00:00\"}\r\n",
+  "stderr": null,
+  "observed_at": "2026-08-20T09:15:29.0693578+00:00"
+}

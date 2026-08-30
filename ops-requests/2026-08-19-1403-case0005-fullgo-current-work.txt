@@ -1,0 +1,3 @@
+Validate latest Case0005 Go chain 010->020->025->026->027 on ODA resident node and publish current durable work receipt.
+Business execution: false.
+Do not resubmit Case0005 work.

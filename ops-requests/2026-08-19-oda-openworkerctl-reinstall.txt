@@ -1,0 +1,4 @@
+request=install-openworkerctl-oda
+machine=DESKTOP-ODAQN0D
+reason=case0005-transient-transport-real-verification
+requested_at=2026-08-19T11:10:00+08:00

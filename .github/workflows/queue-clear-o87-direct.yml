@@ -1,0 +1,35 @@
+name: Queue Clear O87 Direct
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  queue_clear_o87:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] queue_clear_o87_direct' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify fixed O87 host
+        shell: pwsh
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host actual=$env:COMPUTERNAME"}
+      - name: Clear O87 durable queue through OpenWorker control transport
+        shell: pwsh
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $requestId="pr-$env:PR_NUMBER-$env:GITHUB_RUN_ID-queue-clear"
+          & (Join-Path $env:GITHUB_WORKSPACE 'scripts\run-o87-transient-command.ps1') -Command 'queue_clear' -RequestId $requestId
+          if($LASTEXITCODE -ne 0){throw "O87 queue clear failed exit=$LASTEXITCODE"}
+          Write-Host "OPENWORKER_O87_QUEUE_CLEAR_PASS request_id=$requestId"

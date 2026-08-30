@@ -1,0 +1,5 @@
+requested_by=ChatGPT
+case_id=0004
+machine=DESKTOP-O87PJNR
+purpose=Deploy OpenWorker fanout retry/stale-state fix and refresh Case0004 runtime to revision 148.
+boundary=deployment/control only; GitHub Actions must not execute Case0004 business work.

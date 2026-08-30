@@ -1,0 +1,7 @@
+{
+  "schema":"openworker.case0005-runtime-probe-request/v1",
+  "case_id":"0005",
+  "machine":"DESKTOP-ODAQN0D",
+  "requested_by":"chatgpt",
+  "revision":2
+}

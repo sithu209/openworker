@@ -1,0 +1,4 @@
+requested_at=2026-08-19T16:55:00+08:00
+purpose=reconcile_runner_registry_before_case0005
+expected_oda_machine=DESKTOP-ODAQN0D
+expected_oda_label=ODA

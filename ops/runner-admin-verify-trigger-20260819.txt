@@ -1,0 +1,2 @@
+triggered_at=2026-08-19T23:00:00+08:00
+purpose=REAL verify ODA O87 UL7 GitHub Actions administrator authority

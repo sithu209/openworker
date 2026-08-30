@@ -1,0 +1,9 @@
+{
+  "schema": "openworker.case-work-probe-request/v1",
+  "case_id": "0005",
+  "work_id": "case0005-0005-010-r000014-17b8b780",
+  "machine": "DESKTOP-ODAQN0D",
+  "requested_by": "chatgpt",
+  "requested_at": "2026-08-19T13:18:00+08:00",
+  "business_execution": false
+}

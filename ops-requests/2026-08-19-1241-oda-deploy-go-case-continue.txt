@@ -1,0 +1,8 @@
+request=deploy-oda-resident-go-case-continue
+machine=DESKTOP-ODAQN0D
+required_endpoint=/v1/cases/continue
+required_controller=openworker-go-case-engine/v1
+case_id=0005
+worklist_revision=14
+python_controller_allowed=false
+requested_at=2026-08-19T12:41:00+08:00

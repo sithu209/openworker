@@ -1,0 +1,136 @@
+{
+  "schema": "case0004.directwork-050-terminal.v1",
+  "request_id": "pr-136-32349807359",
+  "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+  "durable_work": {
+    "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+    "dispatch_id": "pr-136-32349807359",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-050-story-regions.ps1 -RequestId pr-136-32349807359",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "succeeded",
+    "slot": 4,
+    "pid": 90152,
+    "exit_code": 0,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T083831-efc1b644d6d5966c.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T083831-efc1b644d6d5966c.stderr.log",
+    "created_at": "2026-08-20T08:38:31.1595968Z",
+    "claimed_at": "2026-08-20T08:38:31.397723Z",
+    "started_at": "2026-08-20T08:38:31.4253448Z",
+    "finished_at": "2026-08-20T08:40:20.2256229Z",
+    "heartbeat_at": "2026-08-20T08:40:19.4328043Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 69,
+        "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T08:38:31.1595968Z"
+      },
+      {
+        "seq": 70,
+        "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+        "type": "claimed",
+        "detail": "slot=4 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T08:38:31.397723Z"
+      },
+      {
+        "seq": 71,
+        "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+        "type": "running",
+        "detail": "slot=4 pid=90152",
+        "created_at": "2026-08-20T08:38:31.4253448Z"
+      },
+      {
+        "seq": 72,
+        "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+        "type": "succeeded",
+        "detail": "process exited successfully",
+        "created_at": "2026-08-20T08:40:20.2256229Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\1f-get-story-region.stdout.json",
+      "size": 678,
+      "sha256": "199bfa0793990d0945a745672462de48a1b8ea44f74e1f10fb2396602713f202",
+      "name": "1f-get-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\1f-set-story-region.stdout.json",
+      "size": 678,
+      "sha256": "c82fba91d22d5b721dac27a0681989f1c28b4aaac57b5a6bcc319e84d9bb6058",
+      "name": "1f-set-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\2f-get-story-region.stdout.json",
+      "size": 678,
+      "sha256": "554b76c11b3f1548eab6ea88d6b65fb8182ea4782431171e10762078e40ab2ef",
+      "name": "2f-get-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\2f-set-story-region.stdout.json",
+      "size": 678,
+      "sha256": "51edefb82dfe09bb35d3441fccdfdba82f7b264a188a71d31d37f508baaf6dd4",
+      "name": "2f-set-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\3f-get-story-region.stdout.json",
+      "size": 690,
+      "sha256": "fc162f36bf5ea3cd665b15ff331e2a9cded42acbd2d1c0b48c62b57271a1b2e4",
+      "name": "3f-get-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\3f-set-story-region.stdout.json",
+      "size": 690,
+      "sha256": "780cb0cc5497bf15bdc36790e09ee17500b0f32dc42c31b4841fbfc01b19aa95",
+      "name": "3f-set-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\4f-get-story-region.stdout.json",
+      "size": 690,
+      "sha256": "0ae2dcc8288e90311c6ffc8fc834d60e47e75a692658425bac0bcb87ff574f57",
+      "name": "4f-get-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\4f-set-story-region.stdout.json",
+      "size": 690,
+      "sha256": "0a0a325086594489acc1d3c061a2577751977a546f12f7c2ff53d719500bb114",
+      "name": "4f-set-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\final.json",
+      "size": 5385,
+      "sha256": "1bed29d80ecd0fc4d1fd4c3433e440875dc8aa765abb74581d859f9f1881a0ce",
+      "name": "final.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\go-tool-query.json",
+      "size": 12912,
+      "sha256": "fcdbcfe319541229319d6360cfb33eeb60c7bed071fa5327bef247ac3855ebf1",
+      "name": "go-tool-query.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\r1f-get-story-region.stdout.json",
+      "size": 689,
+      "sha256": "c5bdbcbfcaaed2f9f2499f7a96b20fc657c2819d66e4d6ad5c4cee58e7c8762f",
+      "name": "r1f-get-story-region.stdout.json"
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-136-32349807359\\r1f-set-story-region.stdout.json",
+      "size": 689,
+      "sha256": "000c58756c4ee2a214e7bcea817e5f7292601dfc467d0eacab5ee54233eef047",
+      "name": "r1f-set-story-region.stdout.json"
+    }
+  ],
+  "stdout": "{\"schema\":\"case0004.directwork.050.story-regions.v1\",\"case_id\":\"0004\",\"step\":\"0004-050\",\"request_id\":\"pr-136-32349807359\",\"status\":\"succeeded\",\"machine\":\"DESKTOP-O87PJNR\",\"authority_root\":\"C:\\\\ProgramData\\\\go-tool-runtime\\\\work-agent\\\\authorities\\\\dwg-todo-73b53da995d2\",\"authority_commit\":\"73b53da995d2183b69c1a7bc16e95d4084183c14\",\"source_corrected_work_id\":\"dw-20260820T082930-50cdb590b6fecc66\",\"region_count\":5,\"regions\":[{\"story_id\":\"1F\",\"name\":\"ground-floor-plan\",\"bounds\":{\"min_x\":48000,\"min_y\":57100,\"max_x\":50300,\"max_y\":60050},\"confidence\":1,\"review_status\":\"confirmed\",\"source_revision\":24,\"set_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\1f-set-story-region.stdout.json\",\"get_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\1f-get-story-region.stdout.json\"},{\"story_id\":\"2F\",\"name\":\"second-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":54200,\"max_x\":48400,\"max_y\":57300},\"confidence\":1,\"review_status\":\"confirmed\",\"source_revision\":25,\"set_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\2f-set-story-region.stdout.json\",\"get_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\2f-get-story-region.stdout.json\"},{\"story_id\":\"3F\",\"name\":\"third-to-fourth-floor-plan-3F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"confidence\":1,\"review_status\":\"confirmed\",\"source_revision\":26,\"set_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\3f-set-story-region.stdout.json\",\"get_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\3f-get-story-region.stdout.json\"},{\"story_id\":\"4F\",\"name\":\"third-to-fourth-floor-plan-4F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"confidence\":1,\"review_status\":\"confirmed\",\"source_revision\":27,\"set_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\4f-set-story-region.stdout.json\",\"get_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\4f-get-story-region.stdout.json\"},{\"story_id\":\"R1F\",\"name\":\"penthouse-first-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":51050,\"max_x\":48450,\"max_y\":54400},\"confidence\":1,\"review_status\":\"confirmed\",\"source_revision\":28,\"set_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\r1f-set-story-region.stdout.json\",\"get_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-136-32349807359\\\\r1f-get-story-region.stdout.json\"}],\"state_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\dwg\\\\agent-cad-state.json\",\"state_bytes\":13338,\"state_sha256\":\"6cb712b856121d83bf1bd969f01447bc40b1da41af254ede110408dbda645dec\",\"review_status\":\"confirmed\",\"completed_at\":\"2026-08-20T08:40:19.9921056+00:00\"}\r\n",
+  "stderr": null,
+  "observed_at": "2026-08-20T08:40:20.9959904+00:00"
+}

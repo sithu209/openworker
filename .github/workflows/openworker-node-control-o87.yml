@@ -1,0 +1,57 @@
+name: OpenWorker Node Control O87
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: node.status | job.status | job.cancel | job.retry | queue.drain
+        required: true
+        type: string
+      job_id:
+        description: Required for job.* operations
+        required: false
+        type: string
+      mode:
+        description: queued or all for queue.drain
+        required: false
+        default: queued
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  control:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Query or control local OpenWorker node
+        shell: powershell
+        env:
+          OPERATION: ${{ inputs.operation }}
+          JOB_ID: ${{ inputs.job_id }}
+          DRAIN_MODE: ${{ inputs.mode }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "OPENWORKER_WRONG_HOST actual=$env:COMPUTERNAME"}
+          $base='http://127.0.0.1:8787'
+          $op=$env:OPERATION
+          switch($op){
+            'node.status' { $result=Invoke-RestMethod "$base/v1/node/status" }
+            'job.status' { if(-not $env:JOB_ID){throw 'job_id required'}; $result=Invoke-RestMethod "$base/v1/jobs/$env:JOB_ID" }
+            'job.cancel' { if(-not $env:JOB_ID){throw 'job_id required'}; $result=Invoke-RestMethod -Method Post "$base/v1/jobs/$env:JOB_ID/cancel" }
+            'job.retry' { if(-not $env:JOB_ID){throw 'job_id required'}; $result=Invoke-RestMethod -Method Post "$base/v1/jobs/$env:JOB_ID/retry" }
+            'queue.drain' { if($env:DRAIN_MODE -notin @('queued','all')){throw 'mode must be queued or all'}; $result=Invoke-RestMethod -Method Post "$base/v1/queue/drain?mode=$env:DRAIN_MODE" }
+            default { throw "unsupported operation=$op" }
+          }
+          $out=[ordered]@{schema='openworker-node-control.v1';machine=$env:COMPUTERNAME;operation=$op;job_id=$env:JOB_ID;result=$result;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $path=Join-Path $env:RUNNER_TEMP 'openworker-node-control.json'
+          [IO.File]::WriteAllText($path,($out|ConvertTo-Json -Depth 50),(New-Object Text.UTF8Encoding($false)))
+          Get-Content $path -Raw
+      - name: Upload machine-readable control result
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworker-node-control-${{ github.run_id }}
+          path: ${{ runner.temp }}/openworker-node-control.json
+          if-no-files-found: error
+          retention-days: 3

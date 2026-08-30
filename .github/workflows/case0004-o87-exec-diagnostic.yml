@@ -1,0 +1,63 @@
+name: Case0004 O87 Execution Diagnostic
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] case0004_exec_diagnostic' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Collect bounded read-only execution diagnostic
+        shell: pwsh
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $body=[string]$env:PR_BODY
+          if($body -notmatch '(?im)^requested_by:\s*ChatGPT\s*$'){throw 'requested_by mismatch'}
+          if($body -notmatch '(?im)^case_id:\s*0004\s*$'){throw 'case_id mismatch'}
+          if($body -notmatch '(?im)^machine:\s*DESKTOP-O87PJNR\s*$'){throw 'machine mismatch'}
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong machine=$env:COMPUTERNAME"}
+          $workId='case0004-0004-0481-1F-r000149-231d8390'
+          $workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'
+          $pointerPath=Join-Path $env:ProgramData 'go-tool-runtime\work-agent\authorities\dwg-todo-current.json'
+          $pointer=$null
+          if(Test-Path -LiteralPath $pointerPath -PathType Leaf){$pointer=Get-Content -LiteralPath $pointerPath -Raw|ConvertFrom-Json}
+          $proc=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.ProcessName -in @('cargo','rustc','opencad-case','dwg-editor','gtr-work-executor')} | ForEach-Object {
+            [ordered]@{name=$_.ProcessName;pid=$_.Id;cpu_seconds=try{[math]::Round($_.CPU,3)}catch{$null};start_time=try{$_.StartTime.ToUniversalTime().ToString('o')}catch{$null};path=try{$_.Path}catch{$null}}
+          })
+          $cacheRoot=Join-Path $env:ProgramData 'DWG_todo\opencad'
+          $cache=@()
+          if(Test-Path -LiteralPath $cacheRoot -PathType Container){
+            $cache=@(Get-ChildItem -LiteralPath $cacheRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+              $bin=Join-Path $_.FullName 'opencad-case.exe';$auth=Join-Path $_.FullName 'authority.json'
+              [ordered]@{name=$_.Name;path=$_.FullName;last_write_utc=$_.LastWriteTimeUtc.ToString('o');binary_exists=(Test-Path -LiteralPath $bin -PathType Leaf);binary_size=if(Test-Path -LiteralPath $bin -PathType Leaf){(Get-Item $bin).Length}else{0};authority_exists=(Test-Path -LiteralPath $auth -PathType Leaf)}
+            })
+          }
+          $stage=Join-Path $workspace ('evidence\dwg-cad-local\'+$workId)
+          function TailFile([string]$p){if(Test-Path -LiteralPath $p -PathType Leaf){return @((Get-Content -LiteralPath $p -Tail 80 -ErrorAction SilentlyContinue))};return @()}
+          $stdout=Join-Path $stage 'dwg-editor.stdout.log';$stderr=Join-Path $stage 'dwg-editor.stderr.log';$receipt=Join-Path $stage 'receipt.json'
+          $diag=[ordered]@{
+            schema='openworker.case0004-o87-exec-diagnostic/v1';machine=$env:COMPUTERNAME;case_id='0004';work_id=$workId;observed_at=[DateTimeOffset]::UtcNow.ToString('o');
+            authority_pointer_path=$pointerPath;authority_pointer=$pointer;processes=$proc;opencad_cache=$cache;
+            stage=$stage;stage_exists=(Test-Path -LiteralPath $stage -PathType Container);receipt_exists=(Test-Path -LiteralPath $receipt -PathType Leaf);
+            stdout_exists=(Test-Path -LiteralPath $stdout -PathType Leaf);stderr_exists=(Test-Path -LiteralPath $stderr -PathType Leaf);stdout_tail=(TailFile $stdout);stderr_tail=(TailFile $stderr);
+            github_action_used_for_business_execution=$false;read_only=$true
+          }
+          $rel="command-results/o87/exec-diag-pr-$($env:PR_NUMBER)/diagnostic.json";$out=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\');New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null
+          [IO.File]::WriteAllText($out,($diag|ConvertTo-Json -Depth 30)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          Write-Host ('CASE0004_EXEC_DIAG '+($diag|ConvertTo-Json -Depth 30 -Compress))
+          git config user.name 'openworker-exec-diagnostic';git config user.email 'openworker-exec-diagnostic@users.noreply.github.com';git add -- $rel;git commit -m "diagnostic: Case0004 O87 execution pr-$($env:PR_NUMBER)";if($LASTEXITCODE -eq 0){git pull --rebase origin main;git push origin HEAD:main}

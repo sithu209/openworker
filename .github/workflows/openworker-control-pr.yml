@@ -1,0 +1,79 @@
+name: OpenWorker Control PR
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  actions: write
+  pull-requests: write
+  contents: read
+
+concurrency:
+  group: openworker-control-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  control:
+    if: startsWith(github.event.pull_request.title, '[openworker-control]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Execute allowlisted OpenWorker control command
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          command=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*command:[[:space:]]*([A-Za-z0-9_-]+)[[:space:]]*$/\1/p' | head -n1 | tr '[:upper:]' '[:lower:]')
+          case "$command" in
+            drain|upgrade|case0004_status|case0004_continue|case0005_status|case0005_continue|case0005_bootstrap|case0005_queue_clear) ;;
+            *) echo "unsupported or missing command: $command" >&2; exit 2 ;;
+          esac
+          api="https://api.github.com/repos/${REPO}"
+          auth=(-H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28')
+          result=''
+
+          if [ "$command" = 'drain' ]; then
+            runs=$(curl -fsSL "${auth[@]}" "${api}/actions/runs?per_page=100")
+            ids=$(printf '%s' "$runs" | jq -r --arg current "$GITHUB_RUN_ID" '.workflow_runs[] | select((.id|tostring) != $current and (.status == "queued" or .status == "in_progress")) | .id')
+            count=0
+            while read -r id; do
+              [ -z "$id" ] && continue
+              code=$(curl -sS -o /tmp/cancel-response -w '%{http_code}' -X POST "${auth[@]}" "${api}/actions/runs/${id}/cancel")
+              if [ "$code" != '202' ] && [ "$code" != '409' ]; then cat /tmp/cancel-response || true; exit 1; fi
+              count=$((count+1))
+            done <<< "$ids"
+            result="cancelled active runs: ${count}"
+          elif [ "$command" = 'upgrade' ]; then
+            code=$(curl -sS -o /tmp/dispatch-response -w '%{http_code}' -X POST "${auth[@]}" "${api}/actions/workflows/upgrade-openworker-nodes-v4.yml/dispatches" -d '{"ref":"main"}')
+            if [ "$code" != '204' ]; then cat /tmp/dispatch-response || true; exit 1; fi
+            result='upgrade-openworker-nodes-v4.yml dispatch accepted'
+          elif [[ "$command" == case0005_* ]]; then
+            request_id="pr-${PR}-${GITHUB_RUN_ID}"
+            case "$command" in
+              case0005_status) local_command='case_status' ;;
+              case0005_continue) local_command='case_continue' ;;
+              case0005_bootstrap) local_command='case_bootstrap' ;;
+              case0005_queue_clear) local_command='queue_clear' ;;
+            esac
+            payload=$(jq -nc --arg c "$local_command" --arg r "$request_id" '{ref:"main",inputs:{command:$c,request_id:$r}}')
+            code=$(curl -sS -o /tmp/dispatch-response -w '%{http_code}' -X POST "${auth[@]}" "${api}/actions/workflows/dispatch-local-supervisor-command-oda.yml/dispatches" -d "$payload")
+            if [ "$code" != '204' ]; then cat /tmp/dispatch-response || true; echo "ODA transient dispatch failed http=${code}" >&2; exit 1; fi
+            result="ODA local supervisor transport dispatched request_id=${request_id} command=${local_command}; business authority remains OpenWorker"
+          else
+            request_id="pr-${PR}-${GITHUB_RUN_ID}"
+            local_command='case_status'
+            [ "$command" = 'case0004_continue' ] && local_command='case_continue'
+            payload=$(jq -nc --arg c "$local_command" --arg r "$request_id" '{ref:"main",inputs:{command:$c,request_id:$r}}')
+            code=$(curl -sS -o /tmp/dispatch-response -w '%{http_code}' -X POST "${auth[@]}" "${api}/actions/workflows/dispatch-local-supervisor-command-o87.yml/dispatches" -d "$payload")
+            if [ "$code" != '204' ]; then cat /tmp/dispatch-response || true; echo "O87 transient dispatch failed http=${code}" >&2; exit 1; fi
+            result="O87 local supervisor transport dispatched request_id=${request_id} command=${local_command}; business authority remains OpenWorker"
+          fi
+
+          body=$(jq -nc --arg c "$command" --arg r "$GITHUB_RUN_ID" --arg result "$result" '{body:("OpenWorker control accepted: `"+$c+"`. Source run: `"+$r+"`.\n\n"+$result)}')
+          curl -fsSL -X POST "${auth[@]}" -H 'Content-Type: application/json' "${api}/issues/${PR}/comments" -d "$body" >/dev/null
+          echo "OPENWORKER_CONTROL_PASS command=${command}"

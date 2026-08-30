@@ -1,0 +1,100 @@
+{
+  "schema": "case0004.directwork-corrected-045-terminal.v1",
+  "request_id": "pr-134-32349019492",
+  "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+  "durable_work": {
+    "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+    "dispatch_id": "pr-134-32349019492",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-045-corrected.ps1 -RequestId pr-134-32349019492",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "succeeded",
+    "slot": 1,
+    "pid": 99044,
+    "exit_code": 0,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T082930-50cdb590b6fecc66.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T082930-50cdb590b6fecc66.stderr.log",
+    "created_at": "2026-08-20T08:29:30.3412655Z",
+    "claimed_at": "2026-08-20T08:29:30.501338Z",
+    "started_at": "2026-08-20T08:29:30.5376626Z",
+    "finished_at": "2026-08-20T08:32:22.7602031Z",
+    "heartbeat_at": "2026-08-20T08:32:22.5455636Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 65,
+        "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T08:29:30.3412655Z"
+      },
+      {
+        "seq": 66,
+        "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+        "type": "claimed",
+        "detail": "slot=1 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T08:29:30.501338Z"
+      },
+      {
+        "seq": 67,
+        "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+        "type": "running",
+        "detail": "slot=1 pid=99044",
+        "created_at": "2026-08-20T08:29:30.5376626Z"
+      },
+      {
+        "seq": 68,
+        "work_id": "dw-20260820T082930-50cdb590b6fecc66",
+        "type": "succeeded",
+        "detail": "process exited successfully",
+        "created_at": "2026-08-20T08:32:22.7602031Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\cad-build-story-index.stdout.json",
+      "sha256": "74fc057d38e2ce57a74476c465d1d3b072d551ea0af121e1fe276c1c31a1246b",
+      "name": "cad-build-story-index.stdout.json",
+      "size": 3084
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\cad-render-story-viewports.stdout.json",
+      "sha256": "70ef65b5f5ef07513aa6b35d5985f208e673ecb5ee25bc072155a8de32233fdd",
+      "name": "cad-render-story-viewports.stdout.json",
+      "size": 4065
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\corrected-story-index-params.json",
+      "sha256": "dcd2b0077d4a7e98f05731aedebccb073eb6f139c2cc29ba8cf0fddb58cff012",
+      "name": "corrected-story-index-params.json",
+      "size": 3620
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\final.json",
+      "sha256": "0456a43963782f860da281c560fd749fe8647f577e663def0cf18ede691297f2",
+      "name": "final.json",
+      "size": 1782
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\go-tool-query.json",
+      "sha256": "b35293fae0a85cfb88be837ae52fe3222bec962d9930497b982cc30045d2de9c",
+      "name": "go-tool-query.json",
+      "size": 12981
+    },
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-134-32349019492\\story-viewport-render-params.json",
+      "sha256": "3bd0371671f83cc17272904c172776a402679d60bad91b8a40fc820b5ea8bacb",
+      "name": "story-viewport-render-params.json",
+      "size": 280
+    }
+  ],
+  "stdout": "DWG_OPENCAD_AUTHORITY_CACHE_HIT key=snapshot-73b53da995d2 tree=snapshot:73b53da995d2183b69c1a7bc16e95d4084183c14 commit=73b53da995d2183b69c1a7bc16e95d4084183c14 path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-73b53da995d2\\opencad-case.exe bytes=62279168\n{\"schema\":\"case0004.directwork.corrected-045.v2\",\"case_id\":\"0004\",\"step\":\"0004-045\",\"request_id\":\"pr-134-32349019492\",\"status\":\"succeeded\",\"machine\":\"DESKTOP-O87PJNR\",\"authority_root\":\"C:\\\\ProgramData\\\\go-tool-runtime\\\\work-agent\\\\authorities\\\\dwg-todo-73b53da995d2\",\"authority_commit\":\"73b53da995d2183b69c1a7bc16e95d4084183c14\",\"source_candidate_work_id\":\"dw-20260820T080310-d2afff3075cd8205\",\"source_candidate_png_sha256\":{\"1F\":\"1b043e00826d3ed55024a226ed7f96ea4eafbfa941e48f886e47e62967128a3d\",\"3F-4F\":\"9f518fb4c9cf959e97c620e6a9df4fb1f9ee8dc7f1e509d5d6b053245f15287b\",\"2F\":\"c2352fc8e0791b5dc34253f3db4804a1cf7efb39d93a25d497260cc9aee1f5a0\",\"R1F\":\"bd7a66f8173eb01628af32d27d766b98ac624ce139ec7194ecd47fb81a246c4b\"},\"build_params_sha256\":\"dcd2b0077d4a7e98f05731aedebccb073eb6f139c2cc29ba8cf0fddb58cff012\",\"build_receipt_sha256\":\"74fc057d38e2ce57a74476c465d1d3b072d551ea0af121e1fe276c1c31a1246b\",\"render_params_sha256\":\"3bd0371671f83cc17272904c172776a402679d60bad91b8a40fc820b5ea8bacb\",\"render_receipt_sha256\":\"70ef65b5f5ef07513aa6b35d5985f208e673ecb5ee25bc072155a8de32233fdd\",\"story_count\":5,\"reconciled_entity_count\":3,\"reused_entity_count\":0,\"viewport_story_count\":5,\"viewport_manifest\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\dwg\\\\exports\\\\default\\\\story-index\\\\case0004-story-index\\\\story-viewport-render-manifest.json\",\"review_required\":true,\"completed_at\":\"2026-08-20T08:32:22.6912272+00:00\"}\r\n",
+  "stderr": null,
+  "observed_at": "2026-08-20T08:32:23.5320938+00:00"
+}

@@ -1,0 +1,28 @@
+name: Probe O87 Drive Process
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] probe_o87_drive_process' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Inspect Google Drive processes and services without secrets
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host=$env:COMPUTERNAME"}
+          $procs=@(Get-CimInstance Win32_Process|Where-Object{$_.Name -match 'GoogleDrive|DriveFS'}|Select-Object Name,ProcessId,SessionId,ExecutablePath)
+          $svcs=@(Get-CimInstance Win32_Service|Where-Object{$_.Name -match 'Google|Drive' -or $_.DisplayName -match 'Google|Drive'}|Select-Object Name,DisplayName,State,StartName,PathName)
+          Write-Host ('OPENWORKER_O87_DRIVE_PROCESS_COUNT='+$procs.Count)
+          $procs|Format-Table -AutoSize|Out-String|Write-Host
+          Write-Host ('OPENWORKER_O87_DRIVE_SERVICE_COUNT='+$svcs.Count)
+          $svcs|Format-Table -AutoSize|Out-String|Write-Host

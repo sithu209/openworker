@@ -1,0 +1,88 @@
+{
+  "schema": "case0004.directwork-terminal-receipt.v4",
+  "request_id": "pr-122-32343561193",
+  "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+  "durable_work": {
+    "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+    "dispatch_id": "pr-122-32343561193",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-045.ps1 -RequestId pr-122-32343561193",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "succeeded",
+    "slot": 2,
+    "pid": 109240,
+    "exit_code": 0,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T072109-4fa9c25680189f3b.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T072109-4fa9c25680189f3b.stderr.log",
+    "created_at": "2026-08-20T07:21:09.925402Z",
+    "claimed_at": "2026-08-20T07:21:10.0977268Z",
+    "started_at": "2026-08-20T07:21:10.1249434Z",
+    "finished_at": "2026-08-20T07:21:32.5740785Z",
+    "heartbeat_at": "2026-08-20T07:21:32.1344427Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 45,
+        "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T07:21:09.925402Z"
+      },
+      {
+        "seq": 46,
+        "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+        "type": "claimed",
+        "detail": "slot=2 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T07:21:10.0977268Z"
+      },
+      {
+        "seq": 47,
+        "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+        "type": "running",
+        "detail": "slot=2 pid=109240",
+        "created_at": "2026-08-20T07:21:10.1249434Z"
+      },
+      {
+        "seq": 48,
+        "work_id": "dw-20260820T072109-4fa9c25680189f3b",
+        "type": "succeeded",
+        "detail": "process exited successfully",
+        "created_at": "2026-08-20T07:21:32.5740785Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "size": 1456,
+      "name": "cad-build-story-index.stdout.json",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-122-32343561193\\cad-build-story-index.stdout.json",
+      "sha256": "aaba48924e5862c07d843a42b5f617cebd75fe12db9c91790196e216135bd3dd"
+    },
+    {
+      "size": 982,
+      "name": "final.json",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-122-32343561193\\final.json",
+      "sha256": "788d1e2e11614ff395c69a7089da39df733e60d910a07cb0434959b8e47e6036"
+    },
+    {
+      "size": 12275,
+      "name": "go-tool-query.json",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-122-32343561193\\go-tool-query.json",
+      "sha256": "3e192960c8fb8db192400e2ba8dabba7b460ca78fe44979864b5520f0fc4e7de"
+    },
+    {
+      "size": 6642,
+      "name": "story-index-params.json",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-122-32343561193\\story-index-params.json",
+      "sha256": "ded60c09bbe8380ca6bdb065e37c72b23db4883aaf698af93afffdedf29cce04"
+    }
+  ],
+  "stdout": "{\"schema\":\"case0004.directwork.045.v1\",\"case_id\":\"0004\",\"step\":\"0004-045\",\"request_id\":\"pr-122-32343561193\",\"status\":\"succeeded\",\"machine\":\"DESKTOP-O87PJNR\",\"workspace_root\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\",\"authority_root\":\"C:\\\\ProgramData\\\\go-tool-runtime\\\\work-agent\\\\authorities\\\\dwg-todo-d1e452858bcb\",\"authority_commit\":\"d1e452858bcbfe7112dbc13a300717bc9d1b0fdd\",\"params_source\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-121-32343107984\\\\story-index-params.json\",\"params_sha256\":\"ded60c09bbe8380ca6bdb065e37c72b23db4883aaf698af93afffdedf29cce04\",\"go_tool_query\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-122-32343561193\\\\go-tool-query.json\",\"cad_receipt\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-122-32343561193\\\\cad-build-story-index.stdout.json\",\"completed_at\":\"2026-08-20T07:21:32.4583934+00:00\"}\r\n",
+  "stderr": null,
+  "observed_at": "2026-08-20T07:21:33.8806285+00:00"
+}

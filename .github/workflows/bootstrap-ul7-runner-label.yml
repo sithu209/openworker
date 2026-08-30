@@ -1,66 +1,64 @@
-name: Drain OpenWorker Queue Through Go Tool
+name: Drain OpenWorker Queue From Cloud
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
   actions: write
 
 concurrency:
-  group: openworker-queue-drain
+  group: openworker-queue-drain-cloud
   cancel-in-progress: false
 
 jobs:
   drain:
-    runs-on: [self-hosted, Windows, X64]
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[drain-openworker-queue]')
+    runs-on: ubuntu-latest
     timeout-minutes: 5
-    defaults:
-      run:
-        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
     steps:
-      - name: Drain every other OpenWorker Action run through gtr-actions-queue
+      - name: Cancel every other active OpenWorker Actions run
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
-          $ErrorActionPreference='Stop'
-          $goToolRoot='D:\AI-Tools\AI Tool Runtime'
-          if(-not (Test-Path -LiteralPath (Join-Path $goToolRoot 'cmd\gtr-actions-queue\main.go') -PathType Leaf)){
-            throw "go-tool-runtime queue CLI unavailable: $goToolRoot"
-          }
-          $cfg=Join-Path $env:RUNNER_TEMP 'openworker-queue-admin.yaml'
-          @'
-          actions:
-            enabled: true
-            api_base: https://api.github.com
-            auth_mode: auto
-            token_env: GITHUB_TOKEN
-            capabilities:
-              - id: openworker.queue.admin
-                description: Administrative queue scope for OpenWorker only.
-                repository: liuxb99/openworker
-                workflow: case-0003-drive-api-publish-ul7.yml
-                ref: main
-                inputs: {}
-                artifacts: []
-                runner_labels: [self-hosted, Windows, X64]
-          '@ | Set-Content -LiteralPath $cfg -Encoding utf8
+          set -euo pipefail
+          api="https://api.github.com/repos/${REPO}/actions/runs"
+          auth=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
 
-          Push-Location $goToolRoot
-          try {
-            $report = & go run ./cmd/gtr-actions-queue --config $cfg --capability openworker.queue.admin --cancel-active --workflow-scoped=false --exclude-run-id $env:GITHUB_RUN_ID --verify-seconds 15
-            if($LASTEXITCODE -ne 0){ throw "gtr-actions-queue drain failed exit=$LASTEXITCODE`n$report" }
-            $report | Write-Host
-            $parsed = ($report -join "`n") | ConvertFrom-Json
-            if(-not $parsed.clean){ throw 'OpenWorker queue is not clean after drain' }
+          cancel_status() {
+            local status="$1"
+            curl -fsSL "${auth[@]}" "${api}?status=${status}&per_page=100" \
+              | jq -r --arg current "${CURRENT_RUN_ID}" '.workflow_runs[] | select((.id|tostring) != $current) | .id' \
+              | while read -r id; do
+                  [ -z "$id" ] && continue
+                  echo "cancel status=${status} run_id=${id}"
+                  code=$(curl -sS -o /tmp/cancel-response -w '%{http_code}' -X POST "${auth[@]}" "${api}/${id}/cancel")
+                  if [ "$code" != "202" ] && [ "$code" != "409" ]; then
+                    cat /tmp/cancel-response || true
+                    echo "cancel failed run_id=${id} http=${code}" >&2
+                    exit 1
+                  fi
+                done
+          }
 
-            $verify = & go run ./cmd/gtr-actions-queue --config $cfg --capability openworker.queue.admin --workflow-scoped=false --exclude-run-id $env:GITHUB_RUN_ID
-            if($LASTEXITCODE -ne 0){ throw "gtr-actions-queue verify failed exit=$LASTEXITCODE`n$verify" }
-            $verify | Write-Host
-            $v = ($verify -join "`n") | ConvertFrom-Json
-            if(-not $v.clean -or @($v.active).Count -ne 0){ throw 'OpenWorker queue verification is not empty' }
-            Write-Host "OPENWORKER_QUEUE_DRAIN_PASS current_run=$env:GITHUB_RUN_ID machine=$env:COMPUTERNAME"
-          }
-          finally {
-            Pop-Location
-          }
+          cancel_status queued
+          cancel_status in_progress
+
+          for i in $(seq 1 15); do
+            active=$(curl -fsSL "${auth[@]}" "${api}?per_page=100" \
+              | jq --arg current "${CURRENT_RUN_ID}" '[.workflow_runs[] | select((.id|tostring) != $current and (.status == "queued" or .status == "in_progress"))] | length')
+            echo "verify attempt=${i} active=${active}"
+            if [ "$active" = "0" ]; then
+              echo "OPENWORKER_QUEUE_DRAIN_PASS current_run=${CURRENT_RUN_ID} runner=github-hosted"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "OpenWorker Actions queue is not clean after cloud drain" >&2
+          exit 1

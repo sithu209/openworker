@@ -1,0 +1,7 @@
+{
+  "schema": "openworker.case0005-reconcile-test/v1",
+  "case_id": "0005",
+  "source_commit": "d927290ebac684074de96de0489d4b9f2a5a86b5",
+  "business_execution": false,
+  "requested_at": "2026-08-19T13:31:00+08:00"
+}

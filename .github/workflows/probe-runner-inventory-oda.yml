@@ -1,0 +1,56 @@
+name: Probe Runner Inventory from ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-runner-inventory-oda.yml'
+      - 'control-triggers/runner-inventory-oda-*.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  inventory:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify ODA host
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+      - name: Query registered runners
+        shell: powershell
+        env:
+          GH_REPO: liuxb99/openworker
+        run: |
+          $ErrorActionPreference='Stop'
+          if(-not(Get-Command gh -ErrorAction SilentlyContinue)){throw 'gh CLI unavailable'}
+          gh auth status
+          if($LASTEXITCODE -ne 0){throw 'gh auth unavailable'}
+          $raw=gh api "repos/$env:GH_REPO/actions/runners?per_page=100"
+          if($LASTEXITCODE -ne 0){throw 'runner inventory query failed'}
+          $obj=$raw|ConvertFrom-Json
+          $rows=@()
+          foreach($r in @($obj.runners)){
+            $labels=@($r.labels|ForEach-Object{[string]$_.name})
+            $rows+=[pscustomobject]@{id=$r.id;name=$r.name;status=$r.status;busy=[bool]$r.busy;labels=$labels}
+          }
+          $o87=@($rows|Where-Object{$_.name -like 'DESKTOP-O87PJNR*' -or $_.labels -contains 'O87'})
+          $out=[ordered]@{schema='openworker.runner-inventory.v1';probe_machine=$env:COMPUTERNAME;probe_runner=$env:RUNNER_NAME;observed_at=[DateTimeOffset]::UtcNow.ToString('o');o87=$o87;all=$rows}
+          New-Item -ItemType Directory -Force -Path 'command-results/runner-inventory'|Out-Null
+          [IO.File]::WriteAllText('command-results/runner-inventory/latest.json',($out|ConvertTo-Json -Depth 10)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-runner-probe'
+          git config user.email 'openworker-runner-probe@users.noreply.github.com'
+          git add -- 'command-results/runner-inventory/latest.json'
+          git commit -m 'receipt: OpenWorker runner inventory from ODA'
+          if($LASTEXITCODE -ne 0){throw 'inventory commit failed'}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'inventory rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'inventory push failed'}

@@ -1,0 +1,26 @@
+name: Case 0003 Fresh Review to Drive Chain
+
+on:
+  workflow_run:
+    workflows: ["Case 0003 Fresh Review Revision UL7"]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-drive-publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch canonical Case 0003 Drive publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run case-0003-drive-api-publish-ul7.yml \
+            --repo liuxb99/openworker \
+            --ref main
+          echo "CASE0003_FRESH_REVIEW_DRIVE_CHAIN_DISPATCHED source_run=${{ github.event.workflow_run.id }} source_sha=${{ github.event.workflow_run.head_sha }}"

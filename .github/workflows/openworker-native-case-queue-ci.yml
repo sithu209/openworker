@@ -1,0 +1,50 @@
+name: OpenWorker Native Case Queue CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'go-runtime/**'
+      - 'coworker/case0005_openworker_native_controller.py'
+      - 'scripts/invoke-openworker-control-envelope-v1.ps1'
+      - '.github/workflows/openworker-native-case-queue-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Go test and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd go-runtime
+          go test ./...
+          go build -buildvcs=false ./cmd/openworker-node
+          go build -buildvcs=false ./cmd/openworker
+      - name: Python native controller compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile coworker/case0005_openworker_native_controller.py
+      - name: Architecture assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'const DefaultServer = "http://127.0.0.1:8787"' go-runtime/internal/controlcli/controlcli.go
+          grep -q 'openworker-local-supervisor' go-runtime/internal/api/case_continue.go
+          grep -q 'case0005-supervisor-' go-runtime/internal/api/case_continue.go
+          grep -q 'GET /ui/' go-runtime/internal/api/case_continue.go
+          grep -q '/v1/jobs?limit=500' go-runtime/internal/api/dashboard.go
+          grep -q 'OPENWORKER_CONTROL_REQUEST_ID' scripts/invoke-openworker-control-envelope-v1.ps1

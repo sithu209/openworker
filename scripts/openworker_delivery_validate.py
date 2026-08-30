@@ -48,6 +48,53 @@ def load_request(path: Path) -> dict[str, Any]:
     return raw
 
 
+def load_review_provenance(request: dict[str, Any], workspace: Path) -> dict[str, Any]:
+    review_path = bounded(Path(required_text(request.get("review_receipt"), "review_receipt")), workspace, "review receipt")
+    if not review_path.is_file() or review_path.stat().st_size <= 0:
+        raise RuntimeError(f"review receipt missing/empty: {review_path}")
+    try:
+        receipt = json.loads(review_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("review receipt is not readable JSON") from exc
+    if not isinstance(receipt, dict):
+        raise RuntimeError("review receipt root must be an object")
+    if receipt.get("schema_version") != "openworker-case0005-drive-gate-receipt/v1":
+        raise RuntimeError("review receipt schema mismatch")
+    if str(receipt.get("case_id") or "") != "0005" or str(receipt.get("step_id") or "") != "0005-100":
+        raise RuntimeError("review receipt Case/step identity mismatch")
+    if str(receipt.get("decision") or "").upper() != "PASS":
+        raise RuntimeError("review receipt decision is not PASS")
+    expected = required_text(request.get("expected_accepted_revision_id"), "expected_accepted_revision_id")
+    reviewed_revision = required_text(receipt.get("workledger_revision_id"), "review receipt workledger_revision_id")
+    accepted_revision = required_text(receipt.get("accepted_revision_id"), "review receipt accepted_revision_id")
+    if reviewed_revision != expected or accepted_revision != expected:
+        raise RuntimeError(
+            f"review receipt accepted revision mismatch: expected={expected} reviewed={reviewed_revision} accepted={accepted_revision}"
+        )
+    reviewed_files = receipt.get("reviewed_files")
+    if not isinstance(reviewed_files, list) or not reviewed_files:
+        raise RuntimeError("review receipt contains no reviewed_files")
+    for index, item in enumerate(reviewed_files):
+        if not isinstance(item, dict):
+            raise RuntimeError(f"reviewed_files[{index}] must be an object")
+        digest = required_text(item.get("sha256"), f"reviewed_files[{index}].sha256").lower()
+        if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+            raise RuntimeError(f"reviewed_files[{index}] SHA256 is invalid")
+        required_text(item.get("relative_path"), f"reviewed_files[{index}].relative_path")
+        required_text(item.get("drive_file_id"), f"reviewed_files[{index}].drive_file_id")
+    return {
+        "review_receipt": str(review_path),
+        "review_receipt_sha256": sha256_file(review_path),
+        "decision": "PASS",
+        "reviewer": required_text(receipt.get("reviewer"), "reviewer"),
+        "accepted_revision_id": accepted_revision,
+        "drive_revision_folder_id": required_text(receipt.get("drive_revision_folder_id"), "drive_revision_folder_id"),
+        "bundle_manifest_sha256": required_text(receipt.get("bundle_manifest_sha256"), "bundle_manifest_sha256").lower(),
+        "reviewed_files": reviewed_files,
+        "drive_receipt_file_id": required_text(receipt.get("drive_receipt_file_id"), "drive_receipt_file_id"),
+    }
+
+
 def stop(process: subprocess.Popen[bytes] | None) -> None:
     if process is None or process.poll() is not None:
         return
@@ -77,6 +124,7 @@ def main() -> int:
     expected_revision = request.get("delivery_revision")
     required_kinds = [str(v).strip() for v in request.get("required_kinds", []) if str(v).strip()]
     required_paths = [str(v).strip().replace("\\", "/") for v in request.get("required_paths", []) if str(v).strip()]
+    review_provenance = load_review_provenance(request, workspace)
 
     process: subprocess.Popen[bytes] | None = None
     try:
@@ -85,8 +133,11 @@ def main() -> int:
         )
         client = EngineeringOSClient(EngineeringOSConfig(base_url=os_url, timeout_seconds=30.0))
         latest = client.latest_delivery(job_id)
+        approval = client.approval_status(job_id)
     finally:
         stop(process)
+    if approval.get("approved") is not True:
+        raise RuntimeError("Engineering OS approval_status is not approved during final delivery validation")
 
     delivery_id = required_text(latest.get("id") or latest.get("delivery_id"), "latest delivery id")
     revision = latest.get("revision")
@@ -164,7 +215,7 @@ def main() -> int:
         raise RuntimeError("checksum manifest item count mismatch")
 
     output = {
-        "schema_version": "openworker-final-delivery-validation/v1",
+        "schema_version": "openworker-final-delivery-validation/v2",
         "status": "PASS",
         "job_id": job_id,
         "delivery_id": delivery_id,
@@ -180,8 +231,10 @@ def main() -> int:
         "verified_items": verified,
         "required_kinds": required_kinds,
         "required_paths": required_paths,
+        "review_provenance": review_provenance,
+        "engineering_os_approval_status": approval,
         "runner": os.environ.get("COMPUTERNAME", ""),
-        "github_run_id": os.environ.get("GITHUB_RUN_ID", ""),
+        "github_action_used_for_business_execution": False,
         "os_stdout": str(stdout_path),
         "os_stderr": str(stderr_path),
     }

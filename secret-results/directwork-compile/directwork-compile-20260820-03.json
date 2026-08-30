@@ -1,0 +1,20 @@
+{
+    "schema":  "openworker.secret-compile-receipt.v2",
+    "phrase":  "DIRECTWORK.COMPILE",
+    "request_id":  "directwork-compile-20260820-03",
+    "source_commit":  "5c54101c34f3e1aaafcd33a354c7e7a83d7cc649",
+    "authority":  "openworker-local-supervisor",
+    "transport":  "github_actions",
+    "github_action_used_for_command_transport":  true,
+    "github_action_used_for_business_execution":  false,
+    "transport_error":  "The remote server returned an error: (404) Not Found.",
+    "ack":  null,
+    "durable_job":  null,
+    "durable_events":  null,
+    "artifacts_api":  null,
+    "artifact":  null,
+    "stdout":  "",
+    "stderr":  "",
+    "github_run_id":  "32330198218",
+    "observed_at":  "2026-08-20T05:07:28.8491037+00:00"
+}

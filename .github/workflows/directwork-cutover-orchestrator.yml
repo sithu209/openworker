@@ -1,0 +1,45 @@
+name: DirectWork Cutover Orchestrator
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/directwork-cutover-trigger.txt'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  clear-and-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Best-effort clear actionable Actions queue
+        working-directory: go-runtime
+        shell: bash
+        run: |
+          set -uo pipefail
+          go run ./cmd/openworker-actions-queue-clear \
+            -repo "${GH_REPO}" \
+            -exclude-run-id "${GITHUB_RUN_ID}" \
+            -run-id "${GITHUB_RUN_ID}" \
+            -source-sha "${GITHUB_SHA}" \
+            -timeout 90s \
+            -poll 5s \
+            -stuck-after 30m > "${RUNNER_TEMP}/directwork-cutover-queue-clear.json" || true
+          echo 'Queue clear is best-effort: GitHub ghost runs must not block production cutover.'
+      - name: Dispatch deterministic DirectWork migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run migrate-to-directwork-v2.yml --repo "${GH_REPO}" --ref main
+          echo "DirectWork migration V2 dispatched; ghost runs are non-blocking"

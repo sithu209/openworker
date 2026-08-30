@@ -1,0 +1,2 @@
+Trigger ODA resident OpenWorker upgrade for Case 0005 4-slot status reporting.
+Required source behavior commit: 3c80b4ee3e245a93aab6aff38ffe18048df08558

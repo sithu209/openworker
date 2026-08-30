@@ -1,0 +1,55 @@
+name: Case 0004 O87 Worklist State via OpenWorker Node
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case0004-o87-worklist-state-node
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+
+      - name: Verify fixed computer and local node
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "CASE0004_WRONG_HOST actual=$env:COMPUTERNAME"}
+          $h=Invoke-RestMethod 'http://127.0.0.1:8787/healthz'
+          if(-not $h.ok){throw 'openworker-node unhealthy'}
+          if($h.machine -ine $env:COMPUTERNAME){throw "node machine mismatch node=$($h.machine) host=$env:COMPUTERNAME"}
+
+      - name: Submit real Case 0004 worklist-state job and exit after durable ACK
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'
+          if(-not(Test-Path -LiteralPath $workspace -PathType Container)){throw "CASE0004_WORKSPACE_MISSING path=$workspace"}
+          $jobId="OWJ-C0004-WL-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          $dispatchId="OWD-C0004-WL-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          $receipt=Join-Path $workspace ".openworker\dispatch\$jobId.json"
+          $command='powershell -NoProfile -ExecutionPolicy Bypass -File scripts\case0004_worklist_state_local.ps1 -WorkspaceRoot D:\AI-Work\jobs\0004-DWG-TO-3D -CaseManifest case-worklists\0004.json'
+          & "$env:GITHUB_WORKSPACE\scripts\submit_openworker_node.ps1" `
+            -JobId $jobId `
+            -DispatchId $dispatchId `
+            -ExpectedComputerName 'DESKTOP-O87PJNR' `
+            -Command $command `
+            -Cwd $env:GITHUB_WORKSPACE `
+            -WorkspaceRoot $workspace `
+            -NodeUrl 'http://127.0.0.1:8787' `
+            -TimeoutSec 180 `
+            -Locks @("workspace:$workspace",'tool:case-worklist') `
+            -UseWorktree `
+            -WorktreeRef $env:GITHUB_SHA `
+            -ReceiptPath $receipt
+          if($LASTEXITCODE -ne 0){throw 'OpenWorker node dispatch failed'}
+          Write-Host "CASE0004_DISPATCH_ACCEPTED job_id=$jobId receipt=$receipt"
+          Write-Host 'Action ends here by design; real work continues under openworker-node.'

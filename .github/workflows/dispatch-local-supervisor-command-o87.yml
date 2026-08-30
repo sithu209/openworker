@@ -1,0 +1,108 @@
+name: Dispatch Local Supervisor Command O87
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Fixed high-level O87 local command transport
+        required: true
+        type: choice
+        options: [supervisor_status, case_status, case_diagnose, case_bootstrap, case_continue, queue_clear, directwork_case0004_045]
+      request_id:
+        description: Stable ChatGPT control request id
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths: ['command-requests/o87.json']
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  direct_pr_dispatch:
+    if: >-
+      github.event_name == 'pull_request' &&
+      (startsWith(github.event.pull_request.title, '[openworker-control] case0004_') || github.event.pull_request.title == '[openworker-control] supervisor_status') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 35
+    concurrency:
+      group: openworker-command-transport-o87-dispatch
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, fetch-depth: 0}
+      - name: Validate PR command and invoke O87 transport
+        shell: pwsh
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $title=[string]$env:PR_TITLE;$body=[string]$env:PR_BODY
+          if($title -eq '[openworker-control] case0004_status'){$command='case_status'}
+          elseif($title -eq '[openworker-control] case0004_continue'){$command='case_continue'}
+          elseif($title -eq '[openworker-control] case0004_directwork_045'){$command='directwork_case0004_045'}
+          elseif($title -eq '[openworker-control] supervisor_status'){$command='supervisor_status'}
+          else{throw "unsupported control PR title=$title"}
+          if($body -notmatch '(?im)^requested_by:\s*ChatGPT\s*$'){throw 'control PR must declare requested_by: ChatGPT'}
+          if($body -notmatch '(?im)^case_id:\s*0004\s*$'){throw 'control PR must declare case_id: 0004'}
+          if($body -notmatch '(?im)^machine:\s*DESKTOP-O87PJNR\s*$'){throw 'control PR must declare machine: DESKTOP-O87PJNR'}
+          $requestId="pr-$($env:PR_NUMBER)-$($env:GITHUB_RUN_ID)"
+          if($command -ne 'directwork_case0004_045'){
+            & (Join-Path $env:GITHUB_WORKSPACE 'scripts\run-o87-transient-command.ps1') -Command $command -RequestId $requestId
+            if($LASTEXITCODE -ne 0){throw "O87 transient command failed exit=$LASTEXITCODE"};exit 0
+          }
+          $jobId=('directwork-case0004-045-'+$requestId).ToLowerInvariant();$workspace='D:\AI-Work\jobs\0004-DWG-TO-3D';$script=Join-Path $env:GITHUB_WORKSPACE 'scripts\case0004-directwork-045.ps1'
+          $cmd='powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+$script+'" -RequestId "'+$requestId+'"'
+          $payload=[ordered]@{job_id=$jobId;dispatch_id=$requestId;machine='DESKTOP-O87PJNR';priority=100;command=$cmd;cwd=$workspace;workspace_root=$workspace;timeout_sec=1800;locks=@('case0004','case0004.045','dwg.story-index')}
+          $ack=Invoke-RestMethod -Method POST -Uri 'http://127.0.0.1:8787/v1/jobs' -ContentType 'application/json' -Body ($payload|ConvertTo-Json -Depth 20) -TimeoutSec 10
+          if($ack.accepted -ne $true){throw 'DirectWork did not accept 045'}
+          $receipt=[ordered]@{schema='case0004.directwork-submit-receipt.v1';request_id=$requestId;job_id=$jobId;machine=$env:COMPUTERNAME;authority='directwork-durable-job';ack=$ack;github_action_used_for_business_execution=$false;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $rel="command-results/o87/$requestId/directwork-submitted.json";$out=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\');New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null;[IO.File]::WriteAllText($out,($receipt|ConvertTo-Json -Depth 30)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name directwork-case0004-transport;git config user.email directwork-case0004-transport@users.noreply.github.com;git add -- $rel;git commit -m "submitted: Case0004 DirectWork 045 $requestId";git pull --rebase origin main;git push origin HEAD:main
+          $terminal=@('succeeded','failed','timed_out','cancelled','stale');$job=$null;for($i=0;$i -lt 1800;$i++){$job=Invoke-RestMethod -Method GET -Uri ('http://127.0.0.1:8787/v1/jobs/'+[uri]::EscapeDataString($jobId));if($terminal -contains [string]$job.status){break};Start-Sleep 1}
+          try{$events=Invoke-RestMethod -Method GET -Uri ('http://127.0.0.1:8787/v1/jobs/'+[uri]::EscapeDataString($jobId)+'/events?limit=300')}catch{$events=@{error=$_.Exception.Message}}
+          $stdout='';$stderr='';if($job.stdout_path -and(Test-Path $job.stdout_path)){$stdout=Get-Content $job.stdout_path -Raw -ErrorAction SilentlyContinue};if($job.stderr_path -and(Test-Path $job.stderr_path)){$stderr=Get-Content $job.stderr_path -Raw -ErrorAction SilentlyContinue}
+          $er=Join-Path $workspace ('evidence\directwork\'+$requestId);$files=@();if(Test-Path $er){foreach($f in Get-ChildItem $er -File){$files+=@{name=$f.Name;path=$f.FullName;size=$f.Length;sha256=(Get-FileHash $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}}}
+          $tr=@{schema='case0004.directwork-terminal-receipt.v1';request_id=$requestId;job_id=$jobId;durable_job=$job;durable_events=$events;case_evidence=$files;stdout=$stdout;stderr=$stderr;observed_at=[DateTimeOffset]::UtcNow.ToString('o')};git pull --rebase origin main;$rel2="command-results/o87/$requestId/directwork-terminal.json";$out2=Join-Path $env:GITHUB_WORKSPACE ($rel2 -replace '/','\');New-Item -ItemType Directory -Force -Path (Split-Path $out2)|Out-Null;[IO.File]::WriteAllText($out2,($tr|ConvertTo-Json -Depth 100)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false));git add -- $rel2;git commit -m "receipt: Case0004 DirectWork 045 $requestId";git pull --rebase origin main;git push origin HEAD:main
+          if([string]$job.status -ne 'succeeded'){throw "Case0004 045 durable status=$($job.status) exit=$($job.exit_code)"}
+
+  ingress:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      command: ${{ steps.request.outputs.command }}
+      request_id: ${{ steps.request.outputs.request_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - id: request
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_COMMAND: ${{ inputs.command }}
+          INPUT_REQUEST_ID: ${{ inputs.request_id }}
+        run: |
+          $ErrorActionPreference='Stop';if($env:EVENT_NAME -eq 'workflow_dispatch'){$command=[string]$env:INPUT_COMMAND;$requestId=[string]$env:INPUT_REQUEST_ID}else{$req=Get-Content (Join-Path $env:GITHUB_WORKSPACE 'command-requests\o87.json') -Raw|ConvertFrom-Json;$command=[string]$req.command;$requestId=[string]$req.request_id}
+          $allowed=@('supervisor_status','case_status','case_diagnose','case_bootstrap','case_continue','queue_clear','directwork_case0004_045');if($allowed -notcontains $command){throw "unsupported command=$command"};"command=$command">>$env:GITHUB_OUTPUT;"request_id=$requestId">>$env:GITHUB_OUTPUT
+  dispatch:
+    if: github.event_name != 'pull_request'
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - shell: pwsh
+        env:
+          COMMAND: ${{ needs.ingress.outputs.command }}
+          REQUEST_ID: ${{ needs.ingress.outputs.request_id }}
+        run: |
+          if($env:COMMAND -eq 'directwork_case0004_045'){throw 'use PR transport for DirectWork 045'}
+          & (Join-Path $env:GITHUB_WORKSPACE 'scripts\run-o87-transient-command.ps1') -Command $env:COMMAND -RequestId $env:REQUEST_ID

@@ -1,0 +1,76 @@
+{
+  "schema": "case0004.directwork-terminal-receipt.v4",
+  "request_id": "pr-120-32342394027",
+  "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+  "durable_work": {
+    "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+    "dispatch_id": "pr-120-32342394027",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-045.ps1 -RequestId pr-120-32342394027",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "failed",
+    "slot": 3,
+    "pid": 85776,
+    "exit_code": 1,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T070528-1eeb56dc764214b9.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T070528-1eeb56dc764214b9.stderr.log",
+    "created_at": "2026-08-20T07:05:28.9346859Z",
+    "claimed_at": "2026-08-20T07:05:28.9982208Z",
+    "started_at": "2026-08-20T07:05:29.0255891Z",
+    "finished_at": "2026-08-20T07:06:27.4741942Z",
+    "heartbeat_at": "2026-08-20T07:06:27.032374Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 37,
+        "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T07:05:28.9346859Z"
+      },
+      {
+        "seq": 38,
+        "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+        "type": "claimed",
+        "detail": "slot=3 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T07:05:28.9982208Z"
+      },
+      {
+        "seq": 39,
+        "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+        "type": "running",
+        "detail": "slot=3 pid=85776",
+        "created_at": "2026-08-20T07:05:29.0255891Z"
+      },
+      {
+        "seq": 40,
+        "work_id": "dw-20260820T070528-1eeb56dc764214b9",
+        "type": "failed",
+        "detail": "exit status 1",
+        "created_at": "2026-08-20T07:06:27.4741942Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "name": "go-tool-query.json",
+      "size": 13141,
+      "sha256": "c168d3c12e5841755991728de99b6c403ab711d24020e0eccd113551e32ec009",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-120-32342394027\\go-tool-query.json"
+    },
+    {
+      "name": "story-index-params.json",
+      "size": 6642,
+      "sha256": "ded60c09bbe8380ca6bdb065e37c72b23db4883aaf698af93afffdedf29cce04",
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-120-32342394027\\story-index-params.json"
+    }
+  ],
+  "stdout": null,
+  "stderr": "go: downloading modernc.org/sqlite v1.51.0\ngo: downloading github.com/jung-kurt/gofpdf v1.16.2\ngo: downloading modernc.org/libc v1.72.3\ngo: downloading golang.org/x/sys v0.42.0\nDWG method failed: story index entity already exists: story-index-rect-1f\r\n��� C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-25fa1cad956a\\scripts\\invoke-agent-cad-local.ps1:205\r\n �r��:28\r\n+ ... f ($response.error) { throw \"DWG method failed: $($response.error)\" }\r\n+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (DWG method fail...y-index-rect-1f:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : DWG method failed: story index entity already exists: story-index-rect-1f\r\n \r\n",
+  "observed_at": "2026-08-20T07:06:27.6223153+00:00"
+}

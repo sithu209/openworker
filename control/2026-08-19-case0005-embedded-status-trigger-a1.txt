@@ -1,0 +1,5 @@
+Case0005 embedded-control status trigger.
+request_id=case0005-status-20260819-a1
+command=CASE.STATUS
+machine=DESKTOP-ODAQN0D
+business_execution=false

@@ -1,0 +1,477 @@
+{
+    "schema":  "openworker.case0005-supervisor-snapshot/v1",
+    "observed_at":  "2026-08-18T19:16:49.2542995+00:00",
+    "machine":  "DESKTOP-ODAQN0D",
+    "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+    "node":  {
+                 "advertise_endpoint":  "http://127.0.0.1:8787",
+                 "build":  {
+                               "build_time":  "2026-08-18T19:05:47.9293103Z",
+                               "commit":  "abd320810ce40978517f65fb9212361889718cb4",
+                               "version":  "p2-node"
+                           },
+                 "busy_workers":  0,
+                 "free_workers":  4,
+                 "heartbeat_at":  "2026-08-18T19:16:48.7117683Z",
+                 "inventory":  {
+                                   "capabilities":  [
+                                                        "case0002",
+                                                        "case0005",
+                                                        "comfyx",
+                                                        "local-supervisor",
+                                                        "minimax-h3",
+                                                        "presentation",
+                                                        "storyboard",
+                                                        "video"
+                                                    ],
+                                   "tools":  [
+                                                 {
+                                                     "name":  "git",
+                                                     "available":  true,
+                                                     "path":  "C:\\Program Files\\Git\\cmd\\git.exe"
+                                                 },
+                                                 {
+                                                     "name":  "go",
+                                                     "available":  true,
+                                                     "path":  "C:\\github-runners\\openworker\\_work\\_tool\\go\\1.23.12\\x64\\bin\\go.exe"
+                                                 },
+                                                 {
+                                                     "name":  "python",
+                                                     "available":  true,
+                                                     "path":  "C:\\Python314\\python.exe"
+                                                 },
+                                                 {
+                                                     "name":  "powershell",
+                                                     "available":  true,
+                                                     "path":  "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+                                                 },
+                                                 {
+                                                     "name":  "blender",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "nvidia-smi",
+                                                     "available":  true,
+                                                     "path":  "C:\\WINDOWS\\system32\\nvidia-smi.exe"
+                                                 }
+                                             ],
+                                   "roots":  [
+                                                 {
+                                                     "name":  "openworker",
+                                                     "env":  "OPENWORKER_ROOT",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "go-tool-runtime",
+                                                     "env":  "GO_TOOL_ROOT",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "terrain-to-dxf",
+                                                     "env":  "TERRAIN_ROOT",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "scenex",
+                                                     "env":  "SCENEX_ROOT",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "engineering-os",
+                                                     "env":  "ENGINEERING_OS_ROOT",
+                                                     "available":  false
+                                                 },
+                                                 {
+                                                     "name":  "review-drive",
+                                                     "env":  "OPENWORKER_REVIEW_DRIVE_ROOT",
+                                                     "available":  false
+                                                 }
+                                             ],
+                                   "gpus":  [
+                                                {
+                                                    "index":  "0",
+                                                    "name":  "NVIDIA GeForce RTX 5060 Ti",
+                                                    "memory_mib":  "16311"
+                                                },
+                                                {
+                                                    "index":  "1",
+                                                    "name":  "NVIDIA GeForce RTX 5060 Ti",
+                                                    "memory_mib":  "16311"
+                                                }
+                                            ],
+                                   "runner_services":  [
+
+                                                       ],
+                                   "runner_ready":  false,
+                                   "collected_at":  "2026-08-18T19:16:49.212136Z"
+                               },
+                 "lease_seconds":  15,
+                 "lease_until":  "2026-08-18T19:17:03.7117683Z",
+                 "machine":  "DESKTOP-ODAQN0D",
+                 "max_workers":  4,
+                 "node_id":  "desktop-odaqn0d",
+                 "online":  true,
+                 "queued_jobs":  0,
+                 "resource_locks":  {
+
+                                    },
+                 "service":  {
+                                 "running_commit":  "abd320810ce40978517f65fb9212361889718cb4",
+                                 "service_started_at":  "2026-08-18T19:05:49.461442Z",
+                                 "supervisor_api_version":  "v1",
+                                 "target_commit":  "abd320810ce40978517f65fb9212361889718cb4",
+                                 "upgrade_status":  "VERIFIED",
+                                 "upgrade_verified":  true
+                             },
+                 "time":  "2026-08-18T19:16:48.7122727Z"
+             },
+    "ledger_path":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE\\.openworker\\case-supervisor-ledger.jsonl",
+    "ledger_exists":  false,
+    "ledger_event_count":  0,
+    "ledger":  [
+
+               ],
+    "worklist":  null,
+    "controller":  null,
+    "case_jobs":  [
+                      {
+                          "job_id":  "case0005-bootstrap-1787080499731203800",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080499731203800",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_logged_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  2,
+                          "pid":  25848,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stderr.log",
+                          "created_at":  "2026-08-18T19:14:59.7312038Z",
+                          "accepted_at":  "2026-08-18T19:14:59.7312038Z",
+                          "started_at":  "2026-08-18T19:14:59.9839834Z",
+                          "finished_at":  "2026-08-18T19:15:00.0052287Z",
+                          "heartbeat_at":  "2026-08-18T19:15:00.0052287Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787080000370329500",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080000370329500",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  1,
+                          "pid":  8680,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080000370329500.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080000370329500.stderr.log",
+                          "created_at":  "2026-08-18T19:06:40.3703295Z",
+                          "accepted_at":  "2026-08-18T19:06:40.3703295Z",
+                          "started_at":  "2026-08-18T19:06:40.4849172Z",
+                          "finished_at":  "2026-08-18T19:06:40.5075241Z",
+                          "heartbeat_at":  "2026-08-18T19:06:40.5075241Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787079962903791900",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787079962903791900",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  1,
+                          "pid":  31052,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079962903791900.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079962903791900.stderr.log",
+                          "created_at":  "2026-08-18T19:06:02.9037919Z",
+                          "accepted_at":  "2026-08-18T19:06:02.9037919Z",
+                          "started_at":  "2026-08-18T19:06:02.9846448Z",
+                          "finished_at":  "2026-08-18T19:06:03.0180676Z",
+                          "heartbeat_at":  "2026-08-18T19:06:03.0180676Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787079850053277300",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787079850053277300",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  1,
+                          "pid":  22948,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079850053277300.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079850053277300.stderr.log",
+                          "created_at":  "2026-08-18T19:04:10.0532773Z",
+                          "accepted_at":  "2026-08-18T19:04:10.0532773Z",
+                          "started_at":  "2026-08-18T19:04:10.0561016Z",
+                          "finished_at":  "2026-08-18T19:04:10.0874867Z",
+                          "heartbeat_at":  "2026-08-18T19:04:10.0874867Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787067013430491700",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787067013430491700",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  2,
+                          "pid":  2928,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787067013430491700.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787067013430491700.stderr.log",
+                          "created_at":  "2026-08-18T15:30:13.4304917Z",
+                          "accepted_at":  "2026-08-18T15:30:13.4304917Z",
+                          "started_at":  "2026-08-18T15:30:13.5831164Z",
+                          "finished_at":  "2026-08-18T15:30:13.6075712Z",
+                          "heartbeat_at":  "2026-08-18T15:30:13.6075712Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787066976461916200",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787066976461916200",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  1,
+                          "pid":  31712,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066976461916200.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066976461916200.stderr.log",
+                          "created_at":  "2026-08-18T15:29:36.4619162Z",
+                          "accepted_at":  "2026-08-18T15:29:36.4619162Z",
+                          "started_at":  "2026-08-18T15:29:36.6835619Z",
+                          "finished_at":  "2026-08-18T15:29:36.7133928Z",
+                          "heartbeat_at":  "2026-08-18T15:29:36.7133928Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787066081300383100",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787066081300383100",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  2,
+                          "pid":  34884,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066081300383100.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066081300383100.stderr.log",
+                          "created_at":  "2026-08-18T15:14:41.3003831Z",
+                          "accepted_at":  "2026-08-18T15:14:41.3003831Z",
+                          "started_at":  "2026-08-18T15:14:41.3578484Z",
+                          "finished_at":  "2026-08-18T15:14:41.3827695Z",
+                          "heartbeat_at":  "2026-08-18T15:14:41.3827695Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787065728691315300",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065728691315300",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  1,
+                          "pid":  29616,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065728691315300.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065728691315300.stderr.log",
+                          "created_at":  "2026-08-18T15:08:48.6913153Z",
+                          "accepted_at":  "2026-08-18T15:08:48.6913153Z",
+                          "started_at":  "2026-08-18T15:08:48.9335088Z",
+                          "finished_at":  "2026-08-18T15:08:48.9631861Z",
+                          "heartbeat_at":  "2026-08-18T15:08:48.9631861Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787065491420051600",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065491420051600",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  4,
+                          "pid":  29208,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065491420051600.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065491420051600.stderr.log",
+                          "created_at":  "2026-08-18T15:04:51.4200516Z",
+                          "accepted_at":  "2026-08-18T15:04:51.4200516Z",
+                          "started_at":  "2026-08-18T15:04:51.4317098Z",
+                          "finished_at":  "2026-08-18T15:04:51.4488048Z",
+                          "heartbeat_at":  "2026-08-18T15:04:51.4488048Z"
+                      },
+                      {
+                          "job_id":  "case0005-bootstrap-1787065444178032500",
+                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065444178032500",
+                          "machine":  "DESKTOP-ODAQN0D",
+                          "status":  "failed",
+                          "priority":  100,
+                          "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE",
+                          "env":  {
+                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                      "OPENWORKER_CASE_ID":  "0005",
+                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                  },
+                          "timeout_sec":  3600,
+                          "locks":  [
+                                        "case:0005:bootstrap"
+                                    ],
+                          "agent_slot":  4,
+                          "pid":  28800,
+                          "exit_code":  1,
+                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065444178032500.stdout.log",
+                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065444178032500.stderr.log",
+                          "created_at":  "2026-08-18T15:04:04.1780325Z",
+                          "accepted_at":  "2026-08-18T15:04:04.1780325Z",
+                          "started_at":  "2026-08-18T15:04:04.3303401Z",
+                          "finished_at":  "2026-08-18T15:04:04.3537697Z",
+                          "heartbeat_at":  "2026-08-18T15:04:04.3537697Z"
+                      }
+                  ],
+    "github_action_used_for_business_execution":  false
+}

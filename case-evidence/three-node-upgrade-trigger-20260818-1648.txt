@@ -1,0 +1,8 @@
+Trigger authoritative OpenWorkerNode install/upgrade on all three fixed worker computers.
+
+Expected nodes:
+- DESKTOP-UL7V2VV / UL7
+- DESKTOP-O87PJNR / O87
+- DESKTOP-ODAQN0D / ODA
+
+Success is not the Git trigger itself. Each node must install/start OpenWorkerNode and self-report running_commit == target_commit == this workflow GITHUB_SHA with upgrade_status=VERIFIED and upgrade_verified=true.

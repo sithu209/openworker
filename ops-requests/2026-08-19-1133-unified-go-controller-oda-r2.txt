@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r2
+machine=DESKTOP-ODAQN0D
+reason=materialize-go-sum-and-verify-single-go-controller
+requested_at=2026-08-19T11:33:00+08:00

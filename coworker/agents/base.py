@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from ..tools.queue import queue_drain_tool
 from ..tools.todo import TodoList
 
 
@@ -41,4 +42,6 @@ class Agent:
     connectors: bool = False
 
     def build_tools(self, context: AgentContext) -> list:
-        return list(self.tool_factory(context)) if self.tool_factory else []
+        tools = list(self.tool_factory(context)) if self.tool_factory else []
+        tools.append(queue_drain_tool())
+        return tools

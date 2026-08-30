@@ -1,0 +1,70 @@
+{
+  "schema": "case0004.directwork-terminal-receipt.v3",
+  "request_id": "pr-119-32342189791",
+  "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+  "durable_work": {
+    "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+    "dispatch_id": "pr-119-32342189791",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-045.ps1 -RequestId pr-119-32342189791",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "failed",
+    "slot": 3,
+    "pid": 86132,
+    "exit_code": 1,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T070248-dac60ae7cab8594e.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T070248-dac60ae7cab8594e.stderr.log",
+    "created_at": "2026-08-20T07:02:48.6911794Z",
+    "claimed_at": "2026-08-20T07:02:48.7982748Z",
+    "started_at": "2026-08-20T07:02:48.8297817Z",
+    "finished_at": "2026-08-20T07:02:53.7579146Z",
+    "heartbeat_at": "2026-08-20T07:02:52.8367839Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 33,
+        "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T07:02:48.6911794Z"
+      },
+      {
+        "seq": 34,
+        "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+        "type": "claimed",
+        "detail": "slot=3 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T07:02:48.7982748Z"
+      },
+      {
+        "seq": 35,
+        "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+        "type": "running",
+        "detail": "slot=3 pid=86132",
+        "created_at": "2026-08-20T07:02:48.8297817Z"
+      },
+      {
+        "seq": 36,
+        "work_id": "dw-20260820T070248-dac60ae7cab8594e",
+        "type": "failed",
+        "detail": "exit status 1",
+        "created_at": "2026-08-20T07:02:53.7579146Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-119-32342189791\\go-tool-query.json",
+      "size": 13142,
+      "sha256": "1428640fd646293aa0c3654a6dfcf296fa86abaeb420ace32792f7d12aac887f",
+      "name": "go-tool-query.json"
+    }
+  ],
+  "stdout": null,
+  "stderr": "C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-045.ps1 : �b������W�䤣���ݩ� 'Na\r\nme'�C�нT�{���ݩʦs�b�C\r\n    + CategoryInfo          : InvalidOperation: (:) [case0004-directwork-045.ps1]�ARuntimeException\r\n    + FullyQualifiedErrorId : PropertyNotFoundStrict,case0004-directwork-045.ps1\r\n \r\n",
+  "observed_at": "2026-08-20T07:02:54.5677433+00:00"
+}

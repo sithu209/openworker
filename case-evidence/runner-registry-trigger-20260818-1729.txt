@@ -1,0 +1,5 @@
+Trigger cloud-hosted three-node runner registry reconciliation.
+Targets: DESKTOP-UL7V2VV, DESKTOP-O87PJNR, DESKTOP-ODAQN0D
+Workflow: diagnose-self-hosted-runners.yml
+Requested at: 2026-08-18 21:16 Asia/Taipei
+Purpose: verify GitHub Actions scheduling and current online/busy/labels state for ODA before retrying Case 0005.

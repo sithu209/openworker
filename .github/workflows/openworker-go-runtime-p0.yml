@@ -1,0 +1,55 @@
+name: OpenWorker Go Runtime P0-P1
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'go-runtime/**'
+      - 'coworker/node_client.py'
+      - 'tests/test_node_client.py'
+      - 'scripts/submit_openworker_node.ps1'
+      - 'scripts/install_openworker_node_service.ps1'
+      - '.github/workflows/openworker-go-runtime-p0.yml'
+
+jobs:
+  verify-go-runtime:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+      - name: Build and test Go core
+        shell: powershell
+        working-directory: go-runtime
+        run: |
+          go mod tidy
+          go build -o openworker-node.exe ./cmd/openworker-node
+          go test ./... -count=1 -v
+          go test ./internal/runtime -run TestFourWorkersRunAndFifthQueues -count=1 -v
+          go test ./internal/runtime -run TestSharedResourceLockSerializesJobs -count=1 -v
+      - name: Verify Python control-plane adapter
+        shell: powershell
+        run: python -m pytest tests/test_node_client.py -q
+      - name: Verify ACK retry drain-all and durable events
+        shell: powershell
+        run: |
+          $data=Join-Path $env:RUNNER_TEMP "openworker-node-p1-$env:GITHUB_RUN_ID"
+          New-Item -ItemType Directory -Force -Path $data | Out-Null
+          $node=Start-Process -FilePath (Join-Path $env:GITHUB_WORKSPACE 'go-runtime\openworker-node.exe') -ArgumentList @('-listen','127.0.0.1:18787','-data',$data,'-workers','1') -PassThru
+          try {
+            for($i=0;$i -lt 30;$i++){try{$h=Invoke-RestMethod 'http://127.0.0.1:18787/healthz';if($h.ok){break}}catch{};Start-Sleep -Milliseconds 500}
+            $jid="P1-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT";$did="P1D-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+            & "$env:GITHUB_WORKSPACE\scripts\submit_openworker_node.ps1" -JobId $jid -DispatchId $did -ExpectedComputerName $env:COMPUTERNAME -Command 'exit 7' -Cwd $env:GITHUB_WORKSPACE -NodeUrl 'http://127.0.0.1:18787' -ReceiptPath (Join-Path $data 'dispatch-receipt.json')
+            for($i=0;$i -lt 30;$i++){$j=Invoke-RestMethod "http://127.0.0.1:18787/v1/jobs/$jid";if($j.status -eq 'failed'){break};Start-Sleep -Milliseconds 300}
+            if($j.status -ne 'failed'){throw "expected failed, got $($j.status)"}
+            $events=Invoke-RestMethod "http://127.0.0.1:18787/v1/jobs/$jid/events?limit=100"
+            if(-not($events.events.event_type -contains 'failed')){throw 'missing durable failed event'}
+            $r=Invoke-RestMethod -Method Post "http://127.0.0.1:18787/v1/jobs/$jid/retry";if($r.status -ne 'queued_local'){throw 'retry did not requeue'}
+            $d=Invoke-RestMethod -Method Post 'http://127.0.0.1:18787/v1/queue/drain?mode=all';if(-not $d.ok){throw 'drain all failed'}
+            $events=Invoke-RestMethod "http://127.0.0.1:18787/v1/jobs/$jid/events?limit=100"
+            if(-not($events.events.event_type -contains 'drained')){throw 'missing durable drained event'}
+            Get-Content (Join-Path $data 'dispatch-receipt.json') -Raw
+          } finally { if($node -and -not $node.HasExited){Stop-Process -Id $node.Id -Force} }

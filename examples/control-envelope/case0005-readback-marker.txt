@@ -1,0 +1,2 @@
+Case0005 Embedded Control read-only marker
+2026-08-19 19:40 +08:00

@@ -1,0 +1,10 @@
+{
+  "schema": "directwork.secret-command.v1",
+  "phrase": "CASE0004.DIRECTWORK.045",
+  "request_id": "case0004-045-20260820-1429-02",
+  "case_id": "0004",
+  "step": "0004-045",
+  "machine": "DESKTOP-O87PJNR",
+  "requested_by": "chatgpt",
+  "requested_at": "2026-08-20T14:29:00+08:00"
+}

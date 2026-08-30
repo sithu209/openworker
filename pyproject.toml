@@ -12,6 +12,7 @@ dependencies = [
     "anthropic>=0.40",
     "google-genai>=1.0",
     "google-auth>=2.23",
+    "google-auth-oauthlib>=1.2",
     "textual>=1.0",
     "fastapi>=0.110",
     "uvicorn[standard]>=0.27",
@@ -38,6 +39,7 @@ bedrock = ["boto3>=1.34"]
 
 [project.scripts]
 openworker = "coworker.cli:main"
+openworker-queue-drain = "coworker.queue_drain:main"
 openworker-server = "coworker.server.run:main"
 openworker-connectors = "coworker.connectors.cli:main"
 openworker-engineering = "coworker.engineering_cli:main"
@@ -46,6 +48,8 @@ openworker-harness-evidence = "coworker.engineering.harness_verify:main"
 openworker-project-query = "coworker.project_query_cli:main"
 openworker-work-ledger = "coworker.work_ledger_cli:main"
 openworker-review-publish-drive = "scripts.publish_review_bundle_to_drive:main"
+openworker-drive = "coworker.google_drive_cli:main"
+openworker-drive-auth-login = "coworker.google_drive_auth_login:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

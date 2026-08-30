@@ -1,0 +1,3 @@
+Trigger three-node runner label reconciliation before OpenWorker latest-main upgrade.
+Target nodes: UL7, O87, ODA.
+Workflow: bootstrap-three-node-labels-v2.yml

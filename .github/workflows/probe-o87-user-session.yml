@@ -1,0 +1,79 @@
+name: Probe O87 User Session Bridge
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] probe_o87_user_session' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Probe bounded WTS user-session token bridge
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host=$env:COMPUTERNAME"}
+          $driveProcs=@(Get-Process -Name GoogleDriveFS -ErrorAction SilentlyContinue)
+          if($driveProcs.Count -lt 1){throw 'GoogleDriveFS process unavailable'}
+          $driveSessionIds=@($driveProcs|Select-Object -ExpandProperty SessionId -Unique)
+          if($driveSessionIds.Count -ne 1){throw "expected exactly one GoogleDriveFS session id, got $($driveSessionIds.Count)"}
+          $driveSession=[int]$driveSessionIds[0]
+          $script='C:\ProgramData\OpenWorker\user-session-drive-probe.ps1'
+          $receipt='C:\ProgramData\OpenWorker\user-session-drive-probe.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $script)|Out-Null
+          @"
+          `$ErrorActionPreference='Stop'
+          `$ok=`$false; `$entries=@(); `$err=''
+          try{`$entries=@(Get-ChildItem -LiteralPath 'G:\' -Force -ErrorAction Stop|Select-Object -First 20 -ExpandProperty Name); `$ok=`$true}catch{`$err=`$_.Exception.Message}
+          `$r=[ordered]@{schema='openworker.user-session-drive-probe/v10';machine=`$env:COMPUTERNAME;g_accessible=`$ok;entry_count=`$entries.Count;error=`$err;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          [IO.File]::WriteAllText('$receipt',(`$r|ConvertTo-Json -Depth 6)+[Environment]::NewLine,[Text.UTF8Encoding]::new(`$false))
+          "@|Set-Content -LiteralPath $script -Encoding utf8
+          Remove-Item -LiteralPath $receipt -Force -ErrorAction SilentlyContinue
+          Add-Type @'
+          using System;
+          using System.Runtime.InteropServices;
+          public static class WtsTokenLauncher {
+            const uint LOGON_WITH_PROFILE = 0x00000001;
+            [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)] public struct STARTUPINFO {
+              public int cb; public string lpReserved; public string lpDesktop; public string lpTitle;
+              public int dwX, dwY, dwXSize, dwYSize, dwXCountChars, dwYCountChars, dwFillAttribute, dwFlags;
+              public short wShowWindow, cbReserved2; public IntPtr lpReserved2, hStdInput, hStdOutput, hStdError;
+            }
+            [StructLayout(LayoutKind.Sequential)] public struct PROCESS_INFORMATION {
+              public IntPtr hProcess, hThread; public int dwProcessId, dwThreadId;
+            }
+            [DllImport("Wtsapi32.dll", SetLastError=true)] static extern bool WTSQueryUserToken(uint sessionId, out IntPtr token);
+            [DllImport("advapi32.dll", SetLastError=true, CharSet=CharSet.Unicode)] static extern bool CreateProcessWithTokenW(IntPtr token, uint flags, string app, string cmd, uint creationFlags, IntPtr env, string cwd, ref STARTUPINFO si, out PROCESS_INFORMATION pi);
+            [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+            public static int Launch(uint sessionId, string app, string args) {
+              IntPtr token=IntPtr.Zero; PROCESS_INFORMATION pi=new PROCESS_INFORMATION();
+              try {
+                if(!WTSQueryUserToken(sessionId,out token)) return Marshal.GetLastWin32Error();
+                STARTUPINFO si=new STARTUPINFO(); si.cb=Marshal.SizeOf(typeof(STARTUPINFO)); si.lpDesktop="winsta0\\default";
+                string cmd="\""+app+"\" "+args;
+                if(!CreateProcessWithTokenW(token,LOGON_WITH_PROFILE,app,cmd,0,IntPtr.Zero,null,ref si,out pi)) return Marshal.GetLastWin32Error();
+                return 0;
+              } finally {
+                if(pi.hThread!=IntPtr.Zero) CloseHandle(pi.hThread); if(pi.hProcess!=IntPtr.Zero) CloseHandle(pi.hProcess); if(token!=IntPtr.Zero) CloseHandle(token);
+              }
+            }
+          }
+          '@
+          $powershell=(Get-Command powershell.exe).Source
+          $args='-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+$script+'"'
+          $code=[WtsTokenLauncher]::Launch([uint32]$driveSession,$powershell,$args)
+          Write-Host ('OPENWORKER_O87_WTS_TOKEN_BRIDGE launch_ok='+($code -eq 0)+' drive_session='+$driveSession+' error_code='+$code)
+          if($code -ne 0){throw 'cannot launch bounded probe from WTS user token'}
+          $deadline=[DateTime]::UtcNow.AddSeconds(45)
+          while([DateTime]::UtcNow -lt $deadline -and -not(Test-Path -LiteralPath $receipt -PathType Leaf)){Start-Sleep -Milliseconds 500}
+          if(-not(Test-Path -LiteralPath $receipt -PathType Leaf)){throw 'WTS user-token probe receipt timeout'}
+          $r=Get-Content -LiteralPath $receipt -Raw|ConvertFrom-Json
+          Write-Host "OPENWORKER_O87_USER_SESSION_BRIDGE g_accessible=$($r.g_accessible) entry_count=$($r.entry_count) error=$($r.error)"
+          if(-not [bool]$r.g_accessible){throw 'Drive WTS-token-launched process cannot access G drive'}

@@ -1,0 +1,5 @@
+O87 Embedded Control install trigger
+machine=DESKTOP-O87PJNR
+case_id=0004
+intent=install-and-verify-hook
+source=successful-embedded-control-pattern

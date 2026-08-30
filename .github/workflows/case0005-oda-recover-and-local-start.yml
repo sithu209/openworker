@@ -1,0 +1,90 @@
+name: Case 0005 ODA Recover And Local Start
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  recover-and-start:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-recover-start]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify fixed ODA computer
+        shell: powershell
+        run: if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+      - name: Build latest OpenWorkerNode
+        shell: powershell
+        working-directory: go-runtime
+        run: |
+          $ErrorActionPreference='Stop'
+          go mod tidy
+          $commit=$env:GITHUB_SHA
+          $build=[DateTime]::UtcNow.ToString('o')
+          go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$commit -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node
+          if($LASTEXITCODE -ne 0){throw 'openworker-node build failed'}
+      - name: Install or upgrade local OpenWorkerNode service
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities 'case0002,case0005,comfyx,minimax-h3,video,storyboard,presentation,local-supervisor' -Listen '127.0.0.1:8787'
+      - name: Verify local authority
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status'
+          if($s.machine -ine 'DESKTOP-ODAQN0D'){throw "node machine=$($s.machine)"}
+          foreach($cap in @('case0005','comfyx','local-supervisor')){if(-not ($s.inventory.capabilities -contains $cap)){throw "missing $cap capability"}}
+          $s|ConvertTo-Json -Depth 20|Set-Content -LiteralPath 'case0005-node-status.json' -Encoding utf8
+      - name: Start Case 0005 local-first controller
+        id: start
+        continue-on-error: true
+        shell: powershell
+        run: |
+          ./scripts/case0005_parallel_bootstrap.ps1 2>&1 | Tee-Object -FilePath case0005-start.log
+      - name: Capture bounded recovery evidence
+        if: always()
+        shell: powershell
+        env:
+          START_OUTCOME: ${{ steps.start.outcome }}
+        run: |
+          $ErrorActionPreference='Continue'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $base='http://127.0.0.1:8787'
+          $node=$null; $jobs=@(); $worklist=$null; $controller=$null; $errors=@()
+          try{$node=Invoke-RestMethod "$base/v1/node/status"}catch{$errors+="node: $($_.Exception.Message)"}
+          try{
+            $raw=Invoke-RestMethod "$base/v1/jobs?limit=1000"
+            $items=@();if($raw.jobs){$items=@($raw.jobs)}elseif($raw -is [System.Array]){$items=@($raw)}
+            $jobs=@($items|Where-Object{$_.job_id -like 'case0005-*'}|Sort-Object created_at -Descending|Select-Object -First 30)
+          }catch{$errors+="jobs: $($_.Exception.Message)"}
+          foreach($pair in @(@('worklist','.openworker\case-worklist.json'),@('controller','.openworker\case-controller-last.json'))){
+            $p=Join-Path $workspace $pair[1]
+            if(Test-Path -LiteralPath $p){try{$v=Get-Content -LiteralPath $p -Raw|ConvertFrom-Json;if($pair[0]-eq 'worklist'){$worklist=$v}else{$controller=$v}}catch{$errors+="$($pair[0]): $($_.Exception.Message)"}}
+          }
+          $log='';if(Test-Path 'case0005-start.log'){$log=Get-Content 'case0005-start.log' -Raw}
+          $receipt=[ordered]@{schema='openworker/case0005-oda-recover-start/v1';case_id='0005';machine=$env:COMPUTERNAME;observed_at=[DateTimeOffset]::UtcNow.ToString('o');start_outcome=$env:START_OUTCOME;node=$node;case_jobs=$jobs;worklist=$worklist;controller=$controller;start_log=$log;errors=$errors}
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005'|Out-Null
+          $receipt|ConvertTo-Json -Depth 30|Set-Content 'case-evidence/0005/oda-recover-start.json' -Encoding utf8
+      - name: Commit bounded evidence
+        if: always()
+        shell: powershell
+        run: |
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'evidence(case0005): record ODA recovery and local start';git pull --rebase origin main;git push origin HEAD:main}
+      - name: Fail closed if local start failed
+        if: always() && steps.start.outcome != 'success'
+        shell: powershell
+        run: throw 'Case 0005 local controller start failed; evidence was persisted first'

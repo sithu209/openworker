@@ -1,0 +1,3 @@
+Reconcile OpenWorker repository runner labels by registered runner computer name.
+Targets: DESKTOP-UL7V2VV=>UL7, DESKTOP-O87PJNR=>O87, DESKTOP-ODAQN0D*=>ODA.
+Triggered 2026-08-18 16:51 Asia/Taipei.

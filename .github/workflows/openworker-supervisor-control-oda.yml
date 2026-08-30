@@ -1,0 +1,53 @@
+name: OpenWorker Supervisor Control ODA
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: session | heartbeat | snapshot | jobs | recover | decision | decisions
+        required: true
+        type: string
+      supervisor_id:
+        required: true
+        default: ODA-CODER-01
+        type: string
+      session_id:
+        required: false
+        type: string
+      model:
+        required: false
+        type: string
+      current_goal:
+        required: false
+        type: string
+      decision_json:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  control:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify ODA supervisor authority
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $h=Invoke-RestMethod 'http://127.0.0.1:8787/healthz'
+          if(-not $h.ok){throw 'OpenWorkerNode unhealthy'}
+      - name: Execute supervisor control
+        shell: powershell
+        env:
+          OP: ${{ inputs.operation }}
+          SUPERVISOR_ID: ${{ inputs.supervisor_id }}
+          SESSION_ID: ${{ inputs.session_id }}
+          MODEL: ${{ inputs.model }}
+          GOAL: ${{ inputs.current_goal }}
+          DECISION_JSON: ${{ inputs.decision_json }}
+        run: |
+          & "$env:GITHUB_WORKSPACE\scripts\openworker_supervisor_control.ps1" -Operation $env:OP -SupervisorId $env:SUPERVISOR_ID -SessionId $env:SESSION_ID -Model $env:MODEL -CurrentGoal $env:GOAL -DecisionJson $env:DECISION_JSON

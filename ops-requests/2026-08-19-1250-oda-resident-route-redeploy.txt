@@ -1,0 +1,5 @@
+Case 0005 resident Go node redeploy after startup-route regression test.
+Target machine: DESKTOP-ODAQN0D
+Required endpoint: POST /v1/cases/continue must be present immediately after service restart, before bootstrap.
+Business execution via GitHub Actions: forbidden.
+Requested at: 2026-08-19T12:50:00+08:00

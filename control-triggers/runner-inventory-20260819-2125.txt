@@ -1,0 +1,3 @@
+intent=runner-inventory
+observed_target=DESKTOP-O87PJNR
+business_execution=false

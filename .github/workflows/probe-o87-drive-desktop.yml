@@ -1,0 +1,52 @@
+name: Probe O87 Google Drive Desktop
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] probe_o87_drive_desktop' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Verify O87 and inspect DriveFS device access
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host=$env:COMPUTERNAME"}
+          Add-Type @'
+          using System;
+          using System.Text;
+          using System.Runtime.InteropServices;
+          public static class DosDeviceQuery {
+            [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern uint QueryDosDevice(string name, StringBuilder target, int max);
+            public static string Read(string name) { var b=new StringBuilder(32768); var n=QueryDosDevice(name,b,b.Capacity); return n==0 ? "" : b.ToString(); }
+          }
+          '@
+          $device=[DosDeviceQuery]::Read('G:')
+          Write-Host ('OPENWORKER_O87_DRIVE_DEVICE present='+(-not [string]::IsNullOrWhiteSpace($device)))
+          $paths=@('G:\')
+          if(-not [string]::IsNullOrWhiteSpace($device)){
+            $trim=$device.TrimEnd([char]0)
+            if($trim.StartsWith('\Device\')){$paths += ('\\?\GLOBALROOT'+$trim+'\')}
+          }
+          $success=$false
+          foreach($root in @($paths|Select-Object -Unique)){
+            $kind='globalroot'
+            if($root -eq 'G:\'){$kind='drive-letter'}
+            try {
+              $entries=@(Get-ChildItem -LiteralPath $root -Force -ErrorAction Stop|Select-Object -First 20 -ExpandProperty Name)
+              Write-Host ('OPENWORKER_O87_DRIVE_PATH_PASS kind='+$kind+' entry_count='+$entries.Count)
+              $success=$true
+              break
+            } catch {
+              Write-Host ('OPENWORKER_O87_DRIVE_PATH_FAIL kind='+$kind+' hresult='+$_.Exception.HResult)
+            }
+          }
+          if(-not $success){throw 'DriveFS is not accessible from NetworkService through drive letter or GLOBALROOT device path'}

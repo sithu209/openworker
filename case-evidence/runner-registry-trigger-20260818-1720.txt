@@ -1,0 +1,2 @@
+Trigger generic self-hosted Windows runner registry inspection for UL7/O87/ODA.
+Purpose: determine registered/online/busy state and reconcile UL7/O87/ODA labels before retrying node upgrade.

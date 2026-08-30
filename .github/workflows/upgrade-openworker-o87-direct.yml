@@ -1,0 +1,56 @@
+name: Upgrade OpenWorker O87 Direct
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade_o87:
+    if: >-
+      github.event.pull_request.title == '[openworker-control] upgrade_o87_direct' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache: false
+      - name: Verify fixed O87 host
+        shell: pwsh
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host actual=$env:COMPUTERNAME"}
+      - name: Build and install current OpenWorker node
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $commit=(git rev-parse HEAD).Trim()
+          Push-Location go-runtime
+          try {
+            go mod tidy
+            if($LASTEXITCODE -ne 0){throw "go mod tidy failed exit=$LASTEXITCODE"}
+            go test ./internal/api -count=1
+            if($LASTEXITCODE -ne 0){throw "resident API tests failed exit=$LASTEXITCODE"}
+            $build=[DateTime]::UtcNow.ToString('o')
+            go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$commit -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$commit -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node
+            if($LASTEXITCODE -ne 0){throw "go build failed exit=$LASTEXITCODE"}
+          } finally { Pop-Location }
+          & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities 'case0004,dwg,story-index,engineering,local-supervisor' -Listen '127.0.0.1:8787'
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 10
+          if($s.machine -ine 'DESKTOP-O87PJNR'){throw "machine=$($s.machine)"}
+          if($s.service.running_commit -ne $commit -or -not $s.service.upgrade_verified){throw "upgrade not verified: $($s.service|ConvertTo-Json -Compress)"}
+          $receipt=[ordered]@{schema='openworker/o87-direct-upgrade/v1';machine=$s.machine;running_commit=$s.service.running_commit;target_commit=$s.service.target_commit;upgrade_verified=[bool]$s.service.upgrade_verified;max_workers=[int]$s.max_workers;github_action_used_for_business_execution=$false;verified_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $dest='case-evidence/o87-direct-upgrade-latest.json'
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE ($dest -replace '/','\')),($receipt|ConvertTo-Json -Depth 10)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-o87-upgrade'; git config user.email 'openworker-o87-upgrade@users.noreply.github.com'
+          git add -- $dest
+          git commit -m "receipt: O87 direct OpenWorker upgrade $commit"
+          if($LASTEXITCODE -eq 0){git pull --rebase origin main; git push origin HEAD:main}
+          Write-Host ('OPENWORKER_O87_DIRECT_UPGRADE_OK '+($receipt|ConvertTo-Json -Compress))

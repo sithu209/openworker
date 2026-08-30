@@ -1,0 +1,63 @@
+name: Case 0005 Supervisor Snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0005-supervisor-snapshot.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case-0005-supervisor-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        slot: [1,2,3,4,5,6,7,8,9,10,11,12]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read ODA local supervisor authority and publish snapshot only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){ Write-Host "CASE0005_SNAPSHOT_SKIP machine=$env:COMPUTERNAME slot=${{ matrix.slot }}"; exit 0 }
+          $marker="C:\ProgramData\OpenWorker\case0005-snapshot-$env:GITHUB_RUN_ID.done"
+          try{$f=[IO.File]::Open($marker,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$f.Dispose()}catch{Write-Host 'CASE0005_SNAPSHOT_DUPLICATE_SKIP';exit 0}
+
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $ledgerPath=Join-Path $workspace '.openworker\case-supervisor-ledger.jsonl'
+          $worklistPath=Join-Path $workspace '.openworker\case-worklist.json'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $ledger=@()
+          if(Test-Path -LiteralPath $ledgerPath -PathType Leaf){foreach($line in @(Get-Content -LiteralPath $ledgerPath -Encoding UTF8)){if([string]::IsNullOrWhiteSpace($line)){continue};try{$ledger += ($line|ConvertFrom-Json)}catch{$ledger += [ordered]@{event_type='ledger_parse_error';raw=$line}}}}
+          $worklist=$null;if(Test-Path -LiteralPath $worklistPath -PathType Leaf){$worklist=Get-Content -Raw -LiteralPath $worklistPath -Encoding UTF8|ConvertFrom-Json}
+          $controller=$null;if(Test-Path -LiteralPath $controllerPath -PathType Leaf){$controller=Get-Content -Raw -LiteralPath $controllerPath -Encoding UTF8|ConvertFrom-Json}
+          $node=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 5
+          $jobs=Invoke-RestMethod 'http://127.0.0.1:8787/v1/jobs?limit=200' -TimeoutSec 10
+          $caseJobs=@($jobs.jobs|Where-Object{([string]$_.job_id -like 'case0005-*') -or ([string]$_.workspace_root -ieq $workspace)})
+          $latestBootstrap=@($caseJobs|Where-Object{[string]$_.job_id -like 'case0005-bootstrap-*'}|Sort-Object created_at -Descending|Select-Object -First 1)
+          $latestExplain=$null;$stderrRaw='';$stdoutRaw=''
+          if($latestBootstrap.Count -gt 0){
+            $jid=[string]$latestBootstrap[0].job_id
+            try{$latestExplain=Invoke-RestMethod "http://127.0.0.1:8787/v1/jobs/$jid/explain" -TimeoutSec 10}catch{$latestExplain=[ordered]@{error=$_.Exception.Message}}
+            $stderrPath=[string]$latestBootstrap[0].stderr_path;if($stderrPath -and (Test-Path -LiteralPath $stderrPath -PathType Leaf)){$stderrRaw=Get-Content -Raw -LiteralPath $stderrPath -Encoding Default}
+            $stdoutPath=[string]$latestBootstrap[0].stdout_path;if($stdoutPath -and (Test-Path -LiteralPath $stdoutPath -PathType Leaf)){$stdoutRaw=Get-Content -Raw -LiteralPath $stdoutPath -Encoding Default}
+          }
+          $payload=[ordered]@{schema='openworker.case0005-supervisor-snapshot/v2';observed_at=[DateTimeOffset]::UtcNow.ToString('o');machine=$env:COMPUTERNAME;workspace_root=$workspace;node=$node;ledger_path=$ledgerPath;ledger_exists=[bool](Test-Path -LiteralPath $ledgerPath -PathType Leaf);ledger_event_count=@($ledger).Count;ledger=$ledger;worklist=$worklist;controller=$controller;case_jobs=$caseJobs;latest_bootstrap=$latestBootstrap;latest_bootstrap_explain=$latestExplain;latest_bootstrap_stderr=$stderrRaw;latest_bootstrap_stdout=$stdoutRaw;github_action_used_for_business_execution=$false}
+          $json=$payload|ConvertTo-Json -Depth 50
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $path='evidence/case0005/latest-supervisor-snapshot.json';$uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path";$readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME);$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          for($i=1;$i -le 10;$i++){$sha=$null;try{$e=Invoke-RestMethod -Uri $readUri -Headers $headers;$sha=$e.sha}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 404){throw}};$body=@{message='case0005: publish local supervisor snapshot';content=$b64;branch=$env:GITHUB_REF_NAME};if($sha){$body.sha=$sha};try{Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress)|Out-Null;break}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 409 -or $i -eq 10){throw};Start-Sleep -Milliseconds (250*$i)}}

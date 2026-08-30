@@ -1,0 +1,50 @@
+name: Case0004 DirectWork 045 Corrected PR
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  submit:
+    if: github.event.pull_request.title == '[openworker-control] case0004_directwork_045_corrected' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Submit corrected Story Index and viewport render as DirectWork durable work
+        shell: pwsh
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $body=[string]$env:PR_BODY
+          if($body -notmatch '(?im)^requested_by:\s*ChatGPT\s*$'){throw 'requested_by missing'}
+          if($body -notmatch '(?im)^case_id:\s*0004\s*$'){throw 'case_id missing'}
+          if($body -notmatch '(?im)^machine:\s*DESKTOP-O87PJNR\s*$'){throw 'machine missing'}
+          $requestId="pr-$($env:PR_NUMBER)-$($env:GITHUB_RUN_ID)"
+          $workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'
+          $script=Join-Path $env:GITHUB_WORKSPACE 'scripts\case0004-directwork-045-corrected.ps1'
+          $cmd='powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File '+$script+' -RequestId '+$requestId
+          $payload=[ordered]@{dispatch_id=$requestId;case_id='0004';project='DWG_todo';machine='DESKTOP-O87PJNR';command=$cmd;cwd=$workspace;workspace_root=$workspace;timeout_sec=1800}
+          $work=Invoke-RestMethod -Method POST -Uri 'http://127.0.0.1:8787/v1/work' -ContentType 'application/json' -Body ($payload|ConvertTo-Json -Depth 20) -TimeoutSec 10
+          if(-not $work.work_id){throw 'DirectWork did not return work_id'}
+          $workId=[string]$work.work_id;Write-Host "DIRECTWORK_WORK_ID=$workId"
+          $terminal=@('succeeded','failed','timed_out','cancelled');$cur=$null
+          for($i=0;$i -lt 1800;$i++){$cur=Invoke-RestMethod -Method GET -Uri ('http://127.0.0.1:8787/v1/work/'+[uri]::EscapeDataString($workId)) -TimeoutSec 10;if($terminal -contains [string]$cur.status){break};Start-Sleep 1}
+          $events=Invoke-RestMethod -Method GET -Uri ('http://127.0.0.1:8787/v1/work/'+[uri]::EscapeDataString($workId)+'/events') -TimeoutSec 10
+          $stdout='';$stderr='';if($cur.stdout_path -and(Test-Path $cur.stdout_path)){$stdout=Get-Content $cur.stdout_path -Raw -ErrorAction SilentlyContinue};if($cur.stderr_path -and(Test-Path $cur.stderr_path)){$stderr=Get-Content $cur.stderr_path -Raw -ErrorAction SilentlyContinue}
+          $er=Join-Path $workspace ('evidence\directwork\'+$requestId);$files=@();if(Test-Path $er){foreach($f in Get-ChildItem $er -File){$files+=@{name=$f.Name;path=$f.FullName;size=$f.Length;sha256=(Get-FileHash $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}}}
+          $tr=[ordered]@{schema='case0004.directwork-corrected-045-terminal.v1';request_id=$requestId;work_id=$workId;durable_work=$cur;durable_events=$events;case_evidence=$files;stdout=$stdout;stderr=$stderr;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          git config --global --add safe.directory $env:GITHUB_WORKSPACE;git config user.name directwork-case0004-transport;git config user.email directwork-case0004-transport@users.noreply.github.com;git pull --rebase origin main
+          $rel="command-results/o87/$requestId/corrected-045-terminal.json";$out=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\');New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null
+          [IO.File]::WriteAllText($out,($tr|ConvertTo-Json -Depth 100)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false));git add -- $rel;git commit -m "receipt: Case0004 corrected 045 $requestId";git pull --rebase origin main;git push origin HEAD:main
+          Write-Host '===DIRECTWORK_STDOUT===';Write-Host $stdout;Write-Host '===DIRECTWORK_STDERR===';Write-Host $stderr
+          if([string]$cur.status -ne 'succeeded'){throw "Case0004 corrected 045 DirectWork status=$($cur.status) exit=$($cur.exit_code)"}

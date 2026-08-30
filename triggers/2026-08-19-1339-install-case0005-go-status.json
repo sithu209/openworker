@@ -1,0 +1,7 @@
+{
+  "schema": "openworker.install-trigger/v1",
+  "machine": "DESKTOP-ODAQN0D",
+  "purpose": "install latest canonical openworker.exe with current durable work status and Case0005 010-020-025 Go mappings",
+  "business_execution": false,
+  "requested_at": "2026-08-19T13:39:00+08:00"
+}

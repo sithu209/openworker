@@ -1,0 +1,88 @@
+name: Case 0005 Local Controller Kick ODA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case0005-local-controller-kick-oda
+  cancel-in-progress: false
+
+jobs:
+  kick-local-controller:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-local-kick]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify ODA computer name
+        shell: powershell
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D') { throw "wrong host: $env:COMPUTERNAME" }
+
+      - name: Ensure resident OpenWorkerNode service is running
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $svc=Get-Service OpenWorkerNode -ErrorAction Stop
+          if($svc.Status -ne 'Running'){
+            Start-Service OpenWorkerNode
+            $svc.WaitForStatus('Running',[TimeSpan]::FromSeconds(20))
+          }
+          $status=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 10
+          if($status.machine -ine 'DESKTOP-ODAQN0D'){throw "resident node machine=$($status.machine)"}
+          Write-Host "OPENWORKER_RESIDENT_READY machine=$($status.machine)"
+
+      - name: Submit Case 0005 through OpenWorker cluster to ODA
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='http://127.0.0.1:8787'
+          $target='DESKTOP-ODAQN0D'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $resident='D:\AI-Work\runtime\openworker'
+          $route=Invoke-RestMethod "$base/v1/cluster/route?machine=$([uri]::EscapeDataString($target))&capabilities=case0005"
+          if($route.selected.machine -ine $target){throw "route selected=$($route.selected.machine) expected=$target"}
+          $body=@{
+            case_id='0005'
+            machine=$target
+            workspace_root=$workspace
+            openworker_root=$resident
+            controller_module='coworker.case0005_controller'
+            manifest_path='case-worklists/0005.json'
+            spec_path='case-specs/0005.json'
+          }|ConvertTo-Json -Depth 8
+          $ack=Invoke-RestMethod -Method Post "$base/v1/cases/bootstrap" -ContentType 'application/json' -Body $body
+          if(-not $ack.job.accepted){throw 'Case 0005 bootstrap missing durable ACK'}
+          if($ack.machine -ine $target){throw "ACK machine=$($ack.machine) expected=$target"}
+          $ack|ConvertTo-Json -Depth 20|Set-Content 'case0005-bootstrap-ack.json' -Encoding utf8
+          Write-Host "CASE0005_DURABLE_ACK machine=$($ack.machine) job=$($ack.job.job_id) accepted=$($ack.job.accepted) workspace=$($ack.workspace_root)"
+
+      - name: Snapshot cluster state
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Continue'
+          $base='http://127.0.0.1:8787'
+          $target='DESKTOP-ODAQN0D'
+          $jobs=@();$agents=@();$errors=@();$ack=$null
+          try{$raw=Invoke-RestMethod "$base/v1/cluster/jobs?limit=1000";$jobs=@($raw.jobs|Where-Object{$_.job.job_id -like 'case0005-*' -or $_.job.job_id -like 'case0005*'})}catch{$errors+="jobs: $($_.Exception.Message)"}
+          try{$raw=Invoke-RestMethod "$base/v1/cluster/agents";$agents=@($raw.agents|Where-Object{$_.machine -ieq $target})}catch{$errors+="agents: $($_.Exception.Message)"}
+          if(Test-Path 'case0005-bootstrap-ack.json'){try{$ack=Get-Content 'case0005-bootstrap-ack.json' -Raw|ConvertFrom-Json}catch{$errors+="ack: $($_.Exception.Message)"}}
+          $receipt=[ordered]@{
+            schema='openworker/case0005-cluster-kick/v1';case_id='0005';target_machine=$target;transport_machine=$env:COMPUTERNAME;
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o');github_action_role='transport_only';
+            business_execution_authority='DESKTOP-ODAQN0D resident OpenWorker local supervisor';ack=$ack;case_jobs=$jobs;oda_agents=$agents;errors=$errors
+          }
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005'|Out-Null
+          $receipt|ConvertTo-Json -Depth 30|Set-Content 'case-evidence/0005/cluster-kick.json' -Encoding utf8
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'evidence(case0005): record cluster kick to ODA';git pull --rebase origin main;git push origin HEAD:main}

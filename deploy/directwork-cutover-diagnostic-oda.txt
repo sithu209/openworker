@@ -1,0 +1,5 @@
+DirectWork ODA cutover diagnostic
+Date: 2026-08-20T11:29+08:00
+Target: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+Purpose: inspect ODA REAL state without changing services; persist build/service/8787/work evidence.
+Mode: local validation authority first; no service replacement in this diagnostic run.

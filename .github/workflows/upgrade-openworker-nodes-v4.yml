@@ -1,0 +1,131 @@
+name: Upgrade OpenWorker Nodes V4
+# Registered from an authenticated user push so workflow_dispatch is available.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-openworker-nodes-v4.yml'
+      - 'go-runtime/**'
+      - 'scripts/install_openworker_node_service.ps1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: openworker-node-upgrade-v4
+  cancel-in-progress: true
+
+jobs:
+  upgrade:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - node: oda
+            runner_label: ODA
+            machine: DESKTOP-ODAQN0D
+            capabilities: case0002,case0005,comfyx,minimax-h3,video,storyboard,presentation,local-supervisor
+          - node: o87
+            runner_label: O87
+            machine: DESKTOP-O87PJNR
+            capabilities: case0004,dwg,story-index,engineering
+          - node: ul7
+            runner_label: UL7
+            machine: DESKTOP-UL7V2VV
+            capabilities: case0003,bridge,blender,scenex,engineering,drive-review
+    runs-on: [self-hosted, Windows, X64, "${{ matrix.runner_label }}"]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify fixed machine routing
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine '${{ matrix.machine }}'){
+            throw "wrong machine label=${{ matrix.runner_label }} actual=$env:COMPUTERNAME expected=${{ matrix.machine }}"
+          }
+          Write-Host "OPENWORKER_UPGRADE_FIXED_ROUTE node=${{ matrix.node }} machine=$env:COMPUTERNAME label=${{ matrix.runner_label }}"
+
+      - uses: actions/setup-go@v5
+        if: ${{ !(matrix.node == 'oda' && contains(github.event.head_commit.message, '[case0005-status-only]')) }}
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+          cache: false
+
+      - name: Build install verify and persist canonical receipt
+        if: ${{ !(matrix.node == 'oda' && contains(github.event.head_commit.message, '[case0005-status-only]')) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE: ${{ matrix.node }}
+          MACHINE: ${{ matrix.machine }}
+          CAPABILITIES: ${{ matrix.capabilities }}
+        run: |
+          $ErrorActionPreference='Stop'
+          function Put-Receipt([string]$phase,[hashtable]$payload){
+            $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+            $path="case-evidence/node-upgrade/$env:GITHUB_SHA/$env:NODE-$($phase.ToLowerInvariant()).json"
+            $uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path"
+            $readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME)
+            $json=$payload|ConvertTo-Json -Depth 20 -Compress
+            $b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+            for($attempt=1;$attempt -le 8;$attempt++){
+              $sha=$null
+              try{$existing=Invoke-RestMethod -Uri $readUri -Headers $headers;$sha=$existing.sha}catch{$status=$null;try{$status=$_.Exception.Response.StatusCode.value__}catch{};if($status -ne 404){throw}}
+              $body=@{message="receipt: $env:NODE $phase $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME};if($sha){$body.sha=$sha}
+              try{Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress)|Out-Null;return}catch{$status=$null;try{$status=$_.Exception.Response.StatusCode.value__}catch{};if($status -ne 409 -or $attempt -eq 8){throw};Start-Sleep -Milliseconds (250*$attempt)}
+            }
+          }
+
+          Put-Receipt 'ACCEPTED' ([ordered]@{schema='openworker/node-upgrade-receipt/v5';phase='ACCEPTED';routing_authority='fixed-runner-label+COMPUTERNAME';node=$env:NODE;machine=$env:MACHINE;runner_label='${{ matrix.runner_label }}';runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;run_id=$env:GITHUB_RUN_ID;accepted_at=[DateTimeOffset]::UtcNow.ToString('o')})
+
+          $already=$false
+          try{$s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 3;if($s.service.running_commit -eq $env:GITHUB_SHA -and $s.service.upgrade_verified){$already=$true}}catch{}
+          if(-not $already){
+            Push-Location go-runtime
+            try{
+              go mod tidy
+              go test ./internal/api -count=1
+              if($LASTEXITCODE -ne 0){throw "resident API tests failed exit=$LASTEXITCODE"}
+              $build=[DateTime]::UtcNow.ToString('o')
+              go build -buildvcs=false -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node
+              if($LASTEXITCODE -ne 0){throw "go build failed exit=$LASTEXITCODE"}
+            } finally {Pop-Location}
+            & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities $env:CAPABILITIES -Listen '127.0.0.1:8787'
+          }
+
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 10
+          if($s.machine -ine $env:MACHINE){throw "node machine=$($s.machine) expected=$env:MACHINE"}
+          if($s.service.running_commit -ne $env:GITHUB_SHA -or $s.service.target_commit -ne $env:GITHUB_SHA -or -not $s.service.upgrade_verified){throw "upgrade not verified: $($s.service|ConvertTo-Json -Compress)"}
+          Put-Receipt 'VERIFIED' ([ordered]@{schema='openworker/node-upgrade-receipt/v5';phase='VERIFIED';routing_authority='fixed-runner-label+COMPUTERNAME';node=$env:NODE;machine=$s.machine;runner_label='${{ matrix.runner_label }}';runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;running_commit=$s.service.running_commit;upgrade_status=$s.service.upgrade_status;upgrade_verified=$s.service.upgrade_verified;service_started_at=$s.service.service_started_at;run_id=$env:GITHUB_RUN_ID;verified_at=[DateTimeOffset]::UtcNow.ToString('o')})
+
+      - name: Publish read-only Case 0005 local status from ODA
+        if: ${{ matrix.node == 'oda' && (contains(github.event.head_commit.message, '[case0005-status-through-upgrade]') || contains(github.event.head_commit.message, '[case0005-status-only]')) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $worklistPath=Join-Path $workspace '.openworker\case-worklist.json'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $worklist=$null;$controller=$null
+          if(Test-Path -LiteralPath $worklistPath -PathType Leaf){$worklist=Get-Content -Raw -LiteralPath $worklistPath|ConvertFrom-Json}
+          if(Test-Path -LiteralPath $controllerPath -PathType Leaf){$controller=Get-Content -Raw -LiteralPath $controllerPath|ConvertFrom-Json}
+          $workId='case0005-0005-010-r000014-17b8b780'
+          $work=$null;$events=$null;$supervisor=$null
+          try{$work=Invoke-RestMethod "http://127.0.0.1:8848/api/execution/local-work/$workId" -TimeoutSec 10}catch{$work=[ordered]@{error=$_.Exception.Message}}
+          try{$events=Invoke-RestMethod "http://127.0.0.1:8848/api/execution/local-work/$workId/events?limit=100" -TimeoutSec 10}catch{$events=[ordered]@{error=$_.Exception.Message}}
+          try{$supervisor=Invoke-RestMethod "http://127.0.0.1:8848/api/execution/local-supervisor/status?machine=DESKTOP-ODAQN0D" -TimeoutSec 10}catch{$supervisor=[ordered]@{error=$_.Exception.Message}}
+          $payload=[ordered]@{schema='openworker/case0005-local-status/v2';case_id='0005';machine=$env:COMPUTERNAME;workspace_root=$workspace;observed_at=[DateTimeOffset]::UtcNow.ToString('o');authority='openworker-go-case-engine+go-tool-runtime-local-supervisor';worklist=$worklist;controller=$controller;current_work=$work;current_work_events=$events;local_supervisor=$supervisor;github_action_used_for_business_execution=$false}
+          $json=$payload|ConvertTo-Json -Depth 50
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $path='evidence/case0005/latest-local-status.json';$uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path";$readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME);$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          for($i=1;$i -le 10;$i++){$sha=$null;try{$e=Invoke-RestMethod -Uri $readUri -Headers $headers;$sha=$e.sha}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 404){throw}};$body=@{message='case0005: publish read-only local status v2';content=$b64;branch=$env:GITHUB_REF_NAME};if($sha){$body.sha=$sha};try{Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress)|Out-Null;break}catch{$st=$null;try{$st=$_.Exception.Response.StatusCode.value__}catch{};if($st -ne 409 -or $i -eq 10){throw};Start-Sleep -Milliseconds (250*$i)}}

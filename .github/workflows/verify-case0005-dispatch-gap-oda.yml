@@ -1,0 +1,91 @@
+name: Verify Case0005 Dispatch Gap Repair ODA
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  verify-dispatch-gap:
+    if: contains(github.event.head_commit.message, '[verify-dispatch-gap]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify ODA
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          foreach($p in @('C:\ProgramData\OpenWorker\hooks\openworker-job-started-hook.ps1','C:\ProgramData\OpenWorker\bin\openworker.exe')){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){throw "missing $p"}}
+      - name: Send CASE.CONTINUE_BATCH through Embedded Control
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $requestId='case0005-dispatch-gap-verify-20260819-d1'
+          $envelope=[ordered]@{
+            schema='openworker.control-envelope.v1'
+            request_id=$requestId
+            command='CASE.CONTINUE_BATCH'
+            machine='DESKTOP-ODAQN0D'
+            case_id='0005'
+            policy=[ordered]@{max_parallel=4;join='case-defined';fail_closed=$true}
+          }
+          $env:OPENWORKER_CONTROL=$envelope|ConvertTo-Json -Compress -Depth 10
+          try {
+            & powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'C:\ProgramData\OpenWorker\hooks\openworker-job-started-hook.ps1'
+            if($LASTEXITCODE -ne 0){throw "Embedded Control failed exit=$LASTEXITCODE"}
+          } finally { Remove-Item Env:OPENWORKER_CONTROL -ErrorAction SilentlyContinue }
+      - name: Validate durable dispatch evidence
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $requestId='case0005-dispatch-gap-verify-20260819-d1'
+          $dispatchPath=Join-Path $env:ProgramData "OpenWorker\control-envelope\receipts\$requestId.json"
+          if(-not(Test-Path -LiteralPath $dispatchPath -PathType Leaf)){throw "dispatcher receipt missing: $dispatchPath"}
+          $dispatch=Get-Content -LiteralPath $dispatchPath -Raw|ConvertFrom-Json
+          if(-not $dispatch.accepted){throw "continue rejected: $($dispatch|ConvertTo-Json -Compress -Depth 50)"}
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $ledgerPath=Join-Path $workspace '.openworker\case-supervisor-ledger.jsonl'
+          if(-not(Test-Path -LiteralPath $controllerPath -PathType Leaf)){throw "controller snapshot missing: $controllerPath"}
+          $controller=Get-Content -LiteralPath $controllerPath -Raw|ConvertFrom-Json
+          $workId=[string]$controller.work_id
+          if([string]::IsNullOrWhiteSpace($workId)){throw "no durable work_id after continue: $($controller|ConvertTo-Json -Compress -Depth 30)"}
+          $work=Invoke-RestMethod -Method Get -Uri ('http://127.0.0.1:8848/api/execution/local-work/'+[Uri]::EscapeDataString($workId)) -TimeoutSec 10
+          if(([string]$work.status) -notin @('pending','claimed','running','completed')){throw "unexpected durable work status=$($work.status)"}
+          $ledger=@()
+          if(Test-Path -LiteralPath $ledgerPath -PathType Leaf){$ledger=Get-Content -LiteralPath $ledgerPath|ForEach-Object{if($_.Trim()){$_|ConvertFrom-Json}}}
+          $stale=@($ledger|Where-Object{$_.event_type -eq 'go_stale_controller_work_ref_cleared'}|Select-Object -Last 5)
+          $accepted=@($ledger|Where-Object{$_.event_type -in @('go_step_durable_accepted','go_fanout_durable_accepted')}|Select-Object -Last 5)
+          $out=[ordered]@{
+            schema='openworker.case0005-dispatch-gap-verification/v1'
+            machine=$env:COMPUTERNAME
+            case_id='0005'
+            request_id=$requestId
+            verified=$true
+            controller=$controller
+            durable_work=$work
+            stale_ref_events=$stale
+            durable_accept_events=$accepted
+            github_run_id=$env:GITHUB_RUN_ID
+            github_action_used_for_command_transport=$true
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          $rel='command-results/DESKTOP-ODAQN0D/case0005-dispatch-gap-verify-20260819-d1/final.json'
+          $path=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\')
+          New-Item -ItemType Directory -Force -Path (Split-Path $path)|Out-Null
+          [IO.File]::WriteAllText($path,($out|ConvertTo-Json -Depth 60)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-dispatch-verifier'
+          git config user.email 'openworker-dispatch-verifier@users.noreply.github.com'
+          git add -- $rel
+          git commit -m "receipt(case0005): dispatch-gap repair verified $requestId"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+# retrigger: 2026-08-19T22:35:00+08:00

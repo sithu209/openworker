@@ -1,0 +1,4 @@
+retire-openworker-oda-to-directwork-ui-20260821-r01
+Target: DirectWork b81d1b2a28cec2ed34ce6e27d625623594c108a9
+Expected UI: DirectWork 工作總控
+One-way: OpenWorkerNode removed; 8787 owned by directwork-node

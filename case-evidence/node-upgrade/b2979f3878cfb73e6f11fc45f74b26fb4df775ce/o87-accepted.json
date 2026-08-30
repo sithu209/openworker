@@ -1,0 +1,1 @@
+{"schema":"openworker/node-upgrade-receipt/v5","target_commit":"b2979f3878cfb73e6f11fc45f74b26fb4df775ce","run_id":"32319071471","accepted_at":"2026-08-20T00:54:54.8925727+00:00","runner_label":"O87","phase":"ACCEPTED","routing_authority":"fixed-runner-label+COMPUTERNAME","node":"o87","machine":"DESKTOP-O87PJNR","runner_name":"DESKTOP-O87PJNR-R001"}

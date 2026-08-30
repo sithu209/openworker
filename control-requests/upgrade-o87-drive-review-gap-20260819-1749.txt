@@ -1,0 +1,4 @@
+requested_by: ChatGPT
+machine: DESKTOP-O87PJNR
+purpose: Deploy revision 149 Story viewport automatic Google Drive review publish mapper and Case definition.
+boundary: deployment only; GitHub Actions is not Case business execution authority.

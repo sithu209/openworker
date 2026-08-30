@@ -1,0 +1,30 @@
+name: Verify OpenWorker Cluster Authority Fallbacks
+on:
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: O87, computer: DESKTOP-O87PJNR}
+          - {label: UL7, computer: DESKTOP-UL7V2VV}
+          - {label: ODA, computer: DESKTOP-ODAQN0D}
+    runs-on: [self-hosted, Windows, X64, '${{ matrix.label }}']
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify fixed authority host
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine '${{ matrix.computer }}'){throw "wrong host=$env:COMPUTERNAME expected=${{ matrix.computer }}"}
+      - name: Verify local node and cluster control surface
+        shell: powershell
+        run: |
+          $n=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status'
+          if($n.machine -ine '${{ matrix.computer }}'){throw "node machine=$($n.machine)"}
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/cluster/status'
+          $e=Invoke-RestMethod 'http://127.0.0.1:8787/v1/cluster/endpoints'
+          $c=Invoke-RestMethod 'http://127.0.0.1:8787/v1/cluster/connectivity?limit=20'
+          [ordered]@{authority=$env:COMPUTERNAME;node=$n;cluster=$s;endpoints=$e;connectivity=$c}|ConvertTo-Json -Depth 30

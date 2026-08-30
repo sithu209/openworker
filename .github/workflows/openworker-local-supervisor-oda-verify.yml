@@ -1,0 +1,22 @@
+name: openworker-local-supervisor-oda-verify
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify COMPUTERNAME
+        shell: powershell
+        run: |
+          if ($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D') { throw "wrong computer: $env:COMPUTERNAME" }
+      - name: Python syntax and unit tests
+        shell: powershell
+        run: |
+          python -m py_compile coworker\local_supervisor.py coworker\node_client.py
+          python -m pytest tests\test_local_supervisor.py -q
+      - name: Verify launcher parses help
+        shell: cmd
+        run: scripts\run_local_supervisor.bat --help

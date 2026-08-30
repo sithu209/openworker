@@ -1,0 +1,4 @@
+recover request 2026-08-19 22:03 +08:00
+machine=DESKTOP-ODAQN0D
+reason=Case0005 dispatch-gap REAL verification blocked: ODA runner/status probes produced no receipt
+retrigger=receipt-enabled

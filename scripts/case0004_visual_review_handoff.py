@@ -1,8 +1,8 @@
-"""Case 0004 intermediate DWG visual review -> Google Drive handoff.
+"""Case 0004 intermediate DWG visual review -> Google Drive API handoff.
 
-This is intentionally not final acceptance and does not mutate WorkLedger.  It
-packages the current immutable DWG visual-search evidence so ChatGPT can inspect
-real overview/candidate PNGs before Story Region is selected.
+This is intentionally not final acceptance and does not mutate WorkLedger. It
+packages current immutable DWG visual-search evidence and publishes it through the
+same proven Google Drive API transport used by Case 0003.
 """
 from __future__ import annotations
 
@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Any
 
 from coworker.review_bundle_binding import write_manifest_sha256_sidecar
-from coworker.review_cycle import ReviewCycle, ReviewCycleError
+from coworker.review_cycle import DEFAULT_DRIVE_FOLDER_ID, ReviewCycleError
+from coworker.review_drive import GoogleDriveAPIClient, publish_review_bundle
 
 _ALLOWED_SUFFIXES = {".png", ".json"}
 _MAX_TOTAL_BYTES = 512 * 1024 * 1024
@@ -60,11 +61,9 @@ def _collect_artifacts(workspace: Path) -> list[Path]:
     items.extend(path.resolve() for path in required_evidence)
     unique = {os.path.normcase(str(path)): path for path in items}
     result = sorted(unique.values(), key=lambda path: str(path).casefold())
-    pngs = [path for path in result if path.suffix.lower() == ".png"]
-    jsons = [path for path in result if path.suffix.lower() == ".json"]
-    if not pngs:
+    if not any(path.suffix.lower() == ".png" for path in result):
         raise ReviewCycleError("Case 0004 visual review has no physical PNG")
-    if not jsons:
+    if not any(path.suffix.lower() == ".json" for path in result):
         raise ReviewCycleError("Case 0004 visual review has no metadata/inventory JSON")
     return result
 
@@ -79,7 +78,10 @@ def _write_state(path: Path, payload: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--drive-sync-root", default=os.environ.get("OPENWORKER_REVIEW_DRIVE_ROOT", ""))
+    parser.add_argument(
+        "--drive-folder-id",
+        default=os.environ.get("OPENWORKER_REVIEW_DRIVE_FOLDER_ID", DEFAULT_DRIVE_FOLDER_ID),
+    )
     parser.add_argument("--run-id", default=os.environ.get("GITHUB_RUN_ID", "local"))
     args = parser.parse_args(argv)
 
@@ -146,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
                 "do_not_accept_final_delivery": True,
                 "next_action": "select/refine Story Region only from reviewed physical evidence",
             },
-            "drive_folder_id": ReviewCycle(workspace).drive_folder_id,
+            "drive_folder_id": str(args.drive_folder_id),
             "artifacts": manifest_items,
         }
         request_path = staging / "review-request.json"
@@ -168,23 +170,38 @@ def main(argv: list[str] | None = None) -> int:
         raise
 
     manifest_sha = write_manifest_sha256_sidecar(bundle)
-    cycle = ReviewCycle(workspace)
-    drive_target = cycle.handoff_to_drive_sync(
-        bundle,
-        drive_sync_root=args.drive_sync_root,
-        work_code="CASE-0004-DWG-VISUAL",
-    )
+    client = GoogleDriveAPIClient.from_environment()
+    try:
+        receipt = publish_review_bundle(
+            bundle,
+            work_code="OpenWorker-Case-0004",
+            root_folder_id=str(args.drive_folder_id),
+            uploader=client,
+            machine_id=os.environ.get("COMPUTERNAME", "DESKTOP-O87PJNR"),
+            metadata={
+                "case_id": "0004",
+                "stage": "story-region-discovery",
+                "run_id": run_id,
+                "transport_authority": "coworker.review_drive",
+            },
+        )
+    finally:
+        client.close()
+
     state = {
-        "schema_version": "openworker-case0004-visual-drive-handoff/v1",
+        "schema_version": "openworker-case0004-visual-drive-handoff/v2",
         "case_id": "0004",
         "review_id": review_id,
         "workspace": str(workspace),
         "bundle": str(bundle),
         "bundle_manifest_sha256": manifest_sha,
-        "drive_handoff_path": str(drive_target),
-        "drive_folder_id": cycle.drive_folder_id,
+        "drive_root_folder_id": receipt.drive_root_folder_id,
+        "drive_revision_folder_id": receipt.drive_revision_folder_id,
+        "drive_revision_web_view_link": receipt.drive_revision_web_view_link,
+        "published_file_count": len(receipt.files),
         "artifact_count": len(manifest_items),
         "total_bytes": total_bytes,
+        "transport": "google-drive-api",
         "status": "WAITING_LLM_VISUAL_REVIEW",
     }
     state_path = workspace / "evidence" / f"case0004-visual-drive-handoff-{run_id}.json"
@@ -192,7 +209,8 @@ def main(argv: list[str] | None = None) -> int:
     print(json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True))
     print(
         "CASE0004_VISUAL_REVIEW_DRIVE_PASS "
-        f"review_id={review_id} artifacts={len(manifest_items)} manifest_sha256={manifest_sha} drive={drive_target}"
+        f"review_id={review_id} artifacts={len(manifest_items)} manifest_sha256={manifest_sha} "
+        f"drive_revision_folder_id={receipt.drive_revision_folder_id}"
     )
     return 0
 

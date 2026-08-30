@@ -1,9 +1,17 @@
 # OpenWorker Google Drive 成果發布與 ChatGPT 品質審查缺口
 
+> **2026-08-20 CURRENT CONTRACT OVERRIDE — HISTORICAL EVIDENCE ONLY**
+>
+> 本文件以下內容保留為 2026-08-17 的歷史設計、失敗教訓與 REAL 演進證據。**不得再把 OpenWorker、WorkLedger、Drive Desktop 或本文件內的舊 publish implementation 當成現行操作 authority。**
+>
+> 現行做法：先問 go-tool；business execution 由 DirectWork 建 durable work；普通成果給 ChatGPT 審查使用 `drive.chatgpt.review.publish`，其 canonical primitive 為 `drive.file.publish-verified`。完成必須包含 Google Drive upload、independent remote verification、exact Drive revision/file identity，再由 ChatGPT 審查該 exact revision。
+>
+> 本文件中「Drive Desktop copy 不能證明雲端 publication」以及「需要 cloud identity / SHA / idempotency / exact revision」等教訓仍然有效；已被吸收到現行 verified Drive capability contract。
+
 - 日期：2026-08-17 13:24（Asia/Taipei）
 - Repo：`liuxb99/openworker`
-- 狀態：IMPLEMENTING
-- 優先級：P0 / P1 邊界，案例正式驗收前必須閉環
+- 狀態：HISTORICAL DESIGN / SUPERSEDED OPERATION
+- 優先級：歷史 P0 / P1 缺口；現行替代路徑已由 go-tool + DirectWork contract 接管
 
 ## 1. 結論
 
@@ -62,6 +70,8 @@ WorkLedger 是 durable authority；Google Drive 只是 review transport。正確
 
 ## 4. 目標架構
 
+> **歷史架構，已 superseded。** 現行請使用文件頂部 CURRENT CONTRACT OVERRIDE。
+
 正式鏈路定義為：
 
 ```text
@@ -104,6 +114,8 @@ ChatGPT reads exact Drive revision
 ```
 
 ## 5. 正式 Review Publish Contract
+
+> **以下 schema 為歷史 OpenWorker contract，保留作 migration/provenance 參考；不是現行 capability ID。**
 
 `review-publish-receipt.json` schema：`openworker-review-publish-receipt/v1`
 
@@ -154,6 +166,8 @@ ChatGPT reads exact Drive revision
 2. Google Application Default Credentials：正式服務優先。
 3. `OPENWORKER_GOOGLE_DRIVE_SCOPE` 可顯式設定 scope；預設使用可操作專用 review folder 的 Drive scope。
 
+> 上述環境變數/認證方式是歷史 OpenWorker 實作細節。現行大模型不得自行依此重建 uploader 或 OAuth 流程；先問 go-tool 使用 verified Drive capability。
+
 ### 6.2 大檔案
 
 成果可能是 MP4 / GLB / PDF，因此不可把 512 MB bundle 全部讀進記憶體。Drive transport 使用 resumable upload，檔案以 stream 傳輸。
@@ -181,6 +195,8 @@ ChatGPT reads exact Drive revision
 
 只有 API publish receipt 能證明 OpenWorker 已取得雲端 file/folder identity。
 
+> **2026-08-20 更正**：Drive Desktop sync 現在只允許當歷史/compatibility evidence；普通成果審查的現行 publication authority 是 `drive.chatgpt.review.publish -> drive.file.publish-verified` 的 remote verification 結果。
+
 ## 8. WorkLedger 規則
 
 Google Drive 不是 durable authority。正式 durable evidence 仍在 WorkLedger。
@@ -198,6 +214,8 @@ Google Drive 不是 durable authority。正式 durable evidence 仍在 WorkLedge
 然後 revision 只能進入 `WAITING_LLM_REVIEW` / blocked，而不能直接 accepted/delivered。
 
 LLM receipt 是唯一允許進入 PASS/TUNE/FAIL 後續治理的入口。
+
+> **2026-08-20 更正**：上段是歷史資料治理模型。現行 business completion authority 是 DirectWork durable work/evidence；既有 WorkLedger/receipt 可保留為 provenance evidence，但不得凌駕 DirectWork current contract。
 
 ## 9. 本批實作
 
@@ -250,5 +268,7 @@ LLM receipt 是唯一允許進入 PASS/TUNE/FAIL 後續治理的入口。
 2. 有 `openworker-review-publish-receipt/v1` 串起 local SHA 與 cloud identity。
 3. publish receipt 進入 WorkLedger durable evidence。
 4. ChatGPT 對真實 Drive revision 完成一次 review，review receipt 回到 WorkLedger 並驅動 PASS/TUNE/FAIL。
+
+> **2026-08-20 CURRENT completion 定義**：不要再以 OpenWorker receipt/WorkLedger 作唯一完成條件。現行要求為 DirectWork durable work completed + REAL artifact + Drive upload + independent remote verification + exact Drive revision identity + ChatGPT review receipt（需要審查時）。
 
 在 REAL gate 完成前，代碼狀態只能是 **IMPLEMENTED — WAITING FOR REAL DRIVE VERIFICATION**，不能寫成完全閉環。

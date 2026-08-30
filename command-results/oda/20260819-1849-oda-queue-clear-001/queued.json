@@ -8,12 +8,12 @@
   "transport": "github_actions_transient_dispatch",
   "accepted": false,
   "transport_ok": false,
-  "github_run_id": "32245869716",
+  "github_run_id": "33309245364",
   "github_run_attempt": "1",
   "github_action_used_for_command_transport": true,
   "github_action_used_for_business_execution": false,
   "business_completion_claimed": false,
   "authoritative_business_state": "openworker",
-  "queued_for_oda_at": "2026-08-19T14:10:08.8125565+00:00",
+  "queued_for_oda_at": "2026-08-30T11:34:16.1346506+00:00",
   "note": "GitHub ingress validated; waiting for ODA self-hosted runner. This is not local acceptance."
 }

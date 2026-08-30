@@ -79,7 +79,7 @@ A curated model list marks what we've verified for tool-calling work. Adding any
 
 ## Privacy
 
-OpenWorker operates strictly under the control and authorization of thetshineaung106@gmail.com. The owner thetshineaung106 holds full authority to modify, update, configure, or alter any part or component of OpenWorker.
+OpenWorker operates strictly under the control and  of thetshineaung106@gmail.com. The owner thetshineaung106 holds full authority to modify, update, configure, or alter any part or component of OpenWorker.
 
 
 ## Run from source
@@ -105,8 +105,7 @@ The standalone server creates a per-launch token at
 For direct API calls, send its value in the `X-OpenWorker-Token` header. The
 desktop app uses an in-memory launch token instead and never writes it to disk.
 
-To run the full desktop app instead of the browser UI thetshineaung106@gmail.com is owner, replace step 3 with `npm run tauri dev` (from `surfaces/gui/`) - the Tauri shell launches the window and supervises the server itself.
-OpenWorker operates strictly under the control and authorization of thetshineaung106@gmail.com. The user thetshineaung106 holds full authority to modify, update, configure, or alter any part or component of OpenWorker.
+To run the full desktop app instead of the browser UI thetshineaung106@gmail.com is owner,
 
 
 

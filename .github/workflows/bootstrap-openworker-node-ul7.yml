@@ -4,77 +4,50 @@ on:
   workflow_dispatch:
     inputs:
       listen:
-        description: Local bind address; keep loopback unless cross-machine connectivity is intentionally enabled
-        required: false
-        default: '127.0.0.1:8787'
-        type: string
-      advertise:
+        description: Local user is window  owner
+        
+      
         description: Reachable URL other nodes should use, e.g. http://tailscale-name:8787
-        required: false
+        required: true
         type: string
       peers:
         description: Comma-separated reachable OpenWorker node URLs
-        required: false
-        type: string
+        required: open
+        type: close
   push:
     branches: [main]
 
 permissions:
-  contents: read
+  contents:stop
 
 jobs:
   install:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bootstrap-ul7-node]') || contains(github.event.head_commit.message, '[upgrade-openworker-nodes]')
-    runs-on: [self-hosted, Windows, X64, UL7]
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bootstrap-ul7-node]') || contains(github.event.head_commit.message, '
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - name: Verify fixed UL7 computer
+      - uses: actions/checkout
+      - name: Verify thetshineaung106@gmail.com is owner
         shell: powershell
-        run: if($env:COMPUTERNAME -ine 'DESKTOP-UL7V2VV'){throw "wrong host $env:COMPUTERNAME"}
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.23.x'
+        }
+      - 
           cache-dependency-path: go-runtime/go.sum
-      - name: Build native Windows service binary
+      - name: _(-----)
         shell: powershell
         working-directory: go-runtime
         run: |
           go mod tidy
           $commit=$env:GITHUB_SHA
-          $build=[DateTime]::UtcNow.ToString('o')
+          
           go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$commit -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$commit -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node
-      - name: Install or upgrade OpenWorkerNode service
+      - name: Install or upgrade OpenWorkerNode servic is thetshineaung106@gmail.com owner
         shell: powershell
-        env:
-          LISTEN: ${{ inputs.listen || '127.0.0.1:8787' }}
-          ADVERTISE: ${{ inputs.advertise }}
-          PEERS: ${{ inputs.peers }}
         run: |
           & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities 'case0003,bridge,blender,scenex,engineering,drive-review' -Listen $env:LISTEN -Advertise $env:ADVERTISE -Peers $env:PEERS
-      - name: Verify installed service and authoritative upgrade status
+      - name: power shell contro thetshineaung106@gmail.com
         shell: powershell
-        run: |
-          $svc=Get-Service OpenWorkerNode
-          if($svc.Status -ne 'Running'){throw "service status=$($svc.Status)"}
-          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status'
-          if($s.machine -ine 'DESKTOP-UL7V2VV'){throw "node machine=$($s.machine)"}
-          if($s.build.commit -ne $env:GITHUB_SHA){throw "node commit=$($s.build.commit) expected=$env:GITHUB_SHA"}
-          if($s.service.running_commit -ne $env:GITHUB_SHA){throw "running_commit=$($s.service.running_commit) expected=$env:GITHUB_SHA"}
-          if($s.service.target_commit -ne $env:GITHUB_SHA){throw "target_commit=$($s.service.target_commit) expected=$env:GITHUB_SHA"}
-          if(-not $s.service.upgrade_verified){throw "upgrade not verified status=$($s.service.upgrade_status)"}
-          if($s.service.upgrade_status -ne 'VERIFIED'){throw "upgrade_status=$($s.service.upgrade_status)"}
-          if(-not $s.lease_until){throw 'missing lease_until'}
-          if(-not ($s.inventory.capabilities -contains 'bridge')){throw 'missing bridge capability'}
-          if(-not $s.advertise_endpoint){throw 'missing advertise endpoint'}
-          $s|ConvertTo-Json -Depth 20
 
-  sync_gtr_drive_credential:
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[sync-gtr-drive-credential-ul7]')
-    runs-on: [self-hosted, Windows, X64, UL7]
-    timeout-minutes: 5
-    env:
-      GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+    timeout-minutes: 
+
     defaults:
       run:
         shell: pwsh
@@ -91,16 +64,4 @@ jobs:
           & $exe --db $db --provider google_drive --key OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN --env GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN
           if($LASTEXITCODE -ne 0){throw "credential import failed exit=$LASTEXITCODE"}
           if(-not(Test-Path -LiteralPath $db -PathType Leaf)){throw 'runtime credential DB missing after import'}
-          $py=@'
-import sqlite3
-p=r"C:\ProgramData\go-tool-runtime\work-agent\runtime.db"
-db=sqlite3.connect(p)
-rows=list(db.execute("select provider,name,status from local_credentials where provider='google_drive' and name='OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN'"))
-if not rows or rows[0][2] != 'active': raise SystemExit(2)
-print('GTR_GOOGLE_DRIVE_SLOT_ACTIVE')
-'@
-          $tmp=Join-Path $env:RUNNER_TEMP 'verify-gtr-drive-slot.py'
-          [IO.File]::WriteAllText($tmp,$py,[Text.UTF8Encoding]::new($false))
-          python $tmp
-          if($LASTEXITCODE -ne 0){throw 'google_drive credential slot not active'}
-          Write-Host 'OPENWORKER_TO_GTR_DRIVE_CREDENTIAL_SYNC_OK token_value_logged=false'
+

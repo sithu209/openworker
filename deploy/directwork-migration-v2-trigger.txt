@@ -1,0 +1,6 @@
+DirectWork deterministic replacement V2
+Date: 2026-08-20T11:10+08:00
+Order: ODA -> O87 -> UL7
+Source: migration/directwork-src pinned to DirectWork 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+Policy: compile/test before touching OpenWorker; REAL durable smoke; retire OpenWorkerNode only after receipt; preserve C:\ProgramData\OpenWorker.
+Mode: direct push trigger, no queue-clear dependency, no scheduled monitoring.

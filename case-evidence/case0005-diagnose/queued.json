@@ -1,0 +1,11 @@
+{
+  "schema": "openworker.case0005-diagnose-queued/v1",
+  "case_id": "0005",
+  "machine": "DESKTOP-ODAQN0D",
+  "phase": "queued_for_oda",
+  "github_run_id": "32211696087",
+  "github_run_attempt": "1",
+  "request_sha": "676722a6306f7ec8a46e65001ba17a88409b2530",
+  "github_action_used_for_business_execution": false,
+  "observed_at": "2026-08-19T03:19:44.6199509+00:00"
+}

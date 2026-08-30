@@ -1,0 +1,143 @@
+name: Verify OpenWorker Parallel V1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-openworker-parallel-v1.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-openworker-parallel-v1
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix:
+        slot: [1,2,3,4,5,6,7,8,9]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 8
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Claim machine and verify local four-worker concurrency
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $m=$env:COMPUTERNAME.ToUpperInvariant()
+          switch($m){
+            'DESKTOP-UL7V2VV' { $node='ul7' }
+            'DESKTOP-O87PJNR' { $node='o87' }
+            'DESKTOP-ODAQN0D' { $node='oda' }
+            default { Write-Host "OPENWORKER_PARALLEL_SKIP_UNKNOWN machine=$m"; exit 0 }
+          }
+
+          $lockDir='C:\ProgramData\OpenWorker'
+          New-Item -ItemType Directory -Force -Path $lockDir | Out-Null
+          $lockPath=Join-Path $lockDir 'parallel-smoke-v1.lock'
+          $lock=$null
+          try {
+            try { $lock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None) }
+            catch { Write-Host "OPENWORKER_PARALLEL_DUPLICATE_SKIP node=$node machine=$m"; exit 0 }
+
+            $base='http://127.0.0.1:8787'
+            $before=Invoke-RestMethod "$base/v1/node/status" -TimeoutSec 5
+            if(-not $before.online){ throw 'OpenWorker node is not online' }
+            if([int]$before.max_workers -lt 4){ throw "max_workers=$($before.max_workers), expected >=4" }
+
+            # Start from a clean local queue, then submit four independent jobs.
+            Invoke-RestMethod -Method Post "$base/v1/queue/drain?mode=all" -TimeoutSec 10 | Out-Null
+            $stamp=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+            $jobIds=@()
+            1..4 | ForEach-Object {
+              $id="parallel-$node-$stamp-$_"
+              $jobIds += $id
+              $payload=[ordered]@{
+                job_id=$id
+                dispatch_id="dispatch-$id"
+                machine=$m
+                priority=100
+                command='ping 127.0.0.1 -n 9 >nul'
+                cwd='C:\ProgramData\OpenWorker'
+                timeout_sec=30
+              } | ConvertTo-Json -Compress
+              $ack=Invoke-RestMethod -Method Post "$base/v1/jobs" -ContentType 'application/json' -Body $payload -TimeoutSec 10
+              if(-not $ack.accepted){ throw "job not accepted: $id" }
+            }
+
+            $peakBusy=0
+            $parallelSeen=$false
+            for($i=0;$i -lt 40;$i++){
+              $s=Invoke-RestMethod "$base/v1/node/status" -TimeoutSec 5
+              $busy=[int]$s.busy_workers
+              if($busy -gt $peakBusy){$peakBusy=$busy}
+              if($busy -ge 4){$parallelSeen=$true;break}
+              Start-Sleep -Milliseconds 250
+            }
+            if(-not $parallelSeen){ throw "four-worker parallelism not observed; peak_busy_workers=$peakBusy" }
+
+            $jobs=@()
+            foreach($id in $jobIds){
+              $done=$null
+              for($i=0;$i -lt 80;$i++){
+                $j=Invoke-RestMethod "$base/v1/jobs/$id" -TimeoutSec 5
+                if($j.status -in @('succeeded','failed','timed_out','cancelled','stale')){$done=$j;break}
+                Start-Sleep -Milliseconds 250
+              }
+              if($null -eq $done){ throw "job did not finish: $id" }
+              if($done.status -ne 'succeeded'){ throw "job $id finished status=$($done.status)" }
+              $jobs += [ordered]@{job_id=$done.job_id;status=$done.status;agent_slot=$done.agent_slot;pid=$done.pid;started_at=$done.started_at;finished_at=$done.finished_at}
+            }
+
+            $slots=@($jobs | ForEach-Object {[int]$_.agent_slot} | Sort-Object -Unique)
+            if($slots.Count -lt 4){ throw "expected four distinct agent slots, got $($slots -join ',')" }
+
+            $receipt=[ordered]@{
+              schema='openworker/parallel-verification/v1'
+              phase='VERIFIED'
+              node=$node
+              machine=$m
+              target_commit=$env:GITHUB_SHA
+              run_id=$env:GITHUB_RUN_ID
+              runner_name=$env:RUNNER_NAME
+              max_workers=[int]$before.max_workers
+              peak_busy_workers=$peakBusy
+              distinct_agent_slots=$slots
+              jobs=$jobs
+              verified_at=[DateTimeOffset]::UtcNow.ToString('o')
+            }
+
+            $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+            $path="case-evidence/node-parallel/$env:GITHUB_SHA/$node-parallel-verified.json"
+            $uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path"
+            $readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME)
+            $json=$receipt | ConvertTo-Json -Depth 20 -Compress
+            $b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+            for($attempt=1;$attempt -le 8;$attempt++){
+              $sha=$null
+              try { $existing=Invoke-RestMethod -Uri $readUri -Headers $headers; $sha=$existing.sha } catch {
+                $status=$null; try{$status=$_.Exception.Response.StatusCode.value__}catch{}
+                if($status -ne 404){throw}
+              }
+              $body=@{message="parallel receipt: $node VERIFIED $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}
+              if($sha){$body.sha=$sha}
+              try {
+                Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress) | Out-Null
+                break
+              } catch {
+                $status=$null; try{$status=$_.Exception.Response.StatusCode.value__}catch{}
+                if($status -ne 409 -or $attempt -eq 8){throw}
+                Start-Sleep -Milliseconds (250*$attempt)
+              }
+            }
+            Write-Host "OPENWORKER_PARALLEL_VERIFIED node=$node machine=$m peak_busy=$peakBusy slots=$($slots -join ',')"
+          }
+          finally { if($lock){$lock.Dispose()} }

@@ -1,0 +1,11 @@
+case_id=0005
+machine=DESKTOP-ODAQN0D
+requested_at=2026-08-19T16:42:00+08:00
+transport=github-one-shot-bootstrap-only
+business_execution=openworker-local-supervisor
+publish_bootstrap_ack=true
+controller=go-native
+python_required=false
+resident_node_bootstrap_required=true
+case_bootstrap_required=true
+reason=co_trigger_oda_resident_node_verify_and_case0005_go_native_bootstrap

@@ -1,0 +1,31 @@
+{
+  "schema_version": "openworker.llm-visual-review-receipt/v1",
+  "case_id": "0004",
+  "worklist_step": "R-0004-050-002",
+  "review_round": 2,
+  "reviewer": "ChatGPT multimodal",
+  "decision": "REWORK",
+  "reviewed_source": {
+    "preview_sha256": "5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e",
+    "subtile_run_id": "32016382434",
+    "subtile_schema": "case0004.llm-review-r2c1-subtiles.v2",
+    "parent_bounds": [0, 400, 400, 400]
+  },
+  "visual_findings": [
+    "a-top-left visibly contains multiple separate plan-like frames stacked vertically and cannot be promoted as one StoryRegion.",
+    "b-top-right still contains more than one small plan/frame and is not a single authoritative floor plan.",
+    "c-mid-left is the strongest floor-plan candidate: it visibly shows one coherent architectural plan, but the fixed grid crop cuts close to its frame and does not yet prove the complete drawing boundary/title are included.",
+    "d-mid-right is primarily annotation/table/detail content, not the target floor plan.",
+    "e-bottom-left is primarily elevation/detail-like content, not a single target floor plan.",
+    "f-bottom-right is low-information/blank and is not a StoryRegion candidate."
+  ],
+  "acceptance_reason": "No reviewed tile yet proves one complete, bounded, authoritative floor-plan drawing. c-mid-left is promising but must be re-cropped around its complete drawing frame before promotion.",
+  "required_next_action": {
+    "action": "focused_line_art_recrop",
+    "focus_tile": "c-mid-left",
+    "focus_source_bounds": [0, 533, 200, 133],
+    "instruction": "Create overlapping focused line-art crops around c-mid-left with enough margin to include the complete drawing frame and nearby title/label. Preserve source pixel bounds and SHA. Submit those crops to multimodal review; do not set StoryRegion until the model visually confirms a complete single floor plan."
+  },
+  "allows_story_region_promotion": false,
+  "allows_next_worklist_stage": false
+}

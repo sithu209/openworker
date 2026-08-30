@@ -1,0 +1,1 @@
+{"schema":"openworker/node-upgrade-receipt/v5","target_commit":"98bb4cad5e1413afa9faf07e331e68a0d3ac8738","run_id":"32320416505","accepted_at":"2026-08-20T01:16:50.6416233+00:00","runner_label":"UL7","phase":"ACCEPTED","routing_authority":"fixed-runner-label+COMPUTERNAME","node":"ul7","machine":"DESKTOP-UL7V2VV","runner_name":"DESKTOP-UL7V2VV-R001"}

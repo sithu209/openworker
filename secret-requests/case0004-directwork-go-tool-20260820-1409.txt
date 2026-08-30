@@ -1,0 +1,1 @@
+继续案例4。固定 DESKTOP-O87PJNR，从最新 worklist canonical READY 续作；执行用新版 DirectWork/OpenWorker，本机工具方法先查最新版 go-tool；已 PASSED 的 0004-010~040 不回退，优先执行 0004-045 cad.build_story_index，完成后继续 0004-047；只以 durable work、receipt、artifact、hash 与案例 workspace 落盘为完成证据。

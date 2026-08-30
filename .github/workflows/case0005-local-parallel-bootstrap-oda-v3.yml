@@ -1,0 +1,97 @@
+name: Case 0005 Local Parallel Bootstrap ODA v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  local-supervisor-parallel:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-parallel-v3]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 8
+    steps:
+      - name: Verify fixed ODA host
+        shell: powershell
+        run: |
+          if (-not $env:COMPUTERNAME.Equals('DESKTOP-ODAQN0D',[StringComparison]::OrdinalIgnoreCase)) { throw "wrong host actual=$env:COMPUTERNAME" }
+      - uses: actions/checkout@v4
+      - name: Bootstrap local-first Case controller
+        id: bootstrap
+        continue-on-error: true
+        shell: powershell
+        run: |
+          ./scripts/case0005_parallel_bootstrap.ps1 2>&1 | Tee-Object -FilePath case0005-bootstrap.log
+      - name: Observe local durable jobs even after bootstrap failure
+        if: always()
+        shell: powershell
+        env:
+          BOOTSTRAP_OUTCOME: ${{ steps.bootstrap.outcome }}
+        run: |
+          $ErrorActionPreference='Continue'
+          $base='http://127.0.0.1:8787'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $deadline=[DateTimeOffset]::UtcNow.AddSeconds(45)
+          $caseJobs=@(); $pairs=@(); $node=$null; $agents=$null; $observeErrors=@()
+          try {
+            do {
+              try {
+                $raw=Invoke-RestMethod -Uri "$base/v1/jobs?limit=1000"
+                $items=@(); if($raw.jobs){$items=@($raw.jobs)}elseif($raw -is [System.Array]){$items=@($raw)}
+                $caseJobs=@($items | Where-Object { $_.job_id -like 'case0005-*' } | Sort-Object created_at -Descending | Select-Object -First 20)
+                $pairs=@()
+                for($i=0;$i -lt $caseJobs.Count;$i++){
+                  for($j=$i+1;$j -lt $caseJobs.Count;$j++){
+                    $a=$caseJobs[$i];$b=$caseJobs[$j]
+                    if($a.started_at -and $b.started_at){
+                      $as=[DateTimeOffset]::Parse($a.started_at);$bs=[DateTimeOffset]::Parse($b.started_at)
+                      $ae=if($a.finished_at){[DateTimeOffset]::Parse($a.finished_at)}else{[DateTimeOffset]::UtcNow}
+                      $be=if($b.finished_at){[DateTimeOffset]::Parse($b.finished_at)}else{[DateTimeOffset]::UtcNow}
+                      if($as -lt $be -and $bs -lt $ae){$pairs+=@{a=$a.job_id;b=$b.job_id;a_slot=$a.agent_slot;b_slot=$b.agent_slot}}
+                    }
+                  }
+                }
+                if($caseJobs.Count -gt 0 -and @($caseJobs | Where-Object {$_.status -in @('succeeded','failed','timed_out','cancelled','stale')}).Count -gt 0){break}
+              } catch { $observeErrors += "jobs: $($_.Exception.Message)"; break }
+              Start-Sleep -Seconds 2
+            } while([DateTimeOffset]::UtcNow -lt $deadline)
+            try {$node=Invoke-RestMethod -Uri "$base/v1/node/status"} catch {$observeErrors += "node: $($_.Exception.Message)"}
+            try {$agents=Invoke-RestMethod -Uri "$base/v1/cluster/agents"} catch {$observeErrors += "agents: $($_.Exception.Message)"}
+          } catch { $observeErrors += "observe: $($_.Exception.Message)" }
+          $worklistPath=Join-Path $workspace '.openworker\case-worklist.json'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $worklist=$null; if(Test-Path -LiteralPath $worklistPath){try{$worklist=Get-Content -LiteralPath $worklistPath -Raw|ConvertFrom-Json}catch{$observeErrors += "worklist: $($_.Exception.Message)"}}
+          $controller=$null; if(Test-Path -LiteralPath $controllerPath){try{$controller=Get-Content -LiteralPath $controllerPath -Raw|ConvertFrom-Json}catch{$observeErrors += "controller: $($_.Exception.Message)"}}
+          $bootstrapLog=''; if(Test-Path -LiteralPath 'case0005-bootstrap.log'){$bootstrapLog=(Get-Content -LiteralPath 'case0005-bootstrap.log' -Raw)}
+          $receipt=[ordered]@{
+            schema='openworker/case0005-local-parallel-v3/v3';case_id='0005';machine=$env:COMPUTERNAME;
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o');bootstrap_outcome=$env:BOOTSTRAP_OUTCOME;bootstrap_log=$bootstrapLog;
+            node=$node;agents=$agents;case_jobs=$caseJobs;overlapping_pairs=$pairs;parallel_verified=($pairs.Count -gt 0);
+            worklist=$worklist;controller=$controller;observe_errors=$observeErrors
+          }
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005' | Out-Null
+          $receipt|ConvertTo-Json -Depth 25|Set-Content -LiteralPath 'case-evidence/0005/local-parallel-v3.json' -Encoding utf8
+          $ack=Join-Path $workspace 'evidence\case0005-local-first-bootstrap.json'
+          if(Test-Path -LiteralPath $ack){Copy-Item -LiteralPath $ack -Destination 'case-evidence/0005/local-first-bootstrap.json' -Force}
+          Write-Host "CASE0005_LOCAL_FIRST_V3 bootstrap=$env:BOOTSTRAP_OUTCOME jobs=$($caseJobs.Count) overlap=$($pairs.Count) errors=$($observeErrors.Count)"
+      - name: Commit bounded local-first evidence
+        if: always()
+        shell: powershell
+        run: |
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'evidence(case0005): record ODA local-first supervisor v3'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          } else { Write-Host 'no evidence change' }
+      - name: Fail closed if bootstrap failed
+        if: always() && steps.bootstrap.outcome != 'success'
+        shell: powershell
+        run: |
+          throw "Case 0005 local-first bootstrap failed; bounded failure evidence was committed first"

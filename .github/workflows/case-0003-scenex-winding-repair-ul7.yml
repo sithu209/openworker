@@ -1,0 +1,198 @@
+name: Case 0003 SceneX Winding Repair UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-scenex-winding-repair-ul7.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0003-scenex-winding-repair-ul7
+  cancel-in-progress: false
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_SCENEX_EXPECTED_COMMIT: afe74d7ded5f88ca6d971f3eef2d3ab099147183
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  repair:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed UL7 host and existing canonical inputs
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw ('host mismatch '+$env:COMPUTERNAME)}
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          foreach($rel in @('terrain\terrain-grid.json','terrain\terrain-context.json','geo\geolocation.json')){
+            $p=Join-Path $root $rel
+            if(-not(Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){throw ('missing canonical input '+$p)}
+          }
+          Write-Host "CASE0003_SCENEX_WINDING_REPAIR_HOST_OK host=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Resolve exact private SceneX source from UL7 local checkout
+        run: |
+          $ErrorActionPreference='Stop'
+          $expected=$env:CASE0003_SCENEX_EXPECTED_COMMIT.ToLowerInvariant()
+          $candidates=New-Object System.Collections.Generic.List[string]
+          $workspaceParent=Split-Path -Parent $env:GITHUB_WORKSPACE
+          foreach($p in @(
+            (Join-Path $workspaceParent 'SceneX'),
+            (Join-Path $workspaceParent 'scenex-src'),
+            'D:\AI-Work\SceneX',
+            'D:\AI-Work\repos\SceneX',
+            'D:\AIWork\SceneX',
+            'D:\AI\SceneX',
+            'D:\PyWork\SceneX'
+          )){if(-not [string]::IsNullOrWhiteSpace($p)){$candidates.Add($p)}}
+          foreach($root in @('D:\AI-Work','D:\AIWork','D:\AI','D:\PyWork')){
+            if(-not(Test-Path -LiteralPath $root -PathType Container)){continue}
+            Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+              if($_.Name -match '(?i)^scenex$|scene.*x|.*scenex.*'){$candidates.Add($_.FullName)}
+              Get-ChildItem -LiteralPath $_.FullName -Directory -ErrorAction SilentlyContinue | Where-Object {$_.Name -match '(?i)^scenex$|.*scenex.*'} | ForEach-Object {$candidates.Add($_.FullName)}
+            }
+          }
+          $chosen=$null
+          foreach($candidate in ($candidates|Select-Object -Unique)){
+            if(-not(Test-Path -LiteralPath (Join-Path $candidate '.git'))){continue}
+            $remote=(& git -C $candidate remote get-url origin 2>$null)
+            if($LASTEXITCODE -ne 0){continue}
+            if(([string]$remote) -notmatch '(?i)(^|[/\\:])liuxb99[/\\]SceneX(?:\.git)?$'){continue}
+            Write-Host "CASE0003_SCENEX_LOCAL_CANDIDATE path=$candidate remote=$remote"
+            & git -C $candidate cat-file -e ($expected+'^{commit}') 2>$null
+            if($LASTEXITCODE -ne 0){
+              Write-Host "CASE0003_SCENEX_LOCAL_FETCH_ATTEMPT path=$candidate"
+              & git -C $candidate fetch --no-tags origin master
+              if($LASTEXITCODE -ne 0){Write-Host "CASE0003_SCENEX_LOCAL_FETCH_FAILED path=$candidate";continue}
+            }
+            & git -C $candidate cat-file -e ($expected+'^{commit}') 2>$null
+            if($LASTEXITCODE -ne 0){continue}
+            $chosen=(Resolve-Path -LiteralPath $candidate).Path
+            break
+          }
+          if([string]::IsNullOrWhiteSpace($chosen)){throw ('exact SceneX source unavailable on UL7 expected_commit='+$expected)}
+          & git -C $chosen checkout --detach $expected
+          if($LASTEXITCODE -ne 0){throw 'failed to checkout exact SceneX commit'}
+          $actual=(& git -C $chosen rev-parse HEAD).Trim().ToLowerInvariant()
+          if($actual -ne $expected){throw ('SceneX commit mismatch actual='+$actual+' expected='+$expected)}
+          $status=(& git -C $chosen status --porcelain)
+          if(-not [string]::IsNullOrWhiteSpace(($status -join "`n"))){throw ('SceneX local checkout dirty; refusing canonical execution: '+($status -join '; '))}
+          "SCENEX_SRC=$chosen"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_SCENEX_EXACT_SOURCE_PASS path=$chosen commit=$actual"
+
+      - name: Resolve canonical inputs and output paths
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          $grid=Join-Path $root 'terrain\terrain-grid.json'
+          $context=Join-Path $root 'terrain\terrain-context.json'
+          $geo=Join-Path $root 'geo\geolocation.json'
+          $ctx=Get-Content -LiteralPath $context -Raw|ConvertFrom-Json
+          if($ctx.schema_version -ne 'terrain-context/v1'){throw 'terrain context schema mismatch'}
+          $project=[string]$ctx.project_id
+          if([string]::IsNullOrWhiteSpace($project)){throw 'terrain project_id missing'}
+          $safe=($project -replace '[^A-Za-z0-9._-]','-').Trim('-')
+          $out=Join-Path $root 'scenex'
+          New-Item -ItemType Directory -Force $out|Out-Null
+          "SCENEX_GRID=$grid"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_CONTEXT=$context"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_GEO=$geo"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_OUT=$out"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_REGION_ID=scenex-$safe"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build fresh SceneX Region Pack from canonical Terrain grid
+        run: |
+          $ErrorActionPreference='Stop'
+          Push-Location $env:SCENEX_SRC
+          try {
+            $pack=Join-Path $env:SCENEX_OUT 'terrain.region.json'
+            python tools\build_region_pack_from_terrain_grid.py --grid $env:SCENEX_GRID --geo $env:SCENEX_GEO --terrain-context $env:SCENEX_CONTEXT --output $pack --region-id $env:SCENEX_REGION_ID --name 'OpenWorker Case 0003 Winding Repair'
+            if($LASTEXITCODE -ne 0){throw 'Region Pack rebuild failed'}
+            "SCENEX_REGION_PACK=$pack"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          } finally { Pop-Location }
+
+      - name: Resolve canonical Godot
+        run: |
+          $ErrorActionPreference='Stop'
+          Push-Location $env:SCENEX_SRC
+          try { .\tools\resolve_godot_for_ci.ps1; if($LASTEXITCODE -ne 0){throw 'Godot resolver failed'} } finally { Pop-Location }
+
+      - name: Run permanent terrain winding smoke
+        run: |
+          $ErrorActionPreference='Stop'
+          if(-not $env:GODOT_EXE -or -not(Test-Path -LiteralPath $env:GODOT_EXE)){throw 'GODOT_EXE unavailable'}
+          Push-Location $env:SCENEX_SRC
+          try {
+            & $env:GODOT_EXE --headless --path godot --audio-driver Dummy --script res://tests/terrain_geometry_winding_smoke.gd
+            if($LASTEXITCODE -ne 0){throw ('terrain winding smoke failed exit='+$LASTEXITCODE)}
+          } finally { Pop-Location }
+
+      - name: Execute fresh REAL SceneX browse
+        timeout-minutes: 6
+        run: |
+          $ErrorActionPreference='Stop'
+          $shot=Join-Path $env:SCENEX_OUT 'terrain-browse.png'
+          $evidence=Join-Path $env:SCENEX_OUT 'terrain-browse-evidence.json'
+          $manifestPath=Join-Path $env:SCENEX_OUT 'scenex-workspace.json'
+          foreach($p in @($shot,$evidence,$manifestPath)){if(Test-Path -LiteralPath $p){Remove-Item -LiteralPath $p -Force}}
+          $godotProject=Join-Path $env:SCENEX_SRC 'godot'
+          $args=@('--path',$godotProject,'--resolution','1280x720','--rendering-method','forward_plus','--rendering-driver','d3d12','--audio-driver','Dummy','--script','res://tests/workspace_region_pack_browse.gd','--',("--region-pack="+$env:SCENEX_REGION_PACK),("--screenshot="+$shot),("--evidence="+$evidence))
+          $p=Start-Process -FilePath $env:GODOT_EXE -ArgumentList $args -WorkingDirectory $env:SCENEX_SRC -PassThru -Wait
+          if([int]$p.ExitCode -ne 0){throw ('SceneX browse failed exit='+$p.ExitCode)}
+          foreach($path in @($shot,$evidence)){if(-not(Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -le 0){throw ('missing SceneX artifact '+$path)}}
+          $ev=Get-Content -LiteralPath $evidence -Raw|ConvertFrom-Json
+          if($ev.ok -ne $true -or [int]$ev.terrain_diagnostics.active_chunk_count -le 0 -or [int]$ev.geometry_diagnostics.terrain_geometry_count -le 0){throw 'SceneX evidence rejected'}
+          $shotSha=(Get-FileHash -LiteralPath $shot -Algorithm SHA256).Hash.ToLowerInvariant()
+          $packSha=(Get-FileHash -LiteralPath $env:SCENEX_REGION_PACK -Algorithm SHA256).Hash.ToLowerInvariant()
+          $sceneCommit=(& git -C $env:SCENEX_SRC rev-parse HEAD).Trim()
+          if($sceneCommit.ToLowerInvariant() -ne $env:CASE0003_SCENEX_EXPECTED_COMMIT.ToLowerInvariant()){throw 'SceneX producer commit drifted during execution'}
+          $manifest=[ordered]@{schema_version='scenex-workspace-browse/v1';ok=$true;run_id=$env:GITHUB_RUN_ID;producer_commit=$sceneCommit;runner_name=$env:RUNNER_NAME;computer_name=$env:COMPUTERNAME;assigned_host=$env:CASE0003_ASSIGNED_HOST;workspace_root=$env:CASE0003_WORKSPACE;region_id=[string]$ev.region_id;region_pack=[ordered]@{path=$env:SCENEX_REGION_PACK;sha256=$packSha};screenshot=[ordered]@{path=$shot;sha256=$shotSha;width=1280;height=720};evidence=$evidence;active_chunks=[int]$ev.terrain_diagnostics.active_chunk_count;terrain_geometry_count=[int]$ev.geometry_diagnostics.terrain_geometry_count}
+          [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
+          Write-Host "CASE0003_SCENEX_WINDING_REAL_PASS scene_commit=$sceneCommit screenshot_sha256=$shotSha"
+
+      - name: Prepare fresh immutable OpenWorker review bundle
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+        run: |
+          $ErrorActionPreference='Stop'
+          python openworker\scripts\case0003_review_handoff.py --workspace $env:CASE0003_WORKSPACE
+          $code=$LASTEXITCODE
+          if($code -ne 0 -and $code -ne 3){throw ('review handoff failed exit='+$code)}
+          $state=Get-Content -LiteralPath (Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json') -Raw|ConvertFrom-Json
+          if([string]::IsNullOrWhiteSpace([string]$state.revision_id)){throw 'fresh revision missing'}
+          "CASE0003_FRESH_REVISION=$([string]$state.revision_id)"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_FRESH_REVIEW_READY revision=$($state.revision_id) status=$($state.status)"
+
+      - name: Stage compact exact review evidence
+        run: |
+          $ErrorActionPreference='Stop'
+          $stage=Join-Path $env:RUNNER_TEMP ('case0003-winding-review-'+$env:GITHUB_RUN_ID)
+          New-Item -ItemType Directory -Force $stage|Out-Null
+          foreach($rel in @('scenex\terrain-browse.png','scenex\terrain-browse-evidence.json','scenex\scenex-workspace.json')){Copy-Item -LiteralPath (Join-Path $env:CASE0003_WORKSPACE $rel) -Destination $stage -Force}
+          $state=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          Copy-Item -LiteralPath $state -Destination (Join-Path $stage 'work-ledger-final-acceptance.json') -Force
+          "CASE0003_STAGE=$stage"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Upload compact exact review evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: case0003-scenex-winding-review-${{ github.run_id }}
+          path: ${{ env.CASE0003_STAGE }}
+          if-no-files-found: error
+          retention-days: 3

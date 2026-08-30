@@ -1,0 +1,19 @@
+{
+    "schema":  "openworker-control-install/v6",
+    "succeeded":  false,
+    "status":  "FAILED",
+    "machine":  "DESKTOP-ODAQN0D",
+    "runner_name":  "DESKTOP-ODAQN0D-R001",
+    "canonical_executable":  "",
+    "compatibility_executable":  "",
+    "supervisor_status":  "",
+    "route_label":  "",
+    "single_go_control_authority":  true,
+    "python_required_for_case_bootstrap":  false,
+    "error":  "OPENWORKER_FAIL: Get \"http://127.0.0.1:8848/api/execution/local-supervisor/status?machine=DESKTOP-ODAQN0D\u0026limit=200\": dial tcp 127.0.0.1:8848: connectex: No connection could be made because the target machine actively refused it.",
+    "github_run_id":  "32219688038",
+    "github_run_attempt":  "1",
+    "github_action_used_for_command_transport":  true,
+    "github_action_used_for_business_execution":  false,
+    "observed_at":  "2026-08-19T09:45:58.0450781+00:00"
+}

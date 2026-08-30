@@ -1,0 +1,5 @@
+trigger=upgrade-openworker-nodes
+requested_at=2026-08-20T06:32:00+08:00
+reason=verify fresh job acceptance then continue formal OpenWorkerNode installation on ODA O87 UL7
+transport_authority=GitHub Actions only
+business_authority=OpenWorker/go-tool durable evidence

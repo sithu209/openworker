@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r5
+machine=DESKTOP-ODAQN0D
+reason=verify-complete-cmdline-terminal-summary-and-clean-receipt-fixes
+requested_at=2026-08-19T11:51:00+08:00

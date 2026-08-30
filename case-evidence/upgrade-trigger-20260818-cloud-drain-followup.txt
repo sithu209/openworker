@@ -1,0 +1,3 @@
+Trigger three-node OpenWorker upgrade after cloud-side emergency queue drain deployment.
+Target nodes: UL7, O87, ODA.
+Workflow: upgrade-openworker-nodes-v2.yml

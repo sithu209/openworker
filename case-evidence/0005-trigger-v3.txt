@@ -1,0 +1,3 @@
+Case 0005 Snow White cluster-routed resident OpenWorker trigger.
+Target machine is DESKTOP-ODAQN0D. GitHub Action is transport only: call local OpenWorker cluster route, POST /v1/cases/bootstrap with machine=DESKTOP-ODAQN0D, require durable ACK, then ODA resident local supervisor owns business execution with up to 4 local agent slots. Workspace: D:\AI-Work\jobs\0005-SNOW-WHITE.
+Retriggered at 2026-08-18T21:12:00+08:00 after pinning transport workflow to ODA runner and verifying computer-name-only host check.

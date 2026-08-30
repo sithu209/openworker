@@ -19,7 +19,7 @@ from coworker.tools.ask import (
     question_item_fields,
 )
 
-from test_durable_resume import ScriptedProvider, _run_until_pending, _text, _tool
+from tests.test_durable_resume import ScriptedProvider, _run_until_pending, _text, _tool
 
 
 # -- schema -------------------------------------------------------------------

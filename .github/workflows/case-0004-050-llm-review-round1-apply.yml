@@ -1,0 +1,55 @@
+name: Case 0004 050 Apply LLM Visual Review Round 1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0004-050-llm-review-round1-apply.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 10
+    env:
+      WORKSPACE_ROOT: 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+      STEP_ID: 'R-0004-050-002'
+      ACTION_ID: 'openworker.review.apply'
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host: $env:COMPUTERNAME"}
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+        with:
+          clean: false
+      - name: Start governed visual review apply
+        run: |
+          python scripts/case_worklist_action.py start --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --action-id "$env:ACTION_ID" --execution-id "$env:GITHUB_RUN_ID"
+          if($LASTEXITCODE -ne 0){throw 'failed to start review apply'}
+      - name: Record round1 review evidence
+        run: |
+          python scripts/case_worklist_action.py record --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --key review_bundle --value "DWG_todo/review-tmp/case0004; source_preview_sha256=5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e; microtile_run=32015633583"
+          if($LASTEXITCODE -ne 0){throw 'failed review_bundle evidence'}
+          python scripts/case_worklist_action.py record --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --key llm_review_receipt --value "docs/cases/reviews/0004-050-round1-llm-visual-review.json@29f33c90e786053f20b856db791def11910fec80"
+          if($LASTEXITCODE -ne 0){throw 'failed llm_review_receipt evidence'}
+          python scripts/case_worklist_action.py record --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --key review_decision --value "REWORK"
+          if($LASTEXITCODE -ne 0){throw 'failed review_decision evidence'}
+      - name: Complete action without passing repair
+        run: |
+          python scripts/case_worklist_action.py complete-action --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --action-id "$env:ACTION_ID" --execution-id "$env:GITHUB_RUN_ID"
+          if($LASTEXITCODE -ne 0){throw 'failed to complete review action'}
+          $state=python scripts/case_worklist_action.py show --workspace-root "$env:WORKSPACE_ROOT" | Out-String
+          if($state -notmatch '"canonical_next_step_id"\s*:\s*"R-0004-050-002"'){throw 'visual review repair no longer canonical'}
+          if($state -match '"step_id"\s*:\s*"R-0004-050-002"[\s\S]*?"status"\s*:\s*"PASSED"'){throw 'REWORK review must not pass repair'}
+          Write-Host 'CASE0004_LLM_REWORK_RECORDED repair remains canonical'
+      - name: Fail-safe clear active lease
+        if: failure()
+        run: |
+          python scripts/case_worklist_action.py block-active --workspace-root "$env:WORKSPACE_ROOT" --step-id "$env:STEP_ID" --reason "round1 visual review apply workflow failed; manual repair required"

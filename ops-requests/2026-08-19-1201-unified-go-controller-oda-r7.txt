@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r7
+machine=DESKTOP-ODAQN0D
+reason=verify-running-cancel-cleanup-and-go-native-case-engine
+requested_at=2026-08-19T12:01:00+08:00

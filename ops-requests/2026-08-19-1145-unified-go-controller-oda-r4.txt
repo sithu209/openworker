@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r4
+machine=DESKTOP-ODAQN0D
+reason=verify-test-fixtures-windows-cmdline-workspace-snapshots-clean-publish
+requested_at=2026-08-19T11:45:00+08:00

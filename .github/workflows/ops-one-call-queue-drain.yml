@@ -1,0 +1,126 @@
+name: OpenWorker One-Call Queue Drain
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ops-one-call-queue-drain.yml'
+  workflow_dispatch:
+    inputs:
+      capability_hint:
+        description: 'Expected registered queue-admin capability id; go-tool must confirm it'
+        required: true
+        type: string
+      workspace_root:
+        description: 'Governed workspace used for go-tool information query'
+        required: true
+        type: string
+      assigned_host:
+        description: 'Persisted computer name allowed to execute drain'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  drain:
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Route by exact computer name
+        id: route
+        shell: cmd
+        run: |
+          @echo off
+          set "EXPECTED=${{ inputs.assigned_host }}"
+          if "%EXPECTED%"=="" set "EXPECTED=DESKTOP-O87PJNR"
+          if /I not "%COMPUTERNAME%"=="%EXPECTED%" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            exit /b 0
+          )
+          echo run=true>>"%GITHUB_OUTPUT%"
+
+      - name: Checkout latest OpenWorker
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Checkout latest go-tool-runtime
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/go-tool-runtime
+          ref: main
+          path: _go-tool-runtime
+
+      - name: Ask go-tool before drain
+        if: steps.route.outputs.run == 'true'
+        id: query
+        run: |
+          $workspace='${{ inputs.workspace_root }}'
+          if([string]::IsNullOrWhiteSpace($workspace)){$workspace='D:\AI-Work\jobs\0004-DWG-TO-3D'}
+          $hint='${{ inputs.capability_hint }}'
+          if([string]::IsNullOrWhiteSpace($hint)){$hint='dwg.story_index.queue.admin'}
+          $body=[ordered]@{
+            project='OpenWorker queue maintenance'
+            workspace_root=$workspace
+            question="A governed job is blocked by stale or duplicate GitHub Actions. Which registered queue-admin capability should OpenWorker one-call queue_drain use? Expected scope hint=$hint. Return only registered capability guidance; do not guess execution results."
+            task='Select the registered queue-admin capability for one-call OpenWorker queue drain.'
+          }|ConvertTo-Json -Depth 10 -Compress
+          $headers=@{}
+          if($env:GO_TOOL_RUNTIME_TOKEN){$headers['Authorization']='Bearer '+$env:GO_TOOL_RUNTIME_TOKEN}
+          $response=Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8848/agent/query' -Headers $headers -ContentType 'application/json' -Body $body -TimeoutSec 60
+          $json=$response|ConvertTo-Json -Depth 100 -Compress
+          if($json -notmatch [regex]::Escape($hint)){throw "go-tool did not confirm registered capability hint=$hint"}
+          "capability=$hint" >> $env:GITHUB_OUTPUT
+          Write-Host "GO_TOOL_CONFIRMED_QUEUE_ADMIN capability=$hint"
+
+      - name: Execute OpenWorker one-call drain
+        if: steps.route.outputs.run == 'true'
+        id: drain
+        env:
+          OPENWORKER_GO_TOOL_RUNTIME_ROOT: ${{ github.workspace }}\_go-tool-runtime
+        run: |
+          New-Item -ItemType Directory -Force -Path 'evidence\ops'|Out-Null
+          $out='evidence\ops\latest-queue-drain.json'
+          python -m coworker.queue_drain --capability '${{ steps.query.outputs.capability }}' --runtime-root '${{ github.workspace }}\_go-tool-runtime' --timeout-seconds 120 --verify-seconds 30 | Tee-Object -FilePath $out
+          if($LASTEXITCODE -ne 0){throw 'OpenWorker one-call queue drain failed closed'}
+          $obj=Get-Content -LiteralPath $out -Raw|ConvertFrom-Json
+          if(-not $obj.clean){throw 'queue drain did not prove clean=true'}
+          if($obj.remaining_active -and @($obj.remaining_active).Count -gt 0){throw 'queue drain left active runs'}
+          $wrapped=[ordered]@{
+            schema='openworker.queue-drain.evidence.v1'
+            run_id=$env:GITHUB_RUN_ID
+            machine=$env:COMPUTERNAME
+            runner=$env:RUNNER_NAME
+            capability='${{ steps.query.outputs.capability }}'
+            result=$obj
+          }
+          [IO.File]::WriteAllText($out,($wrapped|ConvertTo-Json -Depth 100),(New-Object Text.UTF8Encoding($false)))
+
+      - name: Publish drain evidence
+        if: steps.route.outputs.run == 'true'
+        run: |
+          git config user.name 'openworker-queue-drain'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- evidence/ops/latest-queue-drain.json
+          if(-not(git diff --cached --quiet)){git commit -m "ops(queue): publish one-call drain evidence $env:GITHUB_RUN_ID"}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'push failed'}
+
+      - name: Non-target candidate exits cleanly
+        if: steps.route.outputs.run != 'true'
+        shell: cmd
+        run: echo OPENWORKER_QUEUE_DRAIN_SKIP machine=%COMPUTERNAME% runner=%RUNNER_NAME%
+
+# case0004 trigger: 2026-08-18T11:22+08:00

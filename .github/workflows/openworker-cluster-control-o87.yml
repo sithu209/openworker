@@ -1,0 +1,26 @@
+name: OpenWorker Cluster Control O87
+on:
+  workflow_dispatch:
+    inputs:
+      operation: {description: 'status | capabilities | jobs | agents | job.status | route | submit | job.cancel | job.retry | queue.drain | dispatches | dispatch | control.events | endpoints | connectivity', required: true, type: string}
+      job_id: {description: 'Durable job id for job-scoped operations', required: false, type: string}
+      machine: {description: 'fixed COMPUTERNAME/node_id, any for route/submit, or all for queue.drain', required: false, default: any, type: string}
+      mode: {description: 'queued | all for queue.drain', required: false, default: queued, type: string}
+      capabilities: {description: 'comma-separated required capabilities', required: false, type: string}
+      request_json: {description: 'cluster submit request JSON for operation=submit', required: false, type: string}
+permissions: {contents: read}
+jobs:
+  control:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify O87 cluster authority node
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $h=Invoke-RestMethod 'http://127.0.0.1:8787/healthz'; if(-not $h.ok){throw 'OpenWorkerNode unhealthy'}
+      - name: Execute cluster control operation
+        shell: powershell
+        run: |
+          & "$env:GITHUB_WORKSPACE\scripts\openworker_cluster_control.ps1" -Operation '${{ inputs.operation }}' -JobId '${{ inputs.job_id }}' -Machine '${{ inputs.machine }}' -Mode '${{ inputs.mode }}' -Capabilities '${{ inputs.capabilities }}' -RequestJson '${{ inputs.request_json }}'

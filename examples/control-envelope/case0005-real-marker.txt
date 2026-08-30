@@ -1,0 +1,5 @@
+Case0005 Embedded Control REAL trigger
+2026-08-19 21:28 +08:00
+round=4
+intent=diagnose-oda-runner-after-local-kick
+path=proven-real-acceptance

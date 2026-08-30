@@ -1,0 +1,98 @@
+# Case 0003 governed retry trigger: 2026-08-18 imagery repair gate
+name: Case 0003 Fresh Review Revision UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-fresh-review-revision-ul7.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0003-fresh-review-revision-ul7
+  cancel-in-progress: false
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  prepare:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed UL7 repaired SceneX imagery and launcher evidence
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw ('wrong host '+$env:COMPUTERNAME)}
+          $root=$env:CASE0003_WORKSPACE
+          $png=Join-Path $root 'scenex\terrain-browse.png'
+          $evidence=Join-Path $root 'scenex\terrain-browse-evidence.json'
+          $workspaceManifest=Join-Path $root 'scenex\scenex-workspace.json'
+          $launcher=Join-Path $root 'Open-Case0003-SceneX.bat'
+          $launcherEvidence=Join-Path $root 'scenex\scenex-launcher-evidence.json'
+          $streetSemantic=Join-Path $root 'streetview\streetview-semantic-acceptance.json'
+          $texturedAssembly=Join-Path $root 'imagery\scenex-textured-assembly.json'
+          foreach($p in @($png,$evidence,$workspaceManifest,$launcher,$launcherEvidence,$streetSemantic,$texturedAssembly)){
+            if(-not(Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){throw ('current Case 0003 acceptance artifact missing '+$p)}
+          }
+          $sv=Get-Content -Raw -LiteralPath $streetSemantic|ConvertFrom-Json
+          if($sv.semantic_visible -ne $true -or @($sv.renders).Count -ne 4){throw 'repaired Street View semantic gate is not PASS'}
+          $tx=Get-Content -Raw -LiteralPath $texturedAssembly|ConvertFrom-Json
+          if([string]$tx.schema -ne 'scenex-textured-assembly/v1'){throw 'canonical textured assembly missing'}
+          $texture=[string]$tx.texture_path
+          if(-not(Test-Path -LiteralPath $texture -PathType Leaf) -or (Get-Item -LiteralPath $texture).Length -le 0){throw 'orthophoto texture missing'}
+          $textureSha=(Get-FileHash -LiteralPath $texture -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($textureSha -ne ([string]$tx.texture_sha256).ToLowerInvariant()){throw 'orthophoto texture SHA drift'}
+          $ev=Get-Content -LiteralPath $evidence -Raw|ConvertFrom-Json
+          if($ev.ok -ne $true){throw 'current SceneX semantic evidence is not PASS'}
+          if([int]$ev.terrain_diagnostics.active_chunk_count -le 0 -or [int]$ev.geometry_diagnostics.terrain_geometry_count -le 0){throw 'current SceneX geometry evidence is empty'}
+          $wm=Get-Content -LiteralPath $workspaceManifest -Raw|ConvertFrom-Json
+          if($wm.imagery_required -ne $true){throw 'current SceneX workspace was not rendered with imagery required'}
+          if(([string]$wm.imagery_texture_sha256).ToLowerInvariant() -ne $textureSha){throw 'SceneX imagery texture SHA does not match canonical textured assembly'}
+          $sha=(Get-FileHash -LiteralPath $png -Algorithm SHA256).Hash.ToLowerInvariant()
+          if([string]$wm.screenshot.sha256 -ne $sha){throw ('SceneX workspace screenshot SHA drift actual='+$sha+' manifest='+[string]$wm.screenshot.sha256)}
+          $le=Get-Content -LiteralPath $launcherEvidence -Raw|ConvertFrom-Json
+          if([string]$le.launcher.check_only -ne 'PASS'){throw 'SceneX launcher check-only evidence is not PASS'}
+          $launcherSha=(Get-FileHash -LiteralPath $launcher -Algorithm SHA256).Hash.ToLowerInvariant()
+          if([string]$le.launcher.sha256 -ne $launcherSha){throw 'SceneX launcher SHA drift'}
+          Write-Host "CASE0003_FRESH_REVIEW_INPUT_PASS scenex_sha256=$sha imagery_sha256=$textureSha launcher_sha256=$launcherSha producer=$($wm.producer_commit)"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Build fresh mechanical acceptance and immutable review revision
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+        run: |
+          $ErrorActionPreference='Stop'
+          python openworker\scripts\case0003_review_handoff.py --workspace $env:CASE0003_WORKSPACE
+          $code=$LASTEXITCODE
+          if($code -ne 0 -and $code -ne 3){throw ('fresh review handoff failed exit='+$code)}
+          $state=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          $ev=Get-Content -LiteralPath $state -Raw|ConvertFrom-Json
+          if([string]$ev.status -ne 'WAITING_DRIVE_HANDOFF' -and [string]$ev.status -ne 'WAITING_LLM_REVIEW' -and [string]$ev.status -ne 'MECHANICAL_PASS_PREPARING_LLM_REVIEW'){throw ('fresh review state unexpected '+[string]$ev.status)}
+          $revision=[string]$ev.revision_id
+          if([string]::IsNullOrWhiteSpace($revision)){throw 'fresh revision id missing'}
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$revision)
+          foreach($name in @('manifest.json','manifest.sha256','review-request.json','artifacts\scenex-browse.png','artifacts\scenex-evidence.json','artifacts\blender-render.png','artifacts\delivery-index.html','artifacts\mechanical-acceptance.json')){
+            $p=Join-Path $bundle $name
+            if(-not(Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){throw ('fresh review bundle missing/empty '+$name)}
+          }
+          $manifestSha=(Get-Content -LiteralPath (Join-Path $bundle 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+          if($manifestSha -notmatch '^[0-9a-f]{64}$'){throw 'fresh review manifest SHA invalid'}
+          $sourceScenex=(Get-FileHash -LiteralPath (Join-Path $env:CASE0003_WORKSPACE 'scenex\terrain-browse.png') -Algorithm SHA256).Hash.ToLowerInvariant()
+          $bundleScenex=(Get-FileHash -LiteralPath (Join-Path $bundle 'artifacts\scenex-browse.png') -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($sourceScenex -ne $bundleScenex){throw 'fresh bundle SceneX PNG is not exact current workspace output'}
+          Write-Host "CASE0003_FRESH_REVIEW_READY revision=$revision status=$($ev.status) manifest_sha256=$manifestSha scenex_sha256=$bundleScenex bundle=$bundle launcher_verified=true imagery_required=true"

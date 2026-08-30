@@ -1,0 +1,11 @@
+{
+    "schema":  "openworker.queue-drain.failure.v1",
+    "case_id":  "0004",
+    "run_id":  "32095694781",
+    "machine":  "DESKTOP-O87PJNR",
+    "runner":  "DESKTOP-O87PJNR-R003",
+    "capability":  "dwg.story_index.queue.admin",
+    "go_tool_query_exists":  false,
+    "go_tool_query_raw":  null,
+    "queue_drain_output_exists":  false
+}

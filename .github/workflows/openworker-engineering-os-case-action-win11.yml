@@ -1,0 +1,168 @@
+name: OpenWorker Engineering OS Case Action Win11
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: artifact-register or delivery-publish
+        required: true
+        type: choice
+        options:
+          - artifact-register
+          - delivery-publish
+      request_path:
+        description: Absolute JSON request path inside the governed workspace
+        required: true
+        type: string
+      workspace:
+        description: Absolute OpenWorker workspace path
+        required: true
+        type: string
+      assigned_host:
+        description: Exact COMPUTERNAME allowed to mutate this case
+        required: true
+        type: string
+      runner_label:
+        description: Fixed self-hosted runner label such as O87, ODA or UL7
+        required: true
+        type: string
+      case_step:
+        description: Exact CaseWorklist step id
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-os-case-${{ inputs.workspace }}
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: [self-hosted, Windows, X64, '${{ inputs.runner_label }}']
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed host and bounded request
+        id: contract
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_ASSIGNED_HOST: ${{ inputs.assigned_host }}
+          OW_REQUEST: ${{ inputs.request_path }}
+          OW_OPERATION: ${{ inputs.operation }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:OW_ASSIGNED_HOST){throw "assigned host mismatch expected=$env:OW_ASSIGNED_HOST actual=$env:COMPUTERNAME"}
+          if(-not (Test-Path -LiteralPath $env:OW_WORKSPACE -PathType Container)){throw "workspace unavailable: $env:OW_WORKSPACE"}
+          if(-not (Test-Path -LiteralPath $env:OW_REQUEST -PathType Leaf) -or (Get-Item -LiteralPath $env:OW_REQUEST).Length -le 0){throw "request unavailable/empty: $env:OW_REQUEST"}
+          $workspace=[IO.Path]::GetFullPath($env:OW_WORKSPACE).TrimEnd('\\')
+          $request=[IO.Path]::GetFullPath($env:OW_REQUEST)
+          if(-not $request.StartsWith($workspace+'\\',[StringComparison]::OrdinalIgnoreCase)){throw "request path escapes workspace: $request"}
+          $action = if($env:OW_OPERATION -eq 'artifact-register'){'engineering_os.artifact.register'}elseif($env:OW_OPERATION -eq 'delivery-publish'){'engineering_os.delivery.publish'}else{throw "unsupported operation: $env:OW_OPERATION"}
+          "action_id=$action" >> $env:GITHUB_OUTPUT
+          Write-Host "OPENWORKER_OS_CASE_INPUT_READY operation=$env:OW_OPERATION action=$action host=$env:COMPUTERNAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Checkout AI-Engineering-OS
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/AI-Engineering-OS
+          ref: main
+          path: ai-engineering-os
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install OpenWorker typed client dependencies
+        working-directory: openworker
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ai-engineering-os/go.mod
+          cache: false
+
+      - name: Gate canonical CaseWorklist action
+        id: worklist
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ inputs.case_step }}
+          OW_ACTION: ${{ steps.contract.outputs.action_id }}
+        run: |
+          $execution="github:${{ github.run_id }}:${{ github.run_attempt }}:os:$env:OW_ACTION"
+          python openworker\scripts\case_worklist_action.py start --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id $env:OW_ACTION --execution-id $execution
+          "execution_id=$execution" >> $env:GITHUB_OUTPUT
+
+      - name: Execute existing Engineering OS authority
+        id: osaction
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_REQUEST: ${{ inputs.request_path }}
+          OW_OPERATION: ${{ inputs.operation }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=Join-Path $env:OW_WORKSPACE ("evidence\engineering-os\${{ github.run_id }}-$env:OW_OPERATION.json")
+          & python openworker\scripts\engineering_os_case_action.py $env:OW_OPERATION --request $env:OW_REQUEST --workspace-root $env:OW_WORKSPACE --os-root ai-engineering-os --evidence $evidence
+          if($LASTEXITCODE -ne 0){throw "Engineering OS case action failed exit=$LASTEXITCODE"}
+          if(-not (Test-Path -LiteralPath $evidence -PathType Leaf)){throw "Engineering OS evidence missing: $evidence"}
+          $r=Get-Content -LiteralPath $evidence -Raw|ConvertFrom-Json
+          "evidence=$evidence" >> $env:GITHUB_OUTPUT
+          if($env:OW_OPERATION -eq 'artifact-register'){
+            if(@($r.artifact_ids).Count -lt 1 -or @($r.current_revisions).Count -lt 1){throw 'artifact registration evidence incomplete'}
+            "artifact_ids=$(@($r.artifact_ids)|ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+            "current_revisions=$(@($r.current_revisions)|ConvertTo-Json -Depth 8 -Compress)" >> $env:GITHUB_OUTPUT
+          } else {
+            if([string]::IsNullOrWhiteSpace([string]$r.delivery_id) -or [string]::IsNullOrWhiteSpace([string]$r.delivery_revision)){throw 'delivery publication evidence incomplete'}
+            "delivery_id=$($r.delivery_id)" >> $env:GITHUB_OUTPUT
+            "delivery_revision=$($r.delivery_revision)" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Commit CaseWorklist acceptance evidence
+        if: success()
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ inputs.case_step }}
+          OW_OPERATION: ${{ inputs.operation }}
+          OW_ACTION: ${{ steps.contract.outputs.action_id }}
+        run: |
+          if($env:OW_OPERATION -eq 'artifact-register'){
+            python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key artifact_ids --value '${{ steps.osaction.outputs.artifact_ids }}'
+            python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key current_revisions --value '${{ steps.osaction.outputs.current_revisions }}'
+          } else {
+            python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key delivery_id --value '${{ steps.osaction.outputs.delivery_id }}'
+            python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key delivery_revision --value '${{ steps.osaction.outputs.delivery_revision }}'
+          }
+          python openworker\scripts\case_worklist_action.py complete-action --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id $env:OW_ACTION --execution-id '${{ steps.worklist.outputs.execution_id }}'
+          python openworker\scripts\case_worklist_action.py pass --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP
+
+      - name: Block CaseWorklist on OS action failure
+        if: failure() && steps.worklist.outcome == 'success'
+        continue-on-error: true
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ inputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py block-active --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --reason "Engineering OS case action failed operation=${{ inputs.operation }} run=${{ github.run_id }}"
+
+      - name: Upload bounded OS evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworker-os-case-${{ inputs.operation }}-${{ github.run_id }}
+          path: ${{ steps.osaction.outputs.evidence }}
+          if-no-files-found: warn
+          retention-days: 14

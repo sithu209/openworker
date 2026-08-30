@@ -1,0 +1,4 @@
+Case0004 O87 resident OpenWorker upgrade trigger.
+Reason: go-tool-runtime generic Case control posts manifest_path/spec_path, while O87 resident OpenWorker commit 8aa368b3cf2877598a6c96a46dc208d4d789fc52 rejects manifest_path as an unknown field.
+Requested by: ChatGPT
+Business execution: false

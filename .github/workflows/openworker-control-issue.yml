@@ -1,0 +1,106 @@
+name: OpenWorker Control Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  actions: write
+  issues: write
+  contents: read
+
+concurrency:
+  group: openworker-control-issue
+  cancel-in-progress: false
+
+jobs:
+  control:
+    if: startsWith(github.event.issue.title, '[openworker-control]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Parse allowlisted command
+        id: parse
+        shell: bash
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          command=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*command:[[:space:]]*([A-Za-z0-9_-]+)[[:space:]]*$/\1/p' | head -n1 | tr '[:upper:]' '[:lower:]')
+          case "$command" in
+            drain|reconcile|upgrade|case0004_status|case0004_continue|case0005_clear_continue|case0005_go_drain) ;;
+            *) echo "unsupported or missing command: $command" >&2; exit 2 ;;
+          esac
+          request_id="issue-${{ github.event.issue.number }}-${{ github.run_id }}"
+          echo "command=$command" >> "$GITHUB_OUTPUT"
+          echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch allowlisted OpenWorker workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMAND: ${{ steps.parse.outputs.command }}
+          REQUEST_ID: ${{ steps.parse.outputs.request_id }}
+        run: |
+          set -euo pipefail
+          inputs='{}'
+          case "$COMMAND" in
+            drain) workflow='bootstrap-ul7-runner-label.yml' ;;
+            reconcile) workflow='bootstrap-three-node-labels-v2.yml' ;;
+            upgrade) workflow='upgrade-openworker-nodes-v2.yml' ;;
+            case0004_status)
+              workflow='dispatch-local-supervisor-command-o87.yml'
+              inputs=$(jq -nc --arg c 'case_status' --arg r "$REQUEST_ID" '{command:$c,request_id:$r}')
+              ;;
+            case0004_continue)
+              workflow='dispatch-local-supervisor-command-o87.yml'
+              inputs=$(jq -nc --arg c 'case_continue' --arg r "$REQUEST_ID" '{command:$c,request_id:$r}')
+              ;;
+            case0005_clear_continue)
+              workflow='dispatch-openworker-control-envelope-oda.yml'
+              inputs=$(jq -nc --arg c 'CASE.CLEAR_AND_CONTINUE' --arg r "$REQUEST_ID" --arg case_id '0005' --arg max_parallel '4' '{command:$c,request_id:$r,case_id:$case_id,max_parallel:$max_parallel}')
+              ;;
+            case0005_go_drain)
+              workflow='case0005-go-queue-drain-o87.yml'
+              ;;
+          esac
+          api="https://api.github.com/repos/${REPO}/actions/workflows/${workflow}/dispatches"
+          payload=$(jq -nc --argjson i "$inputs" '{ref:"main",inputs:$i}')
+          code=$(curl -sS -o /tmp/dispatch-response -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$api" \
+            -d "$payload")
+          if [ "$code" != '204' ]; then
+            cat /tmp/dispatch-response || true
+            echo "workflow dispatch failed command=${COMMAND} workflow=${workflow} http=${code}" >&2
+            exit 1
+          fi
+          echo "OPENWORKER_CONTROL_DISPATCH_PASS command=${COMMAND} workflow=${workflow} request_id=${REQUEST_ID}"
+
+      - name: Acknowledge and close control issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+          COMMAND: ${{ steps.parse.outputs.command }}
+          REQUEST_ID: ${{ steps.parse.outputs.request_id }}
+        run: |
+          set -euo pipefail
+          base="https://api.github.com/repos/${REPO}/issues/${ISSUE}"
+          curl -fsSL -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${base}/comments" \
+            -d "$(jq -nc --arg c "$COMMAND" --arg r "$GITHUB_RUN_ID" --arg q "$REQUEST_ID" '{body:("OpenWorker control accepted: `"+$c+"`. Dispatch source run: `"+$r+"`; request: `"+$q+"`.")}')" >/dev/null
+          curl -fsSL -X PATCH \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "$base" \
+            -d '{"state":"closed","state_reason":"completed"}' >/dev/null

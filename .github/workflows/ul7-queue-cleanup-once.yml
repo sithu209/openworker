@@ -1,0 +1,46 @@
+name: UL7 Queue Cleanup Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ul7-queue-cleanup-once.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup-and-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel stale queued runs that may occupy UL7
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          stale_runs=(
+            31988051790
+            31942540901
+            31932390860
+            31932172141
+            31920174970
+            31919446281
+          )
+          for run_id in "${stale_runs[@]}"; do
+            echo "cancel stale run ${run_id}"
+            gh api --method POST "repos/${GH_REPO}/actions/runs/${run_id}/cancel" || true
+          done
+
+      - name: Dispatch current single-job Case 0003 final acceptance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run case-0003-yujing-bridge-ul7.yml --repo "${GH_REPO}" --ref main
+          echo "CASE0003_CURRENT_WORKFLOW_DISPATCHED"

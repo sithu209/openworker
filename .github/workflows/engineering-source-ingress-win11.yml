@@ -1,0 +1,156 @@
+name: Engineering Source Ingress Win11
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_blob_repository:
+        description: Private repository containing the unreferenced source Git blob.
+        required: true
+        default: liuxb99/AI-Engineering-OS
+      source_blob_sha:
+        description: Immutable Git blob SHA.
+        required: true
+      original_name:
+        description: Original file name.
+        required: true
+      canonical_name:
+        description: Canonical name under workspace/input.
+        required: true
+        default: source.dwg
+      expected_size:
+        description: Exact byte length.
+        required: true
+      expected_sha256:
+        description: Exact SHA256.
+        required: true
+      expected_header:
+        description: Optional ASCII prefix such as AC1032.
+        required: false
+      media_type:
+        description: OS media type.
+        required: true
+        default: application/acad
+      workspace_root:
+        description: Persistent OpenWorker workspace.
+        required: true
+      assigned_host:
+        description: Fixed machine hostname.
+        required: true
+      user_request:
+        description: Engineering job request.
+        required: true
+  push:
+    branches: [main]
+    paths:
+      - 'source-ingress-requests/request.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engineering-source-ingress
+  cancel-in-progress: false
+
+jobs:
+  source-ingress:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+        with:
+          path: openworker
+
+      - name: Resolve request
+        id: request
+        working-directory: openworker
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          I_SOURCE_BLOB_REPOSITORY: ${{ inputs.source_blob_repository }}
+          I_SOURCE_BLOB_SHA: ${{ inputs.source_blob_sha }}
+          I_ORIGINAL_NAME: ${{ inputs.original_name }}
+          I_CANONICAL_NAME: ${{ inputs.canonical_name }}
+          I_EXPECTED_SIZE: ${{ inputs.expected_size }}
+          I_EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
+          I_EXPECTED_HEADER: ${{ inputs.expected_header }}
+          I_MEDIA_TYPE: ${{ inputs.media_type }}
+          I_WORKSPACE_ROOT: ${{ inputs.workspace_root }}
+          I_ASSIGNED_HOST: ${{ inputs.assigned_host }}
+          I_USER_REQUEST: ${{ inputs.user_request }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:EVENT_NAME -eq 'workflow_dispatch') {
+            $request = [ordered]@{
+              schema_version='openworker.source-ingress-request.v1'
+              source_blob_repository=$env:I_SOURCE_BLOB_REPOSITORY
+              source_blob_sha=$env:I_SOURCE_BLOB_SHA
+              original_name=$env:I_ORIGINAL_NAME
+              canonical_name=$env:I_CANONICAL_NAME
+              expected_size=[int64]$env:I_EXPECTED_SIZE
+              expected_sha256=$env:I_EXPECTED_SHA256
+              expected_header=$env:I_EXPECTED_HEADER
+              media_type=$env:I_MEDIA_TYPE
+              workspace_root=$env:I_WORKSPACE_ROOT
+              assigned_host=$env:I_ASSIGNED_HOST
+              user_request=$env:I_USER_REQUEST
+            }
+            $path = Join-Path $env:RUNNER_TEMP 'source-ingress-request.json'
+            $request | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $path -Encoding UTF8
+          } else {
+            $path = Join-Path (Get-Location) 'source-ingress-requests\request.json'
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "missing request manifest: $path" }
+          }
+          "path=$path" >> $env:GITHUB_OUTPUT
+
+      - name: Checkout private AI-Engineering-OS
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/AI-Engineering-OS
+          ref: main
+          path: ai-engineering-os
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ai-engineering-os/go.mod
+          cache: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install OpenWorker
+        working-directory: openworker
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Focused source ingress regression
+        working-directory: openworker
+        run: python -m pytest -q tests/test_engineering_source_ingress.py
+
+      - name: Governed REAL source ingress
+        id: ingress
+        working-directory: openworker
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) { throw 'GH_TOKEN secret is required' }
+          python scripts/engineering_source_ingress_action.py `
+            --request '${{ steps.request.outputs.path }}' `
+            --os-root '..\ai-engineering-os' `
+            --source-token-env GH_TOKEN
+
+      - name: Upload convenience evidence
+        if: always() && steps.ingress.outputs.evidence_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: engineering-source-ingress-${{ github.run_id }}
+          path: |
+            ${{ steps.ingress.outputs.evidence_path }}
+          if-no-files-found: warn
+          retention-days: 14

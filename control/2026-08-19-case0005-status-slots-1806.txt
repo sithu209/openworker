@@ -1,0 +1,2 @@
+Case 0005 authoritative status request with required 4-slot snapshot.
+Request id: 20260819-1806-oda-case0005-status-slots-002

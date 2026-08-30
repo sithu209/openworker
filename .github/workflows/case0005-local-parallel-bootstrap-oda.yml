@@ -1,0 +1,34 @@
+name: Case 0005 Local Parallel Bootstrap ODA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch-local-parallel:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-parallel]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - name: Verify fixed ODA host
+        shell: powershell
+        run: |
+          if (-not $env:COMPUTERNAME.Equals('DESKTOP-ODAQN0D',[StringComparison]::OrdinalIgnoreCase)) { throw "wrong host actual=$env:COMPUTERNAME" }
+      - uses: actions/checkout@v4
+      - name: Submit four durable local jobs then return
+        shell: powershell
+        run: |
+          ./scripts/case0005_parallel_bootstrap.ps1
+      - name: Upload transport receipt when quota permits
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case0005-local-parallel-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}
+          path: D:/AI-Work/jobs/0005-SNOW-WHITE/evidence/case0005-parallel-bootstrap.json
+          if-no-files-found: warn
+          retention-days: 7

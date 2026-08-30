@@ -1,0 +1,31 @@
+name: OpenWorker Local Case Bootstrap Contract
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'go-runtime/internal/api/**'
+      - 'go-runtime/internal/model/**'
+      - 'go-runtime/internal/store/**'
+      - 'coworker/node_client.py'
+      - '.github/workflows/openworker-case-bootstrap-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  go-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: go-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go-runtime/go.mod
+          cache-dependency-path: go-runtime/go.sum
+      - name: Verify local Case bootstrap API
+        run: go test ./internal/api

@@ -1,0 +1,47 @@
+name: Smoke OpenWorker Embedded Control
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/2026-08-19-1846-OpenWorker-Embedded-Control-密语Runner-Hook-v1.md'
+      - 'scripts/openworker-job-started-hook.ps1'
+      - 'scripts/openworker-job-started.cmd'
+      - 'scripts/install-openworker-runner-hook.ps1'
+      - '.github/workflows/smoke-openworker-embedded-control.yml'
+      - 'examples/control-envelope/hook-smoke-marker.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  no-secret-passthrough:
+    name: Hook passthrough without secret
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Direct pre-install hook smoke without secret
+        shell: cmd
+        run: >-
+          set OPENWORKER_CONTROL=&& powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\openworker-job-started-hook.ps1"
+      - name: Ordinary workflow body
+        shell: cmd
+        run: echo ordinary workflow executed
+
+  recognized-secret:
+    name: Hook recognizes OpenWorker secret
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 2
+    env:
+      OPENWORKER_CONTROL: >-
+        {"schema":"openworker.control-envelope.v1","request_id":"case0005-hook-smoke-002","command":"CASE.STATUS","machine":"DESKTOP-ODAQN0D","case_id":"0005","policy":{"max_parallel":4,"join":"case-defined","fail_closed":true}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Direct pre-install hook smoke with recognized secret
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\openworker-job-started-hook.ps1"
+      - name: Body reached after hook
+        shell: cmd
+        run: echo recognized-secret workflow body reached

@@ -1,0 +1,4 @@
+OpenWorker three-node V2 upgrade trigger
+Target machines: DESKTOP-UL7V2VV / DESKTOP-O87PJNR / DESKTOP-ODAQN0D
+Workflow: upgrade-openworker-nodes-v2.yml
+Expected: ACCEPTED receipt then VERIFIED receipt per node.

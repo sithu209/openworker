@@ -1,0 +1,155 @@
+name: Dispatch OpenWorker Control Envelope ODA
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: OpenWorker Control Envelope command
+        required: true
+        type: choice
+        options:
+          - CASE.STATUS
+          - CASE.CONTINUE_BATCH
+          - CASE.CLEAR_AND_CONTINUE
+          - SUPERVISOR.STATUS
+          - QUEUE.CLEAR
+      case_id:
+        description: Case ID
+        required: false
+        default: '0005'
+      request_id:
+        description: Unique idempotent request ID
+        required: true
+      max_parallel:
+        description: Max local parallelism (1-4)
+        required: false
+        default: '4'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/case0005-continue-batch.json'
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/case0005-continue-batch.json'
+
+permissions:
+  contents: write
+
+jobs:
+  dispatch:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.merged == true }}
+    name: ODA control envelope
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Checkout transport code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache: false
+
+      - name: Install persistent OpenWorker control runtime
+        run: |
+          $ErrorActionPreference='Stop'
+          $runtime='C:\ProgramData\OpenWorker\runtime\openworker'
+          & .\scripts\install_openworker_case_runtime.ps1 -SourceRoot $env:GITHUB_WORKSPACE -InstallRoot $runtime
+          Push-Location .\go-runtime
+          try {
+            go build -buildvcs=false -o "$env:RUNNER_TEMP\openworker.exe" .\cmd\openworker
+            if($LASTEXITCODE -ne 0){throw "openworker control build failed exit=$LASTEXITCODE"}
+          } finally { Pop-Location }
+          $bin='C:\ProgramData\OpenWorker\bin'
+          New-Item -ItemType Directory -Force -Path $bin | Out-Null
+          Copy-Item -LiteralPath "$env:RUNNER_TEMP\openworker.exe" -Destination (Join-Path $bin 'openworker.exe') -Force
+          $env:OPENWORKER_ROOT=$runtime
+          & (Join-Path $bin 'openworker.exe') supervisor status | Out-Host
+          if($LASTEXITCODE -ne 0){throw 'new OpenWorker control CLI cannot reach resident 8787 supervisor'}
+
+      - name: Build, dispatch and persist smoke receipt
+        env:
+          OW_EVENT: ${{ github.event_name }}
+          OW_COMMAND: ${{ inputs.command }}
+          OW_CASE_ID: ${{ inputs.case_id }}
+          OW_REQUEST_ID: ${{ inputs.request_id }}
+          OW_MAX_PARALLEL: ${{ inputs.max_parallel }}
+          OPENWORKER_ROOT: C:\ProgramData\OpenWorker\runtime\openworker
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:OW_EVENT -eq 'push' -or $env:OW_EVENT -eq 'pull_request'){
+            $path=Join-Path $env:GITHUB_WORKSPACE 'examples\control-envelope\case0005-continue-batch.json'
+          }else{
+            $max=[int]$env:OW_MAX_PARALLEL
+            if($max -lt 1 -or $max -gt 4){ throw "max_parallel must be 1..4" }
+            $envelope=[ordered]@{
+              schema='openworker.control-envelope.v1'
+              request_id=$env:OW_REQUEST_ID
+              command=$env:OW_COMMAND
+              machine='DESKTOP-ODAQN0D'
+              case_id=$env:OW_CASE_ID
+              policy=[ordered]@{max_parallel=$max;join='case-defined';fail_closed=$true}
+            }
+            $path=Join-Path $env:RUNNER_TEMP 'openworker-control-envelope.json'
+            $envelope | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path -Encoding UTF8
+          }
+
+          $envl=Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+          $accepted=$false;$result=$null;$errorText='';$durableJob=$null;$durableEvents=$null
+          try {
+            if([string]$envl.command -eq 'CASE.CLEAR_AND_CONTINUE'){
+              $raw=& .\scripts\invoke-openworker-clear-and-continue-v1.ps1 -EnvelopePath $path -ExpectedMachine 'DESKTOP-ODAQN0D' 2>&1 | Out-String
+            }else{
+              $raw=& .\scripts\invoke-openworker-control-envelope-v1.ps1 -EnvelopePath $path -ExpectedMachine 'DESKTOP-ODAQN0D' 2>&1 | Out-String
+            }
+            $result=$raw | ConvertFrom-Json -ErrorAction Stop
+            $accepted=($result.accepted -eq $true)
+            if(-not $accepted){$errorText='control envelope returned accepted=false'}
+            if($accepted -and [string]$envl.command -eq 'CASE.CONTINUE_BATCH'){
+              $jobId=[string]$result.result.job_id
+              if([string]::IsNullOrWhiteSpace($jobId)){$jobId=[string]$result.result.work_id}
+              if([string]::IsNullOrWhiteSpace($jobId)){throw 'CASE.CONTINUE_BATCH accepted without OpenWorker durable job_id/work_id'}
+              for($i=0;$i-lt20;$i++){
+                try{$durableJob=Invoke-RestMethod ("http://127.0.0.1:8787/v1/jobs/"+[uri]::EscapeDataString($jobId)) -TimeoutSec 5}catch{$durableJob=$null}
+                if($null-ne$durableJob -and [string]$durableJob.status -notin @('accepted','queued_local')){break}
+                Start-Sleep -Milliseconds 250
+              }
+              if($null-eq$durableJob){throw "OpenWorker durable job not readable: $jobId"}
+              try{$durableEvents=Invoke-RestMethod ("http://127.0.0.1:8787/v1/jobs/"+[uri]::EscapeDataString($jobId)+"/events?limit=100") -TimeoutSec 5}catch{$durableEvents=[ordered]@{error=$_.Exception.Message}}
+            }
+          } catch {
+            $accepted=$false
+            $errorText=$_.Exception.Message
+          }
+
+          $receipt=[ordered]@{
+            schema='openworker.control-smoke-receipt.v2'
+            request_id=[string]$envl.request_id;command=[string]$envl.command;case_id=[string]$envl.case_id;machine='DESKTOP-ODAQN0D'
+            accepted=$accepted;error=$errorText;result=$result
+            durable_job=$durableJob;durable_events=$durableEvents
+            dashboard_url='http://127.0.0.1:8787/ui/'
+            authority='openworker-local-supervisor'
+            github_action_used_for_business_execution=$false
+            github_run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          $dir=Join-Path $env:GITHUB_WORKSPACE 'control-results\smoke'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $receiptPath=Join-Path $dir (([string]$envl.request_id)+'.json')
+          $receipt | ConvertTo-Json -Depth 80 | Set-Content -LiteralPath $receiptPath -Encoding UTF8
+
+          git config --global --add safe.directory $env:GITHUB_WORKSPACE
+          git config user.name 'openworker-smoke-bot'
+          git config user.email 'openworker-smoke-bot@users.noreply.github.com'
+          git add -- 'control-results/smoke/*.json'
+          git commit -m ("receipt: OpenWorker control envelope " + [string]$envl.request_id)
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+          if(-not $accepted){throw "control envelope smoke failed: $errorText"}

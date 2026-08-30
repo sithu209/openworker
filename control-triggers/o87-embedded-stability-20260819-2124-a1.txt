@@ -1,0 +1,6 @@
+trigger=o87-embedded-control-stability
+machine=DESKTOP-O87PJNR
+case_id=0004
+mode=read_only_9_round
+business_execution=false
+rerun=2026-08-19T21:42:00+08:00

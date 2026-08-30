@@ -1,0 +1,19 @@
+{
+    "schema":  "openworker-control-install/v6",
+    "succeeded":  false,
+    "status":  "FAILED",
+    "machine":  "DESKTOP-ODAQN0D",
+    "runner_name":  "DESKTOP-ODAQN0D-R001",
+    "canonical_executable":  "",
+    "compatibility_executable":  "",
+    "supervisor_status":  "",
+    "route_label":  "",
+    "single_go_control_authority":  true,
+    "python_required_for_case_bootstrap":  false,
+    "error":  "openworker full Go test suite failed: 1",
+    "github_run_id":  "32214669602",
+    "github_run_attempt":  "1",
+    "github_action_used_for_command_transport":  true,
+    "github_action_used_for_business_execution":  false,
+    "observed_at":  "2026-08-19T04:09:24.2226062+00:00"
+}

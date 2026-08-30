@@ -1,0 +1,42 @@
+name: OPS ODA Runner Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/triggers/oda-runner-probe.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record fixed ODA identity
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        run: |
+          $ErrorActionPreference='Stop'
+          $hostname=hostname
+          if($hostname -ine 'DESKTOP-ODAQN0D' -or $env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host hostname=$hostname COMPUTERNAME=$env:COMPUTERNAME"}
+          New-Item -ItemType Directory -Force -Path evidence\ops | Out-Null
+          [ordered]@{schema_version='openworker-oda-runner-probe/v1';run_id=$env:GITHUB_RUN_ID;source_sha=$env:GITHUB_SHA;hostname=$hostname;computername=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;verified_at=[DateTimeOffset]::UtcNow.ToString('o')} | ConvertTo-Json | Set-Content -Encoding utf8 evidence\ops\latest-oda-runner-probe.json
+      - name: Publish ODA probe evidence
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+        run: |
+          git config user.name 'openworker-ops-bot'
+          git config user.email '121744662+liuxb99@users.noreply.github.com'
+          git add evidence/ops/latest-oda-runner-probe.json
+          git commit -m 'evidence(ops): publish latest ODA runner probe'
+          for($attempt=1;$attempt -le 5;$attempt++){
+            git pull --rebase origin main
+            if($LASTEXITCODE -eq 0){git push origin HEAD:main;if($LASTEXITCODE -eq 0){exit 0}}
+            git rebase --abort 2>$null
+            Start-Sleep -Seconds (2*$attempt)
+          }
+          exit 1

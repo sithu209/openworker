@@ -1,0 +1,44 @@
+name: Case0005 Embedded Control REAL
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/case0005-real-marker.txt'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/case0005-real-marker.txt'
+      - 'scripts/test-case0005-embedded-control-real.ps1'
+      - 'scripts/openworker-job-started-hook.ps1'
+      - 'scripts/invoke-openworker-control-envelope-v1.ps1'
+      - 'scripts/install-openworker-runner-hook.ps1'
+      - 'scripts/show-case0005-embedded-control-readback.ps1'
+      - '.github/workflows/case0005-embedded-control-real.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  case0005-real:
+    name: Case0005 Hook to OpenWorker REAL acceptance
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install latest self-contained Hook and dispatcher
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\install-openworker-runner-hook.ps1" -OpenWorkerRepoRoot "%GITHUB_WORKSPACE%" -InstallFilesOnly
+
+      - name: Run Case0005 REAL embedded-control acceptance
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\test-case0005-embedded-control-real.ps1" -CaseId "0005" -Machine "DESKTOP-ODAQN0D" -RunTag "github-%GITHUB_RUN_ID%"
+
+      - name: Show latest Case0005 embedded-control evidence
+        if: always()
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\show-case0005-embedded-control-readback.ps1" -CaseId "0005" -Machine "DESKTOP-ODAQN0D" -RunTag "evidence-%GITHUB_RUN_ID%"

@@ -1,0 +1,13 @@
+{
+  "name": "@openworker/harness-integration",
+  "version": "0.0.0-h2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

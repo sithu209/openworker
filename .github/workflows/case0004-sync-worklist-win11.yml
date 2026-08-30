@@ -1,0 +1,112 @@
+name: Case 0004 Sync Durable Worklist
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'case-worklists/0004.json'
+      - '.github/workflows/case0004-sync-worklist-win11.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: openworker-case0004-worklist-sync
+  cancel-in-progress: true
+
+env:
+  CASE0004_WORKSPACE: D:\AI-Work\jobs\0004-DWG-TO-3D
+
+jobs:
+  sync-worklist:
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Route one candidate to fixed O87 computer name
+        id: route
+        shell: cmd
+        run: |
+          @echo off
+          if /I not "%COMPUTERNAME%"=="DESKTOP-O87PJNR" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_SYNC_SKIP_WRONG_HOST slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+            exit /b 0
+          )
+          if not exist "%CASE0004_WORKSPACE%" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_SYNC_WORKSPACE_MISSING path=%CASE0004_WORKSPACE%
+            exit /b 0
+          )
+          if not exist "%CASE0004_WORKSPACE%\.locks" mkdir "%CASE0004_WORKSPACE%\.locks"
+          mkdir "%CASE0004_WORKSPACE%\.locks\worklist-sync-%GITHUB_RUN_ID%-%GITHUB_RUN_ATTEMPT%" 2>nul
+          if errorlevel 1 (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_SYNC_SKIP_DUPLICATE_O87 slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+          ) else (
+            echo run=true>>"%GITHUB_OUTPUT%"
+            echo CASE0004_SYNC_HOST_OK slot=${{ matrix.slot }} machine=%COMPUTERNAME% runner=%RUNNER_NAME%
+          )
+
+      - name: Checkout OpenWorker main
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Sync durable CaseWorklist to latest manifest
+        if: steps.route.outputs.run == 'true'
+        id: sync
+        run: |
+          $ErrorActionPreference='Stop'
+          python scripts\case_worklist_sync_manifest.py --workspace-root $env:CASE0004_WORKSPACE --manifest case-worklists\0004.json
+          if($LASTEXITCODE -ne 0){throw 'CASE0004 manifest sync failed'}
+          $path=Join-Path $env:CASE0004_WORKSPACE '.openworker\case-worklist.json'
+          if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "CASE0004 durable worklist missing: $path"}
+          $w=Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+          if($w.case_id -ne '0004'){throw "CASE0004 wrong durable case_id=$($w.case_id)"}
+          if($w.assigned_host -ne 'DESKTOP-O87PJNR'){throw "CASE0004 wrong assigned_host=$($w.assigned_host)"}
+          $sha=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+          "worklist_sha256=$sha" >> $env:GITHUB_OUTPUT
+          "canonical_next_step_id=$($w.canonical_next_step_id)" >> $env:GITHUB_OUTPUT
+          Write-Host "CASE0004_WORKLIST_SYNC_PASS machine=$env:COMPUTERNAME next=$($w.canonical_next_step_id) sha=$sha"
+
+      - name: Publish sync authority
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:GITHUB_WORKSPACE 'evidence\case0004'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $path=Join-Path $dir 'latest-worklist-sync.json'
+          $record=[ordered]@{
+            schema_version='case0004.worklist-sync.v1'
+            case_id='0004'
+            run_id=$env:GITHUB_RUN_ID
+            run_attempt=$env:GITHUB_RUN_ATTEMPT
+            machine=$env:COMPUTERNAME
+            runner=$env:RUNNER_NAME
+            workspace_root=$env:CASE0004_WORKSPACE
+            worklist_sha256='${{ steps.sync.outputs.worklist_sha256 }}'
+            canonical_next_step_id='${{ steps.sync.outputs.canonical_next_step_id }}'
+            source_commit=$env:GITHUB_SHA
+            result='PASS'
+          }
+          [IO.File]::WriteAllText($path,($record|ConvertTo-Json -Depth 6),(New-Object Text.UTF8Encoding($false)))
+          git config user.name 'openworker-case0004-sync'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- evidence/case0004/latest-worklist-sync.json
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0004): publish worklist sync $env:GITHUB_RUN_ID"}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'CASE0004 sync authority rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'CASE0004 sync authority push failed'}
+
+      - name: Non-O87 candidate exits cleanly
+        if: steps.route.outputs.run != 'true'
+        shell: cmd
+        run: echo CASE0004_SYNC_NOT_EXECUTED slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%

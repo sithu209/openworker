@@ -1,0 +1,84 @@
+name: Case0005 Go Queue Drain via O87
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0005-go-queue-drain-o87.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  drain:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify controller host
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+
+      - name: Drain ODA durable queue using Go OpenWorker
+        run: |
+          New-Item -ItemType Directory -Force -Path 'evidence\case0005' | Out-Null
+          Push-Location 'go-runtime'
+          try {
+            go run ./cmd/openworker-queue-drain-auto --endpoint http://127.0.0.1:8787 --mode all --machines DESKTOP-ODAQN0D | Tee-Object -FilePath '..\evidence\case0005\go-queue-drain-first.json'
+            if($LASTEXITCODE -ne 0){throw 'first Go queue drain failed'}
+            go run ./cmd/openworker-queue-drain-auto --endpoint http://127.0.0.1:8787 --mode all --machines DESKTOP-ODAQN0D | Tee-Object -FilePath '..\evidence\case0005\go-queue-drain-verify.json'
+            if($LASTEXITCODE -ne 0){throw 'verification Go queue drain failed'}
+          } finally { Pop-Location }
+
+          $first=Get-Content 'evidence\case0005\go-queue-drain-first.json' -Raw | ConvertFrom-Json
+          $verify=Get-Content 'evidence\case0005\go-queue-drain-verify.json' -Raw | ConvertFrom-Json
+          if(-not $first.clean -or $first.selected_machine -ine 'DESKTOP-ODAQN0D'){throw 'first drain did not target ODA cleanly'}
+          if(-not $verify.clean -or $verify.selected_machine -ine 'DESKTOP-ODAQN0D'){throw 'verification drain did not target ODA cleanly'}
+
+          $verifyCounts=@()
+          foreach($a in @($verify.attempts)){
+            if($a.ok -and $a.body -and $a.body.results){
+              foreach($r in @($a.body.results)){
+                $count=$null
+                if($r.response -and $null -ne $r.response.count){$count=[int]$r.response.count}
+                $verifyCounts += [ordered]@{machine=$r.machine;node_id=$r.node_id;count=$count;response=$r.response}
+              }
+            }
+          }
+          $bad=@($verifyCounts | Where-Object { $_.machine -ieq 'DESKTOP-ODAQN0D' -and $null -ne $_.count -and $_.count -ne 0 })
+          if($bad.Count -gt 0){throw 'second drain still removed queued/inflight work; queue was not already empty'}
+          $oda=@($verifyCounts | Where-Object { $_.machine -ieq 'DESKTOP-ODAQN0D' })
+          if($oda.Count -eq 0){throw 'verification response contained no ODA node result'}
+
+          $receipt=[ordered]@{
+            schema='openworker.case0005.go-queue-drain/v1'
+            case_id='0005'
+            target_machine='DESKTOP-ODAQN0D'
+            controller_machine=$env:COMPUTERNAME
+            implementation='go-runtime/cmd/openworker-queue-drain-auto'
+            endpoint='http://127.0.0.1:8787/v1/cluster/queue/drain'
+            first=$first
+            verify=$verify
+            verify_node_results=$verifyCounts
+            clean=$true
+            github_action_used_for_business_execution=$false
+            verified_at=(Get-Date).ToUniversalTime().ToString('o')
+            github_run_id=$env:GITHUB_RUN_ID
+          }
+          $receipt | ConvertTo-Json -Depth 100 | Set-Content -Encoding utf8 'evidence\case0005\go-queue-drain-latest.json'
+
+      - name: Publish Go queue drain evidence
+        run: |
+          git config user.name 'openworker-go-queue-drain'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- evidence/case0005/go-queue-drain-first.json evidence/case0005/go-queue-drain-verify.json evidence/case0005/go-queue-drain-latest.json
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0005): Go durable queue clean $env:GITHUB_RUN_ID"}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'push failed'}

@@ -32,11 +32,14 @@ def test_catalog_expands_engineering_control_plane_and_governance_tools_without_
         "engineering_list_jobs",
         "engineering_get_job",
         "engineering_create_job",
+        "engineering_execute_rc_column_flow",
         "engineering_get_approval_status",
         "engineering_list_job_reviews",
         "engineering_submit_artifact_review",
         "engineering_list_deliveries",
         "engineering_publish_job",
+        "engineering_run_rc_column_flow",
+        "engineering_generate_minimax_h3",
     ]
 
 

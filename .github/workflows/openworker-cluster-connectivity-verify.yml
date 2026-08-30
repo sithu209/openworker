@@ -1,0 +1,67 @@
+name: OpenWorker Cluster Connectivity Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      ul7_endpoint:
+        description: Reachable UL7 OpenWorker endpoint, e.g. http://host:8787
+        required: true
+        type: string
+      oda_endpoint:
+        description: Reachable ODA OpenWorker endpoint
+        required: true
+        type: string
+      o87_endpoint:
+        description: Reachable O87 OpenWorker endpoint
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify-ul7:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 5
+    steps:
+      - name: Verify UL7 reaches all advertised nodes
+        shell: powershell
+        env:
+          UL7: ${{ inputs.ul7_endpoint }}
+          ODA: ${{ inputs.oda_endpoint }}
+          O87: ${{ inputs.o87_endpoint }}
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-UL7V2VV'){throw "wrong host $env:COMPUTERNAME"}
+          $expected=@{UL7='DESKTOP-UL7V2VV';ODA='DESKTOP-ODAQN0D';O87='DESKTOP-O87PJNR'}
+          $out=@();foreach($k in 'UL7','ODA','O87'){$u=(Get-Item "env:$k").Value.TrimEnd('/');$s=Invoke-RestMethod "$u/v1/node/status" -TimeoutSec 5;if($s.machine -ine $expected[$k]){throw "$k endpoint machine=$($s.machine) expected=$($expected[$k])"};if($s.advertise_endpoint.TrimEnd('/') -ine $u){throw "$k advertise mismatch=$($s.advertise_endpoint) input=$u"};$out+=$s};$out|ConvertTo-Json -Depth 20
+  verify-oda:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - name: Verify ODA reaches all advertised nodes
+        shell: powershell
+        env:
+          UL7: ${{ inputs.ul7_endpoint }}
+          ODA: ${{ inputs.oda_endpoint }}
+          O87: ${{ inputs.o87_endpoint }}
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $expected=@{UL7='DESKTOP-UL7V2VV';ODA='DESKTOP-ODAQN0D';O87='DESKTOP-O87PJNR'}
+          foreach($k in 'UL7','ODA','O87'){$u=(Get-Item "env:$k").Value.TrimEnd('/');$s=Invoke-RestMethod "$u/v1/node/status" -TimeoutSec 5;if($s.machine -ine $expected[$k]){throw "$k endpoint machine=$($s.machine)"};if($s.advertise_endpoint.TrimEnd('/') -ine $u){throw "$k advertise mismatch"}}
+  verify-o87-authority:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 5
+    steps:
+      - name: Verify O87 reaches all nodes and registry converges
+        shell: powershell
+        env:
+          UL7: ${{ inputs.ul7_endpoint }}
+          ODA: ${{ inputs.oda_endpoint }}
+          O87: ${{ inputs.o87_endpoint }}
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          foreach($k in 'UL7','ODA','O87'){$u=(Get-Item "env:$k").Value.TrimEnd('/');$null=Invoke-RestMethod "$u/v1/node/status" -TimeoutSec 5}
+          Start-Sleep -Seconds 6
+          $c=Invoke-RestMethod 'http://127.0.0.1:8787/v1/cluster/status'
+          if($c.online_count -lt 3){throw "cluster online_count=$($c.online_count), expected 3"}
+          $c|ConvertTo-Json -Depth 30

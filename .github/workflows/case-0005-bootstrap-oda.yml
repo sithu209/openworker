@@ -1,0 +1,88 @@
+name: Case 0005 Bootstrap ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bootstrap-requests/case-0005-oda.trigger'
+      - '.github/workflows/case-0005-bootstrap-oda.yml'
+      - 'scripts/case0005_resident_bootstrap.ps1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case0005-bootstrap-oda
+  cancel-in-progress: true
+
+jobs:
+  bootstrap:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify fixed ODA computer
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+
+      - name: Run Go-native resident bootstrap
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          & .\scripts\case0005_resident_bootstrap.ps1
+          if($LASTEXITCODE -ne 0){throw "case0005 resident bootstrap failed: $LASTEXITCODE"}
+
+      - name: Publish bootstrap and current-work evidence
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $outcome='C:\ProgramData\OpenWorker\node\case0005-last-bootstrap-outcome.json'
+          $local=Join-Path $workspace 'evidence\case0005-resident-bootstrap.json'
+          if(-not(Test-Path -LiteralPath $outcome -PathType Leaf)){throw "missing outcome $outcome"}
+          if(-not(Test-Path -LiteralPath $local -PathType Leaf)){throw "missing local receipt $local"}
+          $o=Get-Content -Raw -LiteralPath $outcome|ConvertFrom-Json
+          if(-not $o.succeeded){throw "bootstrap outcome failed stage=$($o.stage) reason=$($o.reason)"}
+          if($o.machine -ine 'DESKTOP-ODAQN0D'){throw "wrong outcome machine=$($o.machine)"}
+          $l=Get-Content -Raw -LiteralPath $local|ConvertFrom-Json
+          $workId=''
+          if($l.ack.work_id){$workId=[string]$l.ack.work_id}
+          elseif($l.ack.job.id){$workId=[string]$l.ack.job.id}
+          elseif($l.ack.job.job_id){$workId=[string]$l.ack.job.job_id}
+          $receipt=[ordered]@{
+            schema='openworker/case0005-go-native-bootstrap-evidence/v1'
+            case_id='0005'
+            machine='DESKTOP-ODAQN0D'
+            workspace_root=$workspace
+            work_id=$workId
+            outcome=$o
+            local_receipt=$l
+            github_run_id=$env:GITHUB_RUN_ID
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          git config user.name 'openworker-case-status'
+          git config user.email 'openworker-case-status@users.noreply.github.com'
+          git fetch origin main
+          git reset --hard origin/main
+          $dir=Join-Path $env:GITHUB_WORKSPACE 'evidence\case0005'
+          New-Item -ItemType Directory -Force -Path $dir|Out-Null
+          [IO.File]::WriteAllText((Join-Path $dir 'latest-bootstrap-result.json'),($receipt|ConvertTo-Json -Depth 50)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          if($workId){
+            [IO.File]::WriteAllText((Join-Path $dir 'latest-bootstrap-ack.json'),(([ordered]@{schema='openworker/case0005-bootstrap-ack/v5';case_id='0005';machine='DESKTOP-ODAQN0D';workspace_root=$workspace;accepted=$true;work_id=$workId;controller='go-native';python_required=$false;github_run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o')})|ConvertTo-Json -Depth 10)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          }
+          git add evidence/case0005/latest-bootstrap-result.json evidence/case0005/latest-bootstrap-ack.json
+          git commit -m "receipt: Case0005 Go-native bootstrap $env:GITHUB_RUN_ID"
+          if($LASTEXITCODE -ne 0){throw 'failed to commit Case0005 bootstrap receipt'}
+          for($i=0;$i -lt 4;$i++){
+            git pull --rebase origin main
+            if($LASTEXITCODE -eq 0){git push origin HEAD:main;if($LASTEXITCODE -eq 0){exit 0}}
+            git rebase --abort 2>$null
+            Start-Sleep -Seconds 2
+          }
+          throw 'failed to push Case0005 bootstrap receipt'

@@ -1,0 +1,107 @@
+name: Case 0005 PDF Input Locator UL7
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_name:
+        description: Exact source PDF basename to locate
+        required: false
+        default: '鋼便橋施工圖(2).pdf'
+        type: string
+      workspace_root:
+        description: Canonical Case 0005 workspace root
+        required: false
+        default: 'D:\AI-Work\jobs\0005-PDF-DWG'
+        type: string
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  locate:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-ingest]')
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Resolve bounded source and ingest
+        env:
+          SOURCE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.source_name || '鋼便橋施工圖(2).pdf' }}
+          WORKSPACE_ROOT: ${{ github.event_name == 'workflow_dispatch' && inputs.workspace_root || 'D:\AI-Work\jobs\0005-PDF-DWG' }}
+        run: |
+          if ($env:COMPUTERNAME -ne 'DESKTOP-UL7V2VV') { throw "wrong host: $env:COMPUTERNAME" }
+          $name = [IO.Path]::GetFileName($env:SOURCE_NAME)
+          if ([string]::IsNullOrWhiteSpace($name) -or $name -ne $env:SOURCE_NAME -or [IO.Path]::GetExtension($name).ToLowerInvariant() -ne '.pdf') { throw 'source_name must be an exact PDF basename' }
+          $roots = @(
+            'D:\AI-Work',
+            'D:\AI',
+            'D:\AIWork',
+            'E:\AI',
+            'E:\AIWork',
+            'C:\Users\ug855\Downloads',
+            'C:\Users\ug855\Documents'
+          ) | Where-Object { Test-Path -LiteralPath $_ -PathType Container }
+          $hits = New-Object System.Collections.Generic.List[string]
+          foreach ($root in $roots) {
+            Get-ChildItem -LiteralPath $root -Filter $name -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $hits.Add($_.FullName) }
+          }
+          $hits = @($hits | Sort-Object -Unique)
+          if ($hits.Count -eq 0) {
+            $searched = ($roots -join '; ')
+            throw "CASE0005_SOURCE_NOT_FOUND exact=$name searched=$searched"
+          }
+          if ($hits.Count -gt 1) {
+            $records = foreach ($p in $hits) { $f=Get-Item -LiteralPath $p; [pscustomobject]@{path=$p;size=$f.Length;sha256=(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant();mtime=$f.LastWriteTimeUtc.ToString('o')} }
+            $groups = @($records | Group-Object sha256)
+            if ($groups.Count -ne 1) { $records | ConvertTo-Json -Depth 5 | Write-Host; throw "CASE0005_SOURCE_AMBIGUOUS count=$($hits.Count) distinct_sha=$($groups.Count)" }
+            $source = ($records | Sort-Object mtime -Descending | Select-Object -First 1).path
+          } else { $source = $hits[0] }
+          $sourceFile = Get-Item -LiteralPath $source
+          if ($sourceFile.Length -le 0) { throw 'source PDF is empty' }
+          $workspace = [IO.Path]::GetFullPath($env:WORKSPACE_ROOT).TrimEnd('\')
+          if (-not [IO.Path]::IsPathRooted($workspace)) { throw 'workspace_root must be absolute' }
+          $inputDir = Join-Path $workspace 'input'
+          $evidenceDir = Join-Path $workspace 'evidence'
+          New-Item -ItemType Directory -Force -Path $inputDir,$evidenceDir | Out-Null
+          $dest = Join-Path $inputDir $name
+          Copy-Item -LiteralPath $source -Destination $dest -Force
+          $srcHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $dstHash = (Get-FileHash -LiteralPath $dest -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($srcHash -ne $dstHash) { throw "copy checksum mismatch source=$srcHash dest=$dstHash" }
+          $destFile = Get-Item -LiteralPath $dest
+          $evidence = [ordered]@{
+            schema='openworker/case0005-input-ingest/v1'
+            case_id='0005'
+            real=$true
+            skipped=$false
+            runner=$env:COMPUTERNAME
+            run_id='${{ github.run_id }}'
+            source_path=$source
+            source_name=$name
+            source_size=$sourceFile.Length
+            source_sha256=$srcHash
+            workspace_root=$workspace
+            ingested_path=$dest
+            ingested_size=$destFile.Length
+            ingested_sha256=$dstHash
+            located_candidates=$hits
+            searched_roots=$roots
+            ingested_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          $evidencePath = Join-Path $evidenceDir 'case0005-input-ingest.json'
+          $evidence | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $evidencePath -Encoding utf8
+          Write-Host "CASE0005_INPUT_INGEST_PASS source=$source dest=$dest size=$($destFile.Length) sha256=$dstHash"
+
+      - name: Upload locator evidence when quota permits
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case0005-input-locator-${{ github.run_id }}-${{ github.run_attempt }}
+          path: D:/AI-Work/jobs/0005-PDF-DWG/evidence/case0005-input-ingest.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,26 @@
+name: OpenWorker Cluster Control ODA
+on:
+  workflow_dispatch:
+    inputs:
+      operation: {description: 'cluster control operation', required: true, type: string}
+      job_id: {required: false, type: string}
+      machine: {required: false, default: any, type: string}
+      mode: {required: false, default: queued, type: string}
+      capabilities: {required: false, type: string}
+      request_json: {required: false, type: string}
+permissions: {contents: read}
+jobs:
+  control:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify ODA cluster authority fallback
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $h=Invoke-RestMethod 'http://127.0.0.1:8787/healthz'; if(-not $h.ok){throw 'OpenWorkerNode unhealthy'}
+      - name: Execute cluster control operation
+        shell: powershell
+        run: |
+          & "$env:GITHUB_WORKSPACE\scripts\openworker_cluster_control.ps1" -Operation '${{ inputs.operation }}' -JobId '${{ inputs.job_id }}' -Machine '${{ inputs.machine }}' -Mode '${{ inputs.mode }}' -Capabilities '${{ inputs.capabilities }}' -RequestJson '${{ inputs.request_json }}'

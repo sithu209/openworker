@@ -1,0 +1,19 @@
+{
+    "schema":  "openworker-control-install/v6",
+    "succeeded":  true,
+    "status":  "REAL_VERIFIED",
+    "machine":  "DESKTOP-ODAQN0D",
+    "runner_name":  "DESKTOP-ODAQN0D-R001",
+    "canonical_executable":  "C:\\ProgramData\\OpenWorker\\bin\\openworker.exe",
+    "compatibility_executable":  "C:\\ProgramData\\OpenWorker\\bin\\openworkerctl.exe",
+    "supervisor_status":  "OPERATIONAL",
+    "route_label":  "LOCAL_SUPERVISOR",
+    "single_go_control_authority":  true,
+    "python_required_for_case_bootstrap":  false,
+    "error":  "",
+    "github_run_id":  "32214885422",
+    "github_run_attempt":  "1",
+    "github_action_used_for_command_transport":  true,
+    "github_action_used_for_business_execution":  false,
+    "observed_at":  "2026-08-19T04:12:58.8144265+00:00"
+}

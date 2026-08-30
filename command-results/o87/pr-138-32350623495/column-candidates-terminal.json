@@ -1,0 +1,106 @@
+{
+  "schema": "case0004.directwork-055-terminal.v1",
+  "request_id": "pr-138-32350623495",
+  "work_id": "dw-20260820T084846-9d2ec5343662e329",
+  "durable_work": {
+    "work_id": "dw-20260820T084846-9d2ec5343662e329",
+    "dispatch_id": "pr-138-32350623495",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-055-column-candidates.ps1 -RequestId pr-138-32350623495",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "succeeded",
+    "slot": 4,
+    "pid": 108528,
+    "exit_code": 0,
+    "stdout_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T084846-9d2ec5343662e329.stdout.log",
+    "stderr_path": "C:\\ProgramData\\DirectWork\\node\\logs\\dw-20260820T084846-9d2ec5343662e329.stderr.log",
+    "created_at": "2026-08-20T08:48:46.4602373Z",
+    "claimed_at": "2026-08-20T08:48:46.6990712Z",
+    "started_at": "2026-08-20T08:48:46.7315246Z",
+    "finished_at": "2026-08-20T09:06:47.0047055Z",
+    "heartbeat_at": "2026-08-20T09:06:46.7371495Z"
+  },
+  "durable_events": {
+    "events": [
+      {
+        "seq": 77,
+        "work_id": "dw-20260820T084846-9d2ec5343662e329",
+        "type": "accepted",
+        "detail": "durable work created",
+        "created_at": "2026-08-20T08:48:46.4602373Z"
+      },
+      {
+        "seq": 78,
+        "work_id": "dw-20260820T084846-9d2ec5343662e329",
+        "type": "claimed",
+        "detail": "slot=4 machine=DESKTOP-O87PJNR",
+        "created_at": "2026-08-20T08:48:46.6990712Z"
+      },
+      {
+        "seq": 79,
+        "work_id": "dw-20260820T084846-9d2ec5343662e329",
+        "type": "running",
+        "detail": "slot=4 pid=108528",
+        "created_at": "2026-08-20T08:48:46.7315246Z"
+      },
+      {
+        "seq": 80,
+        "work_id": "dw-20260820T084846-9d2ec5343662e329",
+        "type": "succeeded",
+        "detail": "process exited successfully",
+        "created_at": "2026-08-20T09:06:47.0047055Z"
+      }
+    ]
+  },
+  "case_evidence": [
+    {
+      "name": "1f-column-candidates.stdout.json",
+      "size": 925,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\1f-column-candidates.stdout.json",
+      "sha256": "e94d8d9c0dbb909c17d109410b75342d10964ff9f741c0785b3ac0ab88520e83"
+    },
+    {
+      "name": "2f-column-candidates.stdout.json",
+      "size": 925,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\2f-column-candidates.stdout.json",
+      "sha256": "db1a701f4fe5da5ae0441b4a15a9a7bf20b1edea0f00f100c86b4344f971cf4f"
+    },
+    {
+      "name": "3f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\3f-column-candidates.stdout.json",
+      "sha256": "73a0f64ca0837ba149b98b8d987e41998192903e3f573473a2e15cf5c73040ca"
+    },
+    {
+      "name": "4f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\4f-column-candidates.stdout.json",
+      "sha256": "ec4872ba578673278f2e892eb10492dcc264c01181efd55b662bbb3639bc1111"
+    },
+    {
+      "name": "final.json",
+      "size": 8226,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\final.json",
+      "sha256": "ef72ddd4120f6689c4ad700f0accdc53b5485023b92af649f86f6c2bf1a9964a"
+    },
+    {
+      "name": "go-tool-query.json",
+      "size": 12873,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\go-tool-query.json",
+      "sha256": "07fd422985f017810809da00aff2db6d8f61edccad7fe9fa7a07bcb8dcfb260e"
+    },
+    {
+      "name": "r1f-column-candidates.stdout.json",
+      "size": 937,
+      "path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\directwork\\pr-138-32350623495\\r1f-column-candidates.stdout.json",
+      "sha256": "6062d057e7a29637f768531256f2e9006dc07c279e625dd4ca41eea8f5bee54f"
+    }
+  ],
+  "stdout": "DWG_OPENCAD_AUTHORITY_BUILD key=snapshot-447f62ca2f35 tree=snapshot:447f62ca2f35720dfa043bd636463ccd4c7ab5a1 commit=447f62ca2f35720dfa043bd636463ccd4c7ab5a1 cargo_target=C:\\ProgramData\\DWG_todo\\opencad\\cargo-target\nDWG_OPENCAD_AUTHORITY_CACHE_READY key=snapshot-447f62ca2f35 tree=snapshot:447f62ca2f35720dfa043bd636463ccd4c7ab5a1 commit=447f62ca2f35720dfa043bd636463ccd4c7ab5a1 path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe bytes=62279168 sha256=295c12ded8e742e60f7cf72100f84573a5af14a7ab2895fa6690ca43bc236aaf\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\nDWG_OPENCAD_AUTHORITY_CONFIGURED path=C:\\ProgramData\\DWG_todo\\opencad\\snapshot-447f62ca2f35\\opencad-case.exe\n{\"schema\":\"case0004.directwork.055.column-candidates.v1\",\"case_id\":\"0004\",\"step\":\"0004-055\",\"request_id\":\"pr-138-32350623495\",\"status\":\"succeeded\",\"machine\":\"DESKTOP-O87PJNR\",\"authority_root\":\"C:\\\\ProgramData\\\\go-tool-runtime\\\\work-agent\\\\authorities\\\\dwg-todo-447f62ca2f35\",\"authority_commit\":\"447f62ca2f35720dfa043bd636463ccd4c7ab5a1\",\"source_story_region_work_id\":\"dw-20260820T083831-efc1b644d6d5966c\",\"inventory_count\":5,\"inventories\":[{\"story_id\":\"1F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"1F\",\"name\":\"ground-floor-plan\",\"bounds\":{\"min_x\":48000,\"min_y\":57100,\"max_x\":50300,\"max_y\":60050},\"source_revision\":24,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-138-32350623495\\\\1f-column-candidates.stdout.json\",\"receipt_sha256\":\"e94d8d9c0dbb909c17d109410b75342d10964ff9f741c0785b3ac0ab88520e83\"},{\"story_id\":\"2F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"2F\",\"name\":\"second-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":54200,\"max_x\":48400,\"max_y\":57300},\"source_revision\":25,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-138-32350623495\\\\2f-column-candidates.stdout.json\",\"receipt_sha256\":\"db1a701f4fe5da5ae0441b4a15a9a7bf20b1edea0f00f100c86b4344f971cf4f\"},{\"story_id\":\"3F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"3F\",\"name\":\"third-to-fourth-floor-plan-3F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"source_revision\":26,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-138-32350623495\\\\3f-column-candidates.stdout.json\",\"receipt_sha256\":\"73a0f64ca0837ba149b98b8d987e41998192903e3f573473a2e15cf5c73040ca\"},{\"story_id\":\"4F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"4F\",\"name\":\"third-to-fourth-floor-plan-4F\",\"bounds\":{\"min_x\":47950,\"min_y\":54200,\"max_x\":50250,\"max_y\":57300},\"source_revision\":27,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-138-32350623495\\\\4f-column-candidates.stdout.json\",\"receipt_sha256\":\"ec4872ba578673278f2e892eb10492dcc264c01181efd55b662bbb3639bc1111\"},{\"story_id\":\"R1F\",\"candidate_count\":0,\"source_sha256\":\"aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6\",\"story_region\":{\"story_id\":\"R1F\",\"name\":\"penthouse-first-floor-plan\",\"bounds\":{\"min_x\":46450,\"min_y\":51050,\"max_x\":48450,\"max_y\":54400},\"source_revision\":28,\"confidence\":1,\"review_status\":\"confirmed\"},\"receipt_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\evidence\\\\directwork\\\\pr-138-32350623495\\\\r1f-column-candidates.stdout.json\",\"receipt_sha256\":\"6062d057e7a29637f768531256f2e9006dc07c279e625dd4ca41eea8f5bee54f\"}],\"column_authority\":\"none\",\"visual_review_required\":true,\"state_path\":\"D:\\\\AI-Work\\\\jobs\\\\0004-DWG-TO-3D\\\\dwg\\\\agent-cad-state.json\",\"state_sha256\":\"6cb712b856121d83bf1bd969f01447bc40b1da41af254ede110408dbda645dec\",\"completed_at\":\"2026-08-20T09:06:46.9517126+00:00\"}\r\n",
+  "stderr": "   Compiling OpenCADStudio v0.8.9 (C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-447f62ca2f35\\OpenCADStudio)\n   Compiling dwg-thumbnailer v0.1.0 (C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-447f62ca2f35\\OpenCADStudio\\crates\\dwg-thumbnailer)\n   Compiling ocs_plugin_api v0.1.0 (C:\\ProgramData\\go-tool-runtime\\work-agent\\authorities\\dwg-todo-447f62ca2f35\\OpenCADStudio\\crates\\ocs_plugin_api)\nwarning: fields `copies`, `mono`, `quality`, and `dpi` are never read\n  --> src\\io\\print_to_printer.rs:26:9\n   |\n22 | pub struct PrintOptions {\n   |            ------------ fields in this struct\n...\n26 |     pub copies: u32,\n   |         ^^^^^^\n27 |     /// Force grayscale output.\n28 |     pub mono: bool,\n   |         ^^^^\n29 |     /// Print quality: \"Draft\" | \"Normal\" | \"High\" | \"Maximum\".\n30 |     pub quality: Option<String>,\n   |         ^^^^^^^\n31 |     /// Rasterisation resolution in DPI.\n32 |     pub dpi: Option<u32>,\n   |         ^^^\n   |\n   = note: `PrintOptions` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `primitives` is never used\n   --> src\\case_render.rs:137:4\n    |\n137 | fn primitives(e:&acadrust::EntityType)->Vec<Primitive>{\n    |    ^^^^^^^^^^\n\nwarning: function `curve` is never used\n   --> src\\case_render.rs:154:4\n    |\n154 | fn curve(h:&str,cx:f64,cy:f64,r:f64,a:f64,mut b:f64)->Primitive{if b<a{b+=std::f64::consts::TAU} let pts=(0..=96).map(|i|{let t=a+(...\n    |    ^^^^^\n\nwarning: function `collect_xy` is never used\n   --> src\\case_render.rs:155:4\n    |\n155 | fn collect_xy(v:&Value,out:&mut Vec<[f64;2]>){match v{Value::Array(a)=>for x in a{collect_xy(x,out)},Value::Object(o)=>{if let(Some...\n    |    ^^^^^^^^^^\n\nwarning: `OpenCADStudio` (bin \"opencad-case\") generated 4 warnings\n    Finished `release` profile [optimized] target(s) in 15m 52s\nwarning: the following packages contain code that will be rejected by a future version of Rust: nom v3.2.1, quick-xml v0.22.0\nnote: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 2`\n",
+  "observed_at": "2026-08-20T09:06:47.6095543+00:00"
+}

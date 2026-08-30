@@ -1,0 +1,90 @@
+name: Case0004 Embedded Control Status O87
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  case-status:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0004-embedded-status]')
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify O87 and installed Embedded Control Hook
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $hook='C:\ProgramData\OpenWorker\hooks\openworker-job-started-hook.ps1'
+          if(-not(Test-Path -LiteralPath $hook -PathType Leaf)){throw "installed Hook missing: $hook"}
+          Write-Host 'GitHub is transient command transport only.'
+          Write-Host 'OpenWorker remains Case business authority.'
+
+      - name: Transport CASE.STATUS through Embedded Control phrase
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $requestId='case0004-status-20260819-d1'
+          $envelope=[ordered]@{
+            schema='openworker.control-envelope.v1'
+            request_id=$requestId
+            command='CASE.STATUS'
+            machine='DESKTOP-O87PJNR'
+            case_id='0004'
+            policy=[ordered]@{max_parallel=4;join='case-defined';fail_closed=$true}
+          }
+          $env:OPENWORKER_CONTROL=$envelope|ConvertTo-Json -Compress -Depth 10
+          try {
+            & powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'C:\ProgramData\OpenWorker\hooks\openworker-job-started-hook.ps1'
+            if($LASTEXITCODE -ne 0){throw "Embedded Control Hook failed exit=$LASTEXITCODE"}
+          } finally {
+            Remove-Item Env:OPENWORKER_CONTROL -ErrorAction SilentlyContinue
+          }
+
+      - name: Read back durable control receipts
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $requestId='case0004-status-20260819-d1'
+          $hook=Join-Path $env:ProgramData "OpenWorker\hooks\receipts\$requestId.json"
+          $dispatch=Join-Path $env:ProgramData "OpenWorker\control-envelope\receipts\$requestId.json"
+          if(-not(Test-Path -LiteralPath $hook -PathType Leaf)){throw "hook receipt missing: $hook"}
+          if(-not(Test-Path -LiteralPath $dispatch -PathType Leaf)){throw "dispatcher receipt missing: $dispatch"}
+          $hookObj=Get-Content -LiteralPath $hook -Raw|ConvertFrom-Json
+          $dispatchObj=Get-Content -LiteralPath $dispatch -Raw|ConvertFrom-Json
+          if(-not $hookObj.accepted){throw "hook rejected control: $($hookObj|ConvertTo-Json -Compress -Depth 30)"}
+          if(-not $dispatchObj.accepted){throw "dispatcher rejected control: $($dispatchObj|ConvertTo-Json -Compress -Depth 30)"}
+          $out=[ordered]@{
+            schema='openworker.case0004-control-readback/v1'
+            case_id='0004'
+            machine=$env:COMPUTERNAME
+            request_id=$requestId
+            command='CASE.STATUS'
+            hook=$hookObj
+            dispatcher=$dispatchObj
+            github_run_id=$env:GITHUB_RUN_ID
+            github_action_used_for_command_transport=$true
+            github_action_used_for_business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          $rel="command-results/DESKTOP-O87PJNR/$requestId/final.json"
+          $path=Join-Path $env:GITHUB_WORKSPACE ($rel -replace '/','\')
+          New-Item -ItemType Directory -Force -Path (Split-Path $path)|Out-Null
+          [IO.File]::WriteAllText($path,($out|ConvertTo-Json -Depth 50)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-control-readback'
+          git config user.email 'openworker-control-readback@users.noreply.github.com'
+          git add -- $rel
+          git commit -m "receipt(case0004): embedded CASE.STATUS $requestId"
+          if($LASTEXITCODE -ne 0){throw 'failed to commit embedded-control readback'}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'failed to rebase embedded-control readback'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'failed to push embedded-control readback'}

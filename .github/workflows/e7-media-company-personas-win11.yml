@@ -1,0 +1,60 @@
+name: E7 Media Company Personas Win11
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'coworker/personas/builtin/media.md'
+      - 'coworker/personas/builtin/company.md'
+      - 'coworker/personas/**'
+      - 'coworker/engineering/tools.py'
+      - 'coworker/engineering/media_tools.py'
+      - 'coworker/engineering/comfyx_long_job.py'
+      - 'coworker/catalog.py'
+      - 'tests/test_engineering_tools.py'
+      - 'tests/test_engineering_persona_wiring.py'
+      - 'tests/test_e7_builtin_personas.py'
+      - 'tests/test_e7_task_packages.py'
+      - 'tests/test_e7_product_contract.py'
+      - 'tests/test_e7_submission.py'
+      - 'tests/test_e7_execution_bridge.py'
+      - 'tests/test_e7_media_facade.py'
+      - 'tests/test_e7_media_evidence.py'
+      - '.github/workflows/e7-media-company-personas-win11.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-e7-media-company-personas-win11
+  cancel-in-progress: true
+
+jobs:
+  e7-personas:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Runner identity
+        run: |
+          echo machine=%COMPUTERNAME%
+          python --version
+          git --version
+
+      - uses: actions/checkout@v4
+
+      - name: Install OpenWorker
+        run: python -m pip install -e ".[dev]"
+
+      - name: Compile E7 persona runtime
+        run: python -m compileall -q coworker\personas coworker\engineering\tools.py coworker\engineering\media_tools.py coworker\engineering\comfyx_long_job.py coworker\catalog.py tests\test_engineering_tools.py tests\test_engineering_persona_wiring.py tests\test_e7_builtin_personas.py tests\test_e7_task_packages.py tests\test_e7_product_contract.py tests\test_e7_submission.py tests\test_e7_execution_bridge.py tests\test_e7_media_facade.py tests\test_e7_media_evidence.py
+
+      - name: E7 persona product and execution contracts
+        run: python -m pytest tests\test_engineering_tools.py tests\test_engineering_persona_wiring.py tests\test_e7_builtin_personas.py tests\test_e7_task_packages.py tests\test_e7_product_contract.py tests\test_e7_submission.py tests\test_e7_execution_bridge.py tests\test_e7_media_facade.py tests\test_e7_media_evidence.py -q
+
+      - name: Registry and execution-bridge smoke
+        run: python -c "from coworker.personas.registry import PersonaRegistry; from coworker.personas.task_package import media_task_package,company_task_package; from coworker.personas.product_contract import PersonaSession,canonical_handoffs; from coworker.personas.submission import PersonaJobSubmission; from coworker.personas.execution_bridge import rc_column_tool_call,media_submit_tool_call; from coworker.personas.media_evidence import sync_comfyx_media_evidence; from coworker.engineering.tools import engineering_os_tools; from coworker.engineering.media_tools import managed_media_tools; r=PersonaRegistry(); assert r.get('media') is not None; assert r.get('company') is not None; m=media_task_package(title='m',brief='b'); assert PersonaSession(persona='media',session_id='s1',workspace_id='w1').persona.value=='media'; assert canonical_handoffs(m)[0].authority=='AI-Engineering-OS'; s=PersonaJobSubmission(project_id='p',job_id='j',reused=False,task_package_path='t',persona='company',session_id='s',handoff_capabilities=('engineering',)); assert rc_column_tool_call(s,{'component_id':'C1'}).requires_approval; ms=PersonaJobSubmission(project_id='p',job_id='mj',reused=False,task_package_path='t',persona='media',session_id='s',handoff_capabilities=('media',)); assert media_submit_tool_call(ms,{'prompt':'video'}).tool_name=='engineering_generate_minimax_h3'; assert callable(sync_comfyx_media_evidence); assert any(t.__name__=='engineering_execute_rc_column_flow' and t.__aisuite_tool_metadata__.requires_approval for t in engineering_os_tools()); assert managed_media_tools()[0].__aisuite_tool_metadata__.requires_approval; print('E7 media evidence sync loaded')"

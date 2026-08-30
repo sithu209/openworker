@@ -1,0 +1,28 @@
+name: Case0005 Embedded Control Readback
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'examples/control-envelope/case0005-readback-marker.txt'
+      - 'scripts/show-case0005-embedded-control-readback.ps1'
+      - '.github/workflows/case0005-embedded-control-readback.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    name: Case0005 read-only control evidence
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy current Hook and dispatcher files
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\install-openworker-runner-hook.ps1" -OpenWorkerRepoRoot "%GITHUB_WORKSPACE%" -InstallFilesOnly
+      - name: Read durable evidence and current status
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\show-case0005-embedded-control-readback.ps1" -CaseId "0005" -Machine "DESKTOP-ODAQN0D" -RunTag "github-%GITHUB_RUN_ID%"

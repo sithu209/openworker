@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "repository": "deepseek-ai/deepseek-harness",
+  "commit": "47f943859bef60e4160492346772ded9b24f765a",
+  "release": "0.1.0-rc.5",
+  "packages": {
+    "@deepseek-ai/dsh": "0.1.0-rc.5",
+    "@deepseek-ai/dsh-acp": "0.1.0-rc.5"
+  },
+  "control_plane": {
+    "preferred": "agent-client-protocol-stdio",
+    "package": "@deepseek-ai/dsh-acp",
+    "protocol": "JSON-RPC stdio",
+    "scope": "bootstrap-control-only"
+  },
+  "notes": [
+    "Exact commit and release are pinned because DeepSeek Harness is Developer Preview.",
+    "ACP is reused for fresh-session prompt, cancellation and one-shot permission control.",
+    "ACP is not the complete OpenWorker runtime bridge because it omits resume, replay, live reasoning/tool events, plans and per-session close."
+  ]
+}

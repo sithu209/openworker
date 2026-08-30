@@ -1,0 +1,3 @@
+requested_at=2026-08-19T12:35:00+08:00
+machine=DESKTOP-ODAQN0D
+reason=staged install receipt after shim quoting fix

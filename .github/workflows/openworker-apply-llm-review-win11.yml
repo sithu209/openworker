@@ -1,0 +1,161 @@
+name: OpenWorker Apply LLM Review Receipt Win11
+
+on:
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: Absolute OpenWorker workspace path
+        required: true
+        type: string
+      work_code:
+        description: Authoritative WorkLedger work code
+        required: true
+        type: string
+      revision_id:
+        description: Exact reviewed WorkLedger revision id
+        required: true
+        type: string
+      receipt_path:
+        description: Absolute path to llm-review receipt JSON synchronized from Google Drive
+        required: true
+        type: string
+      assigned_host:
+        description: Exact COMPUTERNAME allowed to mutate this WorkLedger
+        required: true
+        type: string
+      runner_label:
+        description: Self-hosted runner routing label, for example O87, UL7 or ODA
+        required: true
+        type: string
+      delivery_json:
+        description: Optional absolute delivery metadata JSON; blank means accept only
+        required: false
+        default: ''
+        type: string
+      case_step:
+        description: OpenWorker CaseWorklist step id; required when workspace is case-governed
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-llm-review-${{ inputs.work_code }}
+  cancel-in-progress: false
+
+jobs:
+  apply-review:
+    name: Apply immutable LLM review receipt
+    runs-on: [self-hosted, Windows, X64, '${{ inputs.runner_label }}']
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify assigned computer and bounded inputs
+        id: contract
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_ASSIGNED_HOST: ${{ inputs.assigned_host }}
+          OW_RECEIPT: ${{ inputs.receipt_path }}
+          OW_DELIVERY: ${{ inputs.delivery_json }}
+          OW_CASE_STEP: ${{ inputs.case_step }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:OW_ASSIGNED_HOST){throw "OPENWORKER_ASSIGNED_HOST_MISMATCH host=$env:COMPUTERNAME assigned=$env:OW_ASSIGNED_HOST"}
+          if(-not (Test-Path -LiteralPath $env:OW_WORKSPACE -PathType Container)){throw "OPENWORKER_WORKSPACE_UNAVAILABLE $env:OW_WORKSPACE"}
+          if(-not (Test-Path -LiteralPath $env:OW_RECEIPT -PathType Leaf) -or (Get-Item -LiteralPath $env:OW_RECEIPT).Length -le 0){throw "OPENWORKER_RECEIPT_UNAVAILABLE $env:OW_RECEIPT"}
+          if($env:OW_DELIVERY -and (-not (Test-Path -LiteralPath $env:OW_DELIVERY -PathType Leaf) -or (Get-Item -LiteralPath $env:OW_DELIVERY).Length -le 0)){throw "OPENWORKER_DELIVERY_METADATA_UNAVAILABLE $env:OW_DELIVERY"}
+          $worklistPath=Join-Path $env:OW_WORKSPACE '.openworker\case-worklist.json'
+          $governed=Test-Path -LiteralPath $worklistPath -PathType Leaf
+          if($governed -and [string]::IsNullOrWhiteSpace($env:OW_CASE_STEP)){throw "case_step is required for governed workspace: $worklistPath"}
+          if(-not $governed -and -not [string]::IsNullOrWhiteSpace($env:OW_CASE_STEP)){throw "case_step supplied but CaseWorklist is absent: $worklistPath"}
+          "worklist_exists=$($governed.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "case_step=$($env:OW_CASE_STEP.Trim())" >> $env:GITHUB_OUTPUT
+          Write-Host "OPENWORKER_REVIEW_APPLY_HOST_OK host=$env:COMPUTERNAME runner=$env:RUNNER_NAME governed=$governed"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Gate canonical CaseWorklist review action
+        id: worklist
+        if: ${{ steps.contract.outputs.worklist_exists == 'true' }}
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          $execution="github:${{ github.run_id }}:${{ github.run_attempt }}:review-apply"
+          python openworker\scripts\case_worklist_action.py start --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id 'openworker.review.apply' --execution-id $execution
+          "execution_id=$execution" >> $env:GITHUB_OUTPUT
+
+      - name: Apply exact manifest-bound review receipt
+        id: apply
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_WORK_CODE: ${{ inputs.work_code }}
+          OW_REVISION_ID: ${{ inputs.revision_id }}
+          OW_RECEIPT: ${{ inputs.receipt_path }}
+          OW_DELIVERY: ${{ inputs.delivery_json }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $args=@('openworker\scripts\openworker_apply_llm_review.py','--workspace',$env:OW_WORKSPACE,'--work-code',$env:OW_WORK_CODE,'--revision-id',$env:OW_REVISION_ID,'--receipt',$env:OW_RECEIPT)
+          if($env:OW_DELIVERY){$args += @('--delivery-json',$env:OW_DELIVERY)}
+          & python @args
+          $code=$LASTEXITCODE
+          $out=Join-Path $env:OW_WORKSPACE "acceptance\openworker-review\llm-review-apply-$env:OW_REVISION_ID.json"
+          if(-not (Test-Path -LiteralPath $out -PathType Leaf)){throw "review apply evidence missing: $out"}
+          $review=Get-Content -LiteralPath $out -Raw | ConvertFrom-Json
+          "evidence_path=$out" >> $env:GITHUB_OUTPUT
+          "decision=$($review.verdict)" >> $env:GITHUB_OUTPUT
+          "accepted_revision_id=$($review.accepted_revision_id)" >> $env:GITHUB_OUTPUT
+          if($code -eq 4){"review_pass=false" >> $env:GITHUB_OUTPUT; Write-Host "OPENWORKER_REVIEW_APPLY_NONPASS_RECORDED verdict=$($review.verdict) status=$($review.status)"; exit 0}
+          if($code -ne 0){throw "OpenWorker review apply failed exit=$code"}
+          if([string]$review.verdict -ne 'PASS' -or [string]::IsNullOrWhiteSpace([string]$review.accepted_revision_id)){throw 'review apply returned success without PASS accepted revision'}
+          "review_pass=true" >> $env:GITHUB_OUTPUT
+          Write-Host 'OPENWORKER_REVIEW_APPLY_PASS'
+
+      - name: Accept CaseWorklist review step only on PASS
+        if: ${{ success() && steps.contract.outputs.worklist_exists == 'true' && steps.apply.outputs.review_pass == 'true' }}
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key review_receipt --value '${{ inputs.receipt_path }}'
+          python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key review_decision --value '${{ steps.apply.outputs.decision }}'
+          python openworker\scripts\case_worklist_action.py complete-action --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id 'openworker.review.apply' --execution-id '${{ steps.worklist.outputs.execution_id }}'
+          python openworker\scripts\case_worklist_action.py pass --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP
+
+      - name: Block CaseWorklist after legitimate non-PASS review
+        if: ${{ steps.contract.outputs.worklist_exists == 'true' && steps.worklist.outcome == 'success' && steps.apply.outputs.review_pass == 'false' }}
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py block-active --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --reason "LLM review decision=${{ steps.apply.outputs.decision }} requires tuning/rework before delivery; run=${{ github.run_id }}"
+
+      - name: Block CaseWorklist when review workflow fails
+        if: ${{ failure() && steps.contract.outputs.worklist_exists == 'true' && steps.worklist.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py block-active --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --reason "LLM review apply workflow failed run=${{ github.run_id }}"
+
+      - name: Upload bounded review apply evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworker-llm-review-apply-${{ inputs.revision_id }}-${{ github.run_id }}
+          path: |
+            ${{ inputs.workspace }}\acceptance\openworker-review\llm-review-apply-${{ inputs.revision_id }}.json
+            ${{ inputs.workspace }}\.openworker\reviews\${{ inputs.revision_id }}\llm-review-receipt.json
+          if-no-files-found: warn
+          retention-days: 14

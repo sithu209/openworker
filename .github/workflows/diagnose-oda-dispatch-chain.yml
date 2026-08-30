@@ -1,0 +1,84 @@
+name: Diagnose ODA Dispatch Chain
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  ingress:
+    if: contains(github.event.head_commit.message, '[diag-oda-dispatch]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish ingress receipt
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $out='case-evidence/case0005-dispatch-chain/ingress.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null
+          $obj=[ordered]@{schema='openworker.case0005-dispatch-chain.ingress/v1';phase='github_ingress_ok';head_sha=$env:GITHUB_SHA;run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          [IO.File]::WriteAllText($out,($obj|ConvertTo-Json -Depth 20)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-dispatch-chain'
+          git config user.email 'openworker-dispatch-chain@users.noreply.github.com'
+          git add -- $out
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0005): dispatch-chain ingress $env:GITHUB_RUN_ID"; git pull --rebase origin main; git push origin HEAD:main}
+
+  o87-cluster-probe:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Probe ODA from Go cluster authority
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $base='http://127.0.0.1:8787'
+          $health=Invoke-RestMethod "$base/healthz" -TimeoutSec 10
+          $status=Invoke-RestMethod "$base/v1/cluster/status" -TimeoutSec 10
+          $agents=Invoke-RestMethod "$base/v1/cluster/agents" -TimeoutSec 10
+          $connectivity=Invoke-RestMethod "$base/v1/cluster/connectivity?limit=500" -TimeoutSec 10
+          $route=$null; $routeError=$null
+          try {$route=Invoke-RestMethod "$base/v1/cluster/route?machine=DESKTOP-ODAQN0D&capabilities=" -TimeoutSec 10} catch {$routeError=$_.Exception.Message}
+          $oda=@($status.nodes|Where-Object{([string]$_.machine) -ieq 'DESKTOP-ODAQN0D'})
+          $obj=[ordered]@{schema='openworker.case0005-dispatch-chain.o87-probe/v1';phase='o87_cluster_probe';controller_machine=$env:COMPUTERNAME;health=$health;oda_nodes=$oda;route=$route;route_error=$routeError;agents=$agents;connectivity=$connectivity;run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $out='case-evidence/case0005-dispatch-chain/o87-cluster-probe.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null
+          [IO.File]::WriteAllText($out,($obj|ConvertTo-Json -Depth 80)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-dispatch-chain'
+          git config user.email 'openworker-dispatch-chain@users.noreply.github.com'
+          git add -- $out
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0005): O87 cluster probe $env:GITHUB_RUN_ID"; git pull --rebase origin main; git push origin HEAD:main}
+
+  oda-pickup:
+    needs: ingress
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish ODA pickup receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          $health=$null; $healthError=$null
+          try {$health=Invoke-RestMethod 'http://127.0.0.1:8787/healthz' -TimeoutSec 10} catch {$healthError=$_.Exception.Message}
+          $obj=[ordered]@{schema='openworker.case0005-dispatch-chain.oda-pickup/v1';phase='oda_runner_picked_up';machine=$env:COMPUTERNAME;runner=$env:RUNNER_NAME;health=$health;health_error=$healthError;run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $out='case-evidence/case0005-dispatch-chain/oda-pickup.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $out)|Out-Null
+          [IO.File]::WriteAllText($out,($obj|ConvertTo-Json -Depth 40)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+          git config user.name 'openworker-dispatch-chain'
+          git config user.email 'openworker-dispatch-chain@users.noreply.github.com'
+          git add -- $out
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0005): ODA pickup $env:GITHUB_RUN_ID"; git pull --rebase origin main; git push origin HEAD:main}

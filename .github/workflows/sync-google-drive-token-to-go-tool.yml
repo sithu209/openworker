@@ -1,0 +1,124 @@
+name: Sync Google Drive Token To Go Tool
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-google-drive-token-to-go-tool.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: sync-${{ matrix.machine }}
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - machine: O87
+            host: DESKTOP-O87PJNR
+            label: O87
+          - machine: ODA
+            host: DESKTOP-ODAQN0D
+            label: ODA
+          - machine: UL7
+            host: DESKTOP-UL7V2VV
+            label: UL7
+    runs-on: [self-hosted, Windows, X64, '${{ matrix.label }}']
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      EXPECTED_HOST: ${{ matrix.host }}
+      MACHINE_KEY: ${{ matrix.machine }}
+      GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+      GTR_CREDENTIAL_DB_PATH: C:\ProgramData\go-tool-runtime\runtime.db
+      GTR_CREDENTIAL_IMPORT: C:\ProgramData\go-tool-runtime\work-agent\gtr-credential-import.exe
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Persist bounded sync start marker
+        run: |
+          $dest=('evidence\credentials\latest-google-drive-sync-start-' + $env:MACHINE_KEY + '.json')
+          New-Item -ItemType Directory -Force -Path (Split-Path $dest)|Out-Null
+          $payload=[ordered]@{schema_version='openworker-gtr-drive-credential-sync-start/v1';machine=$env:COMPUTERNAME;expected_host=$env:EXPECTED_HOST;machine_key=$env:MACHINE_KEY;run_id=$env:GITHUB_RUN_ID;run_attempt=$env:GITHUB_RUN_ATTEMPT;powershell=$PSVersionTable.PSVersion.ToString();secret_present=(-not [string]::IsNullOrWhiteSpace($env:GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN));importer_present=(Test-Path -LiteralPath $env:GTR_CREDENTIAL_IMPORT -PathType Leaf);gh_cli_untouched=$true;gh_token_untouched=$true;observed_at=(Get-Date).ToUniversalTime().ToString('o')}
+          $payload|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $dest -Encoding utf8NoBOM
+          git config user.name 'openworker-credential-bot';git config user.email 'openworker-credential-bot@users.noreply.github.com'
+          git pull --rebase origin main;git add $dest;git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m "credential: start additive Drive sync $env:MACHINE_KEY $env:GITHUB_RUN_ID";git push origin HEAD:main;if($LASTEXITCODE -ne 0){throw 'failed to persist sync start marker'}}
+
+      - name: Refresh checkout after start marker
+        run: git pull --rebase origin main
+
+      - name: Verify fixed machine and additive secret
+        id: preflight
+        continue-on-error: true
+        run: |
+          Write-Host "machine=$env:COMPUTERNAME ps=$($PSVersionTable.PSVersion)"
+          if ($PSVersionTable.PSVersion.Major -lt 7) { throw "PowerShell 7+ required" }
+          if ($env:COMPUTERNAME -ine $env:EXPECTED_HOST) { throw "wrong host expected=$env:EXPECTED_HOST actual=$env:COMPUTERNAME" }
+          if ([string]::IsNullOrWhiteSpace($env:GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN)) { throw 'OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN secret is unavailable' }
+          if (-not (Test-Path -LiteralPath $env:GTR_CREDENTIAL_IMPORT -PathType Leaf)) { throw "deployed go-tool importer unavailable: $env:GTR_CREDENTIAL_IMPORT" }
+          Write-Host "GTR_DRIVE_CREDENTIAL_TARGET_OK machine=$env:COMPUTERNAME"
+
+      - name: Import additive Google Drive credential slot
+        id: import
+        if: steps.preflight.outcome == 'success'
+        continue-on-error: true
+        run: |
+          & $env:GTR_CREDENTIAL_IMPORT `
+            -db $env:GTR_CREDENTIAL_DB_PATH `
+            -provider google_drive `
+            -key OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN `
+            -env GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN
+          if ($LASTEXITCODE -ne 0) { throw "Drive credential import failed: $LASTEXITCODE" }
+          Write-Host "GTR_DRIVE_CREDENTIAL_IMPORT_PASS machine=$env:COMPUTERNAME provider=google_drive name=OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN"
+
+      - name: Verify credential metadata
+        id: verify
+        if: steps.import.outcome == 'success'
+        continue-on-error: true
+        run: |
+          $py=@'
+import json, sqlite3
+p=r"C:\ProgramData\go-tool-runtime\runtime.db"
+db=sqlite3.connect(p)
+rows=list(db.execute("select provider,name,status from local_credentials where provider in ('github','google_drive') order by provider,name"))
+items=[{'provider':r[0],'name':r[1],'status':r[2]} for r in rows]
+if not any(r[0]=='google_drive' and r[1]=='OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN' and r[2]=='active' for r in rows):
+    raise SystemExit('google_drive credential metadata missing')
+print(json.dumps(items))
+'@
+          $tmp=Join-Path $env:RUNNER_TEMP 'verify-gtr-drive-credential.py'
+          $py|Set-Content -LiteralPath $tmp -Encoding utf8NoBOM
+          $raw=python $tmp
+          if ($LASTEXITCODE -ne 0) { throw 'Drive credential metadata verification failed' }
+          $raw|Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'gtr-drive-credential-metadata.json') -Encoding utf8NoBOM
+
+      - name: Persist metadata only
+        if: always()
+        run: |
+          $metaPath=Join-Path $env:RUNNER_TEMP 'gtr-drive-credential-metadata.json'
+          $items=@()
+          if(Test-Path -LiteralPath $metaPath -PathType Leaf){$items=@((Get-Content -LiteralPath $metaPath -Raw -Encoding utf8)|ConvertFrom-Json)}
+          $dest=('evidence\credentials\latest-google-drive-' + $env:MACHINE_KEY + '.json')
+          New-Item -ItemType Directory -Force -Path (Split-Path $dest)|Out-Null
+          $payload=[ordered]@{schema_version='openworker-gtr-drive-credential-metadata/v3';machine=$env:COMPUTERNAME;machine_key=$env:MACHINE_KEY;run_id=$env:GITHUB_RUN_ID;preflight='${{ steps.preflight.outcome }}';import='${{ steps.import.outcome }}';verify='${{ steps.verify.outcome }}';secret_present=(-not [string]::IsNullOrWhiteSpace($env:GTR_SHARED_GOOGLE_DRIVE_ACCESS_TOKEN));importer_present=(Test-Path -LiteralPath $env:GTR_CREDENTIAL_IMPORT -PathType Leaf);credentials=$items;google_drive_active=('${{ steps.verify.outcome }}' -eq 'success');gh_cli_untouched=$true;gh_token_untouched=$true;observed_at=(Get-Date).ToUniversalTime().ToString('o')}
+          $payload|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $dest -Encoding utf8NoBOM
+          git config user.name 'openworker-credential-bot';git config user.email 'openworker-credential-bot@users.noreply.github.com'
+          git pull --rebase origin main;git add $dest;git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m "credential: record additive Drive slot $env:MACHINE_KEY $env:GITHUB_RUN_ID";git push origin HEAD:main;if($LASTEXITCODE -ne 0){throw 'failed to persist credential metadata'}}
+
+      - name: Fail closed when credential sync failed
+        if: steps.verify.outcome != 'success'
+        run: throw 'Google Drive credential sync did not complete; inspect metadata receipt'
+
+# Metadata evidence only; secret bytes are never persisted or printed.
+# Google Drive credential is additive; GH_TOKEN and gh CLI are not modified.
+# Each machine syncs independently; one offline/busy machine must not block another.

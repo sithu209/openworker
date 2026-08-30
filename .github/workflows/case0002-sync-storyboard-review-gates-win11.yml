@@ -1,0 +1,87 @@
+name: Case 0002 Sync Storyboard Review Gates Win11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'case-worklists/0002.json'
+      - 'scripts/case_worklist_sync_manifest.py'
+      - '.github/workflows/case0002-sync-storyboard-review-gates-win11.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-case0002-worklist-sync
+  cancel-in-progress: true
+
+env:
+  CASE0002_WORKSPACE: D:\AI-Example\0002
+
+jobs:
+  sync-worklist:
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Route one candidate to fixed ODA computer name
+        id: route
+        shell: cmd
+        run: |
+          @echo off
+          if /I not "%COMPUTERNAME%"=="DESKTOP-ODAQN0D" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0002_SYNC_SKIP_WRONG_HOST slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+            exit /b 0
+          )
+          if not exist "%CASE0002_WORKSPACE%\.locks" mkdir "%CASE0002_WORKSPACE%\.locks"
+          mkdir "%CASE0002_WORKSPACE%\.locks\worklist-sync-%GITHUB_RUN_ID%-%GITHUB_RUN_ATTEMPT%" 2>nul
+          if errorlevel 1 (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0002_SYNC_SKIP_DUPLICATE_ODA slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+          ) else (
+            echo run=true>>"%GITHUB_OUTPUT%"
+            echo CASE0002_SYNC_HOST_OK slot=${{ matrix.slot }} machine=%COMPUTERNAME% runner=%RUNNER_NAME%
+          )
+
+      - name: Checkout OpenWorker main
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Sync durable CaseWorklist to latest manifest
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          python scripts\case_worklist_sync_manifest.py --workspace-root $env:CASE0002_WORKSPACE --manifest case-worklists\0002.json
+          if($LASTEXITCODE -ne 0){throw 'CASE0002 manifest sync failed'}
+
+      - name: Assert storyboard review gates precede IMAGE and VIDEO
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          $path=Join-Path $env:CASE0002_WORKSPACE '.openworker\case-worklist.json'
+          $w=Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+          $s025=@($w.steps|Where-Object {$_.step_id -eq '0002-025'})|Select-Object -First 1
+          $s027=@($w.steps|Where-Object {$_.step_id -eq '0002-027'})|Select-Object -First 1
+          $s030=@($w.steps|Where-Object {$_.step_id -eq '0002-030'})|Select-Object -First 1
+          $s055=@($w.steps|Where-Object {$_.step_id -eq '0002-055'})|Select-Object -First 1
+          $s057=@($w.steps|Where-Object {$_.step_id -eq '0002-057'})|Select-Object -First 1
+          $s060=@($w.steps|Where-Object {$_.step_id -eq '0002-060'})|Select-Object -First 1
+          if($null -eq $s025 -or $null -eq $s027 -or $null -eq $s030 -or $null -eq $s055 -or $null -eq $s057 -or $null -eq $s060){throw 'CASE0002 storyboard review gates missing'}
+          if(-not(@($s030.dependencies) -contains '0002-027')){throw 'IMAGE step is not gated by text-only storyboard approval'}
+          if(-not(@($s055.dependencies) -contains '0002-050')){throw 'illustrated PPTX is not gated by completed image binding'}
+          if(-not(@($s057.dependencies) -contains '0002-055')){throw 'illustrated storyboard approval is not gated by illustrated PPTX'}
+          if(-not(@($s060.dependencies) -contains '0002-057')){throw 'VIDEO step is not gated by illustrated storyboard approval'}
+          Write-Host "CASE0002_STORYBOARD_GATES_OK next=$($w.canonical_next_step_id)"
+
+      - name: Non-ODA candidate exits cleanly
+        if: steps.route.outputs.run != 'true'
+        shell: cmd
+        run: echo CASE0002_SYNC_NOT_EXECUTED slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%

@@ -1,0 +1,4 @@
+requested_by: ChatGPT
+machine: DESKTOP-O87PJNR
+command: upgrade_o87_direct
+purpose: deploy latest OpenWorker including Case0004 revision 149 automatic Story viewport Drive review publish mapper

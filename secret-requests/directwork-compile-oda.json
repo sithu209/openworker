@@ -1,0 +1,8 @@
+{
+  "schema": "openworker.secret-command.v1",
+  "phrase": "DIRECTWORK.COMPILE",
+  "request_id": "directwork-compile-20260820-03",
+  "requested_by": "chatgpt",
+  "machine": "DESKTOP-ODAQN0D",
+  "purpose": "Compile and test DirectWork through one OpenWorker durable local job after disabling automatic GitHub-hosted CI billing runs."
+}

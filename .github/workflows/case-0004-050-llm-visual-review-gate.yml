@@ -1,0 +1,55 @@
+name: Case 0004 050 LLM Visual Review Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0004-050-llm-visual-review-gate.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case0004-050-llm-visual-review-gate
+  cancel-in-progress: false
+
+jobs:
+  govern:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 10
+    env:
+      CASE0004_WORKSPACE: 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+      PARENT_STEP: '0004-050'
+      REPAIR_STEP: 'R-0004-050-002'
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong fixed host: $env:COMPUTERNAME"}
+          Write-Host "CASE0004_FIXED_HOST_PASS computer=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker governance authority
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Block 050 until multimodal review passes
+        run: |
+          python scripts/case_worklist_action.py block-active --workspace-root "$env:CASE0004_WORKSPACE" --step-id "$env:PARENT_STEP" --reason "LLM visual review is mandatory before StoryRegion promotion; geometry/text probes are auxiliary evidence only"
+          if($LASTEXITCODE -ne 0){throw "failed to block 0004-050"}
+
+      - name: Add visual-review repair child
+        run: |
+          python scripts/case_worklist_action.py add-repair --workspace-root "$env:CASE0004_WORKSPACE" --step-id "$env:REPAIR_STEP" --parent-step-id "$env:PARENT_STEP" --title "Review cut images with multimodal LLM before StoryRegion promotion" --allowed-action openworker.review.publish --allowed-action openworker.review.apply --acceptance review_bundle --acceptance llm_review_receipt --acceptance review_decision --acceptance selected_story_region
+          if($LASTEXITCODE -ne 0){throw "failed to add visual review repair"}
+
+      - name: Assert repair is canonical next step
+        run: |
+          $json = python scripts/case_worklist_action.py show --workspace-root "$env:CASE0004_WORKSPACE" | Out-String
+          if($LASTEXITCODE -ne 0){throw "failed to read worklist"}
+          if($json -notmatch 'R-0004-050-002'){throw "visual review repair missing"}
+          if($json -notmatch '"canonical_next_step_id"\s*:\s*"R-0004-050-002"'){throw "visual review repair is not canonical next step"}
+          Write-Host "CASE0004_LLM_VISUAL_GATE_PASS next=$env:REPAIR_STEP"

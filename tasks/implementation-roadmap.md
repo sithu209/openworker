@@ -1,14 +1,14 @@
 # OpenWorker 工程版獨立分段開發 Roadmap
 
-更新日期：2026-08-08
+更新日期：2026-08-14
 
 ## 專案定位
 
-OpenWorker 工程版是 AI 工程顧問公司的 AI 員工與自然語言操作層；AI-Engineering-OS 保持 Project / Job / Workflow / Artifact / Review / Delivery lifecycle 權威，專業 Engine 保持工程算法權威。
+OpenWorker 工程版是 AI 工程顧問公司的 AI 員工與自然語言操作層；go-tool-runtime 是 Project Workspace 的 Information / Context Authority；AI-Engineering-OS 保持 Project / Job / Tool / Artifact / Review / Delivery lifecycle 權威；DeepSeek Harness 是可替換 agent runtime；專業 Engine 保持工程算法權威。
 
 ## 目前完成度
 
-- E0 工程版定位與中文架構文件：`IMPLEMENTED`
+- E0：`IMPLEMENTED`
 - E1 Capability Registry / Readiness：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
 - E2 AI-Engineering-OS Bridge：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
 - E3 Tool Facade + Persona Wiring：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
@@ -16,100 +16,148 @@ OpenWorker 工程版是 AI 工程顧問公司的 AI 員工與自然語言操作�
 - E5 Digital Thread / Provenance：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
 - E6 RC Column Golden Job：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
 - E6.1 Lifecycle Closure：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
-- E6.2 Review / Approval / Delivery Closure：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
-- E7 Media / Company Coworker：`NOT_STARTED`
+- E6.2 Review / Approval / Delivery：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
+- E6.3 OS-managed Calculation + Drawing + BIM RC Flow：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
+- E6.4 Public RC Flow API + E2E Verification Harness：`IMPLEMENTED — WAITING FOR FULL VERIFICATION`
+- H0 OpenWorker × DeepSeek Harness 架構研究/詳細設計：`IMPLEMENTED`
+- H1-H7：`VERIFIED — OFFICIAL WIN11 GATES`
+- H8 RC Golden Job Native vs Harness A/B：`IMPLEMENTED / DETERMINISTIC VERIFIED — REAL SAME-MACHINE EVIDENCE PENDING`
+- H9 ComfyX long-running job validation：`IMPLEMENTED / DETERMINISTIC VERIFIED — REAL GPU MP4 EVIDENCE PENDING`
+- H10-H11：`VERIFIED — OFFICIAL H3-H11 WIN11 GATE`
+- Project Workspace Bootstrap / one-command Engineering Host：`VERIFIED — OFFICIAL H3-H11 WIN11 GATE`
+- ProjectRoot CLI product smoke：`VERIFIED — OFFICIAL WIN11 GATE`
+- E7.1 Media / Company built-in personas：`IMPLEMENTED / PYTHON VERIFIED`
+- E7.2 Media / Company declarative task packages：`IMPLEMENTED — CI / WIN11 VERIFICATION IN PROGRESS`
 
-## E6.2 權威來源盤點
-
-直接核對 AI-Engineering-OS 啟動程式與 domain code 後確認，Review / Approval / Delivery 並非缺失，只是先前 OpenWorker bridge 尚未接入：
-
-- `GET /api/v1/jobs/{id}/reviews`
-- `GET /api/v1/jobs/{id}/approval-status`
-- `GET /api/v1/artifacts/{id}/reviews`
-- `POST /api/v1/artifacts/{id}/reviews`
-- `GET /api/v1/jobs/{id}/deliveries`
-- `GET /api/v1/jobs/{id}/deliveries/latest`
-- `POST /api/v1/jobs/{id}/publish`
-
-AI-Engineering-OS 的 Approval 語義是衍生狀態，不是另一張 Approval entity：每一個 Job 目前最新 Artifact revision 都必須有最新 `approved` Review，`ApprovalStatus.Approved` 才為 true。全部核准時 Review Service 會把 Job 從 `review → completed`；發布時 Delivery Service 再次執行 `RequireApproved()`，驗證成果 checksum 並在成功後 `completed → published`。
-
-## OpenWorker E6.2 已完成
-
-`EngineeringOSClient` 新增：
-
-- `list_job_reviews()`
-- `list_artifact_reviews()`
-- `approval_status()`
-- `submit_artifact_review()`
-- `list_deliveries()`
-- `latest_delivery()`
-- `publish_job()`
-
-Tool Facade 新增：
-
-- `engineering_get_approval_status`：唯讀，不需 approval。
-- `engineering_list_job_reviews`：唯讀，不需 approval。
-- `engineering_submit_artifact_review`：會改變治理狀態，`requires_approval=True`。
-- `engineering_list_deliveries`：唯讀，不需 approval。
-- `engineering_publish_job`：正式發布外部副作用，`requires_approval=True`。
-
-RC Column Golden Job 新增顯式治理階段：
+## 正式權責鏈
 
 ```text
-run()
-→ Job review state
-→ approve_for_delivery(reviewer=...)
-   → 對每個 registered Artifact 提交 approved Review
-   → AI-Engineering-OS derived approval status
-   → Job completed
-→ publish(publisher=...)
-   → AI-Engineering-OS RequireApproved
-   → checksum / delivery staging / website rebuild
-   → Job published
+ProjectRoot
+├─ AGENTS.md
+├─ TASK.md
+└─ inputs/
+        ↓
+OpenWorker persona / product surface
+        ↓
+NativeRuntime（產品預設）或 explicit Harness opt-in
+        ↓
+go-tool-runtime information/context（Harness engineering path）
+        ↓
+AI-Engineering-OS canonical tools
+        ↓
+professional domain engines
+        ↓
+Artifact Registry / Workspace Artifact Publisher
+        ↓
+deliverables / reports / evidence
 ```
 
-`run()` 絕不自動呼叫 approve/publish。審查人與發布人必須由顯式操作提供，且 Agent Tool 層仍會經 OpenWorker Approval Gate。
+固定原則：go-tool-runtime 只負責 information/context；OpenWorker 負責產品 lifecycle、permission、runtime jobs、persona 與 Harness composition，不建立第二套 Tool Registry；DeepSeek Harness 負責 agent loop / ACP；AI-Engineering-OS 是 canonical tool/job/artifact/delivery authority；專業 Engine 是 domain authority。consequential publish/mutate 必須通過既有 approval/authorization gate。H11 維持 NativeRuntime 為產品預設，Harness explicit opt-in。
 
-## 目前 P0
+## 已驗證基線
 
-1. E1～E6.2 尚待完整 checkout + dependencies 的 pytest / compileall / diff check。
-2. 真實 AI-Engineering-OS + civilforge-tool 多 repo runtime E2E 尚未執行。
-3. Golden Job 尚未把 EngSketch production drawing mutation 與 AI-BIM-Forge IFC mutation納入正式交付物。
+```text
+Official H3-H11 Harness / Workspace: 31783857135 — success
+ProjectRoot CLI official Win11:       31788465175 — success
+Workspace Artifact Publisher Win11:  31780534951 — success
+```
 
-## P1
+## E7.1 — Built-in persona product surfaces
 
-- EngSketch production drawing mutation 接入 Golden Job。
-- AI-BIM-Forge production IFC mutation 接入 Golden Job。
-- pcces-web / Quantity / Schedule / DWG/PDF 第二批 adapters。
-- adapter config persistence 與 Digital Thread persistence。
-- Review / Delivery evidence 納入 Digital Thread schema 的下一版。
+已新增 `coworker/personas/builtin/media.md`、`company.md`、`tests/test_e7_builtin_personas.py` 與 E7 focused Win11 workflow。Media/Company 都只復用 PersonaRegistry、Native/Harness runtime policy、connectors/messaging/scheduler、`engineering_os` facade、AI-Engineering-OS、Workspace Artifact Publisher 與 professional engines。
 
-## E6 系列驗收
+安全邊界：不得新增第二套 agent loop；不得複製 static tool registry；不得掃任意磁碟猜工具路徑；draft 不等於已發送/已發布；未經 approval 不自動發送、發布、購買、付款或承諾；不得假造 media/upload/delivery artifact。
 
-- [x] RC Column schema / identity fail-closed。
-- [x] dependency readiness 在 side effect 前檢查。
-- [x] 建立 AI-Engineering-OS Job。
-- [x] `draft → queued → running → review` authoritative transitions。
-- [x] 呼叫 `forge.rc-column` / `1.0.0`。
-- [x] protocol status 與 `design_ok` 分離。
-- [x] Design Artifact 正式註冊 AI-Engineering-OS Artifact。
-- [x] failure compensation `running → cancelled`。
-- [x] OS Artifact ↔ Design Artifact ↔ Job Digital Thread。
-- [x] Artifact Review bridge。
-- [x] derived Approval Status bridge。
-- [x] 全部 Artifact approved 後確認 Job `completed`。
-- [x] Delivery publish bridge，並由 OS 再次執行 approval / checksum gate。
-- [x] 發布後由 OS 轉為 `published`。
-- [x] governance mutating tools 維持 OpenWorker `requires_approval=True`。
-- [x] permanent regression tests / 中文規格 / self-review。
-- [ ] full repository verification。
-- [ ] real multi-repo runtime E2E。
-- [ ] EngSketch / BIM production mutation。
+Python 基線 `31789065761`：pytest success、gui-unit/typecheck success。舊 focused Win11 `31789065928` 因後續 push 的 concurrency cancel-in-progress 被取消，沒有被誤標 VERIFIED；最新 E7 focused workflow 已擴大到同時驗證 E7.1 + E7.2。
 
-## 下一階段
+## E7.2 — Declarative Media / Company task packages
 
-E6.3：把 EngSketch 正式圖面與 AI-BIM-Forge IFC Artifact 接入同一 Golden Job，讓 Approval Gate 不只核准 calculation trace，而是核准「計算 + 圖面 + BIM」的完整當前成果集合。
+本批新增：
 
-## 驗證原則
+```text
+coworker/personas/task_package.py
+tests/test_e7_task_packages.py
+```
 
-每個 Segment 必須包含 Production Code、永久 Regression Tests、自我 Code Review、Commit/Push。無法完整執行者維持 `IMPLEMENTED — WAITING FOR FULL VERIFICATION`，不得聲稱 `VERIFIED`。
+新增穩定資料 contract：
+
+```text
+openworker.persona-task-package/v1
+PersonaTaskPackage
+WorkStep
+PackageKind: media | company
+ActionClass: local | canonical | external
+```
+
+它是「工作描述 / handoff contract」，不是 workflow engine，也不直接執行工具。
+
+### Media task package
+
+```text
+brief / inputs
+→ script / prompt / production plan
+→ canonical media generation request
+→ ArtifactRef / checksum / QA evidence
+→ optional external publish
+```
+
+`produce` 必須把 authority 指向 AI-Engineering-OS / specialist media engine；OpenWorker 不可自稱專業生成 authority。只有明確提供 publish target 才產生 external publish step，且 `requires_approval=True`。
+
+### Company task package
+
+```text
+request / evidence
+→ research / proposal / work package
+→ optional engineering handoff → AI-Engineering-OS
+→ optional media handoff → specialist media authority
+→ delivery/follow-up plan
+→ optional external send
+```
+
+外部 send 不是預設步驟。只有明確 external target 才加入 external action，而且必須 approval。
+
+### Fail-closed invariants
+
+永久 regression 明確禁止：
+
+```text
+external action without approval
+canonical action claiming OpenWorker as downstream execution authority
+duplicate step ids
+empty package title/brief
+```
+
+這樣 persona 可以產生結構化計畫，但不能藉 task package 繞過 PermissionEngine、AI-Engineering-OS 或 connector approval。
+
+## Scheduler / connectors 邊界
+
+現有 `ScheduledTask` 已有 origin workspace/session、agent、run history、target-bound `always_allowed_tools`；`create_scheduled_task` 本身是 requires_approval，write standing grant 只接受 exact target。E7.2 因此不另建 scheduler。Task package 的 follow-up 只描述「需要 follow-up」；只有使用者明確要求排程時，才交給既有 scheduling tools 建立 automation。
+
+同理，task package 不直接呼叫 messaging/publishing connector。External step 只是一個需要 approval 的宣告；真正 send/publish 仍由既有 connector + PermissionEngine 執行。
+
+## 驗證狀態
+
+E7.2 commits：
+
+```text
+90a3b534fa0b53013421d3bb12741ad77a5f9c8d  feat(e7): add safe Media and Company task packages
+032e4976428e1f84e00d0e0fcc34c56a5a57da51  test(e7): lock task package authority boundaries
+b9b1ec1db953309d34c5a8f18f7e50827abcf42a  ci(e7): verify persona task packages on Win11
+```
+
+最新驗證已觸發：
+
+```text
+CI: 31789585332
+E7 focused Win11: latest run triggered by b9b1ec1d...
+```
+
+在 CI / focused Win11 全綠前，E7.2 保持 `IMPLEMENTED — VERIFICATION IN PROGRESS`。
+
+## H8 / H9 REAL evidence
+
+H8/H9 deterministic verifier code 與 workflow contract 已完成；REAL evidence 仍需真實 IDs。沒有真實 IDs 時保持 skipped，不生成假 evidence。
+
+## 下一批
+
+E7.3 將把 task package 接到 persona-facing product contract：讓 Media / Company session 能產生/保存 package 到 Project Workspace，並把 canonical handoff 與 external-action approval metadata 映射到既有 runtime/tool surfaces。仍不新增第二套 runtime、scheduler、connector 或 artifact registry。

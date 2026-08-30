@@ -1,0 +1,1319 @@
+{
+    "schema":  "openworker.command-result.v1",
+    "phase":  "oda_accepted",
+    "request_id":  "20260819-1257-oda-case0005-status-go-008",
+    "command":  "case_status",
+    "machine":  "DESKTOP-ODAQN0D",
+    "case_id":  "0005",
+    "transport":  "github_actions_transient_dispatch",
+    "accepted":  true,
+    "transport_ok":  true,
+    "exit_code":  0,
+    "error":  "",
+    "github_run_id":  "32217603778",
+    "github_run_attempt":  "1",
+    "runner_name":  "DESKTOP-ODAQN0D-R001",
+    "runner_machine":  "DESKTOP-ODAQN0D",
+    "github_action_used_for_command_transport":  true,
+    "github_action_used_for_business_execution":  false,
+    "business_completion_claimed":  false,
+    "authoritative_business_state":  "openworker",
+    "completed_at":  "2026-08-19T05:03:15.0797402+00:00",
+    "receipt":  {
+                    "schema":  "openworker.command-transport.v1",
+                    "transport":  "github_actions",
+                    "request_id":  "20260819-1257-oda-case0005-status-go-008",
+                    "command":  "case_status",
+                    "case_id":  "0005",
+                    "machine":  "DESKTOP-ODAQN0D",
+                    "accepted":  true,
+                    "exit_code":  0,
+                    "error":  "",
+                    "github_run_id":  "32217603778",
+                    "github_run_attempt":  "1",
+                    "github_action_used_for_command_transport":  true,
+                    "github_action_used_for_business_execution":  false,
+                    "business_completion_claimed":  false,
+                    "authoritative_business_state":  "openworker",
+                    "started_at":  "2026-08-19T05:03:14.4237024+00:00",
+                    "dispatched_at":  "2026-08-19T05:03:15.0537410+00:00",
+                    "result":  {
+                                   "authority":  "openworker-go-native-case-controller+local-durable-ledger",
+                                   "case_id":  "0005",
+                                   "case_jobs":  [
+                                                     {
+                                                         "accepted_at":  "2026-08-18T19:14:59.7312038Z",
+                                                         "agent_slot":  2,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_logged_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T19:14:59.7312038Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080499731203800",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T19:15:00.0052287Z",
+                                                         "heartbeat_at":  "2026-08-18T19:15:00.0052287Z",
+                                                         "job_id":  "case0005-bootstrap-1787080499731203800",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  25848,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T19:14:59.9839834Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T19:06:40.3703295Z",
+                                                         "agent_slot":  1,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T19:06:40.3703295Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080000370329500",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T19:06:40.5075241Z",
+                                                         "heartbeat_at":  "2026-08-18T19:06:40.5075241Z",
+                                                         "job_id":  "case0005-bootstrap-1787080000370329500",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  8680,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T19:06:40.4849172Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080000370329500.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080000370329500.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T19:06:02.9037919Z",
+                                                         "agent_slot":  1,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T19:06:02.9037919Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787079962903791900",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T19:06:03.0180676Z",
+                                                         "heartbeat_at":  "2026-08-18T19:06:03.0180676Z",
+                                                         "job_id":  "case0005-bootstrap-1787079962903791900",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  31052,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T19:06:02.9846448Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079962903791900.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079962903791900.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T19:04:10.0532773Z",
+                                                         "agent_slot":  1,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T19:04:10.0532773Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787079850053277300",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T19:04:10.0874867Z",
+                                                         "heartbeat_at":  "2026-08-18T19:04:10.0874867Z",
+                                                         "job_id":  "case0005-bootstrap-1787079850053277300",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  22948,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T19:04:10.0561016Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079850053277300.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787079850053277300.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:30:13.4304917Z",
+                                                         "agent_slot":  2,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:30:13.4304917Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787067013430491700",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:30:13.6075712Z",
+                                                         "heartbeat_at":  "2026-08-18T15:30:13.6075712Z",
+                                                         "job_id":  "case0005-bootstrap-1787067013430491700",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  2928,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:30:13.5831164Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787067013430491700.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787067013430491700.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:29:36.4619162Z",
+                                                         "agent_slot":  1,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:29:36.4619162Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787066976461916200",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:29:36.7133928Z",
+                                                         "heartbeat_at":  "2026-08-18T15:29:36.7133928Z",
+                                                         "job_id":  "case0005-bootstrap-1787066976461916200",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  31712,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:29:36.6835619Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066976461916200.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066976461916200.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:14:41.3003831Z",
+                                                         "agent_slot":  2,
+                                                         "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:14:41.3003831Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787066081300383100",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:14:41.3827695Z",
+                                                         "heartbeat_at":  "2026-08-18T15:14:41.3827695Z",
+                                                         "job_id":  "case0005-bootstrap-1787066081300383100",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  34884,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:14:41.3578484Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066081300383100.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787066081300383100.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:08:48.6913153Z",
+                                                         "agent_slot":  1,
+                                                         "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:08:48.6913153Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065728691315300",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:08:48.9631861Z",
+                                                         "heartbeat_at":  "2026-08-18T15:08:48.9631861Z",
+                                                         "job_id":  "case0005-bootstrap-1787065728691315300",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  29616,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:08:48.9335088Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065728691315300.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065728691315300.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:04:51.4200516Z",
+                                                         "agent_slot":  4,
+                                                         "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:04:51.4200516Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065491420051600",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:04:51.4488048Z",
+                                                         "heartbeat_at":  "2026-08-18T15:04:51.4488048Z",
+                                                         "job_id":  "case0005-bootstrap-1787065491420051600",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  29208,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:04:51.4317098Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065491420051600.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065491420051600.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     },
+                                                     {
+                                                         "accepted_at":  "2026-08-18T15:04:04.1780325Z",
+                                                         "agent_slot":  4,
+                                                         "command":  "\"python\" -m coworker.case0005_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                         "created_at":  "2026-08-18T15:04:04.1780325Z",
+                                                         "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                         "dispatch_id":  "local-supervisor-case0005-bootstrap-1787065444178032500",
+                                                         "env":  {
+                                                                     "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                     "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                     "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                     "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                     "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                     "OPENWORKER_CASE_ID":  "0005",
+                                                                     "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                 },
+                                                         "exit_code":  1,
+                                                         "finished_at":  "2026-08-18T15:04:04.3537697Z",
+                                                         "heartbeat_at":  "2026-08-18T15:04:04.3537697Z",
+                                                         "job_id":  "case0005-bootstrap-1787065444178032500",
+                                                         "locks":  [
+                                                                       "case:0005:bootstrap"
+                                                                   ],
+                                                         "machine":  "DESKTOP-ODAQN0D",
+                                                         "pid":  28800,
+                                                         "priority":  100,
+                                                         "started_at":  "2026-08-18T15:04:04.3303401Z",
+                                                         "status":  "failed",
+                                                         "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065444178032500.stderr.log",
+                                                         "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787065444178032500.stdout.log",
+                                                         "timeout_sec":  3600,
+                                                         "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                     }
+                                                 ],
+                                   "controller":  {
+                                                      "action_id":  "comfyx-studio.director.preproduction",
+                                                      "case_id":  "0005",
+                                                      "controller":  "go-native",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "python_controller_used":  false,
+                                                      "queue_item":  {
+                                                                         "assigned_host":  "DESKTOP-ODAQN0D",
+                                                                         "attempts":  0,
+                                                                         "capability_id":  "comfyx-studio.director.preproduction",
+                                                                         "completed_at":  "0001-01-01T00:00:00Z",
+                                                                         "created_at":  "2026-08-19T04:55:48.20299Z",
+                                                                         "inputs":  {
+                                                                                        "assigned_host":  "DESKTOP-ODAQN0D",
+                                                                                        "case_id":  "0005",
+                                                                                        "source_story":  "A cinematic fairy-tale short about Snow White. Establish a coherent forest and castle world; introduce Snow White with a stable recognizable character design; establish the Queen and magic mirror as the threat; make the poisoned apple the central crisis; end with awakening, safety and hope. Preserve Snow White, the Queen, the apple, the castle, the forest and the magic mirror consistently across shots. The Director may choose the exact shot count and staging, but the result must remain a concise short-film narrative suitable for storyboard approval before expensive image/video generation.",
+                                                                                        "source_title":  "Snow White / 白雪公主",
+                                                                                        "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                                                    },
+                                                                         "lease_until":  "0001-01-01T00:00:00Z",
+                                                                         "status":  "pending",
+                                                                         "updated_at":  "2026-08-19T04:55:48.20299Z",
+                                                                         "work_id":  "case0005-0005-010-r000014-17b8b780"
+                                                                     },
+                                                      "queue_status":  "pending",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.go-case-continue/v1",
+                                                      "step_id":  "0005-010",
+                                                      "submitted_at":  "2026-08-19T04:55:48.2188265Z",
+                                                      "work_id":  "case0005-0005-010-r000014-17b8b780",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                   "github_action_used_for_business_execution":  false,
+                                   "latest_job_explain":  {
+                                                              "authority":  "openworker-local-durable-ledger",
+                                                              "events":  [
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:15:00.0091576Z",
+                                                                                 "detail":  "{\"attempted_action\":\"\\\"C:\\\\Python314\\\\python.exe\\\" -m coworker.case0005_logged_controller --node-url \\\"http://127.0.0.1:8787\\\" bootstrap --workspace \\\"D:\\\\AI-Work\\\\jobs\\\\0005-SNOW-WHITE\\\" --manifest \\\"D:\\\\AI-Work\\\\runtime\\\\openworker\\\\case-worklists\\\\0005.json\\\" --spec \\\"D:\\\\AI-Work\\\\runtime\\\\openworker\\\\case-specs\\\\0005.json\\\"\",\"cwd\":\"D:\\\\AI-Work\\\\runtime\\\\openworker\",\"dispatch_id\":\"local-supervisor-case0005-bootstrap-1787080499731203800\",\"exit_code\":1,\"finished_at\":\"2026-08-18T19:15:00.0052287Z\",\"job_id\":\"case0005-bootstrap-1787080499731203800\",\"machine\":\"DESKTOP-ODAQN0D\",\"next_action\":\"inspect stderr_tail and the failing tool receipt, repair the root cause, then retry\",\"reason\":\"exit status 1\",\"recorded_at\":\"2026-08-18T19:15:00.0086414Z\",\"schema\":\"openworker.execution-summary/v1\",\"started_at\":\"2026-08-18T19:14:59.9839834Z\",\"status\":\"failed\",\"stderr_path\":\"C:\\\\ProgramData\\\\OpenWorker\\\\node\\\\logs\\\\case0005-bootstrap-1787080499731203800.stderr.log\",\"stderr_tail\":[\"\\ufffd䤣\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd\\ufffd|\\ufffdC\"],\"stdout_path\":\"C:\\\\ProgramData\\\\OpenWorker\\\\node\\\\logs\\\\case0005-bootstrap-1787080499731203800.stdout.log\",\"stdout_tail\":[],\"succeeded\":false,\"workspace_root\":\"D:\\\\AI-Work\\\\jobs\\\\0005-SNOW-WHITE\"}",
+                                                                                 "event_type":  "execution_summary",
+                                                                                 "id":  118,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:15:00.0070479Z",
+                                                                                 "detail":  "exit status 1",
+                                                                                 "event_type":  "failed",
+                                                                                 "id":  117,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:14:59.9971317Z",
+                                                                                 "detail":  "slot=2 pid=25848 cwd=D:\\AI-Work\\runtime\\openworker",
+                                                                                 "event_type":  "running",
+                                                                                 "id":  116,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:14:59.9850401Z",
+                                                                                 "detail":  "machine=DESKTOP-ODAQN0D cwd=D:\\AI-Work\\runtime\\openworker workspace=D:\\AI-Work\\jobs\\0005-SNOW-WHITE command=\"C:\\Python314\\python.exe\" -m coworker.case0005_logged_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                                                 "event_type":  "attempt",
+                                                                                 "id":  115,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:14:59.9839834Z",
+                                                                                 "detail":  "worker slot claimed",
+                                                                                 "event_type":  "claimed",
+                                                                                 "id":  114,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:14:59.7371409Z",
+                                                                                 "detail":  "workspace materialized before durable ACK",
+                                                                                 "event_type":  "case_bootstrap_accepted",
+                                                                                 "id":  113,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             },
+                                                                             {
+                                                                                 "created_at":  "2026-08-18T19:14:59.7312038Z",
+                                                                                 "detail":  "durable local accept",
+                                                                                 "event_type":  "accepted",
+                                                                                 "id":  112,
+                                                                                 "job_id":  "case0005-bootstrap-1787080499731203800"
+                                                                             }
+                                                                         ],
+                                                              "execution_summary":  {
+                                                                                        "attempted_action":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_logged_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                                                        "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                                                        "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080499731203800",
+                                                                                        "exit_code":  1,
+                                                                                        "finished_at":  "2026-08-18T19:15:00.0052287Z",
+                                                                                        "job_id":  "case0005-bootstrap-1787080499731203800",
+                                                                                        "machine":  "DESKTOP-ODAQN0D",
+                                                                                        "next_action":  "inspect stderr_tail and the failing tool receipt, repair the root cause, then retry",
+                                                                                        "reason":  "exit status 1",
+                                                                                        "recorded_at":  "2026-08-18T19:15:00.0086414Z",
+                                                                                        "schema":  "openworker.execution-summary/v1",
+                                                                                        "started_at":  "2026-08-18T19:14:59.9839834Z",
+                                                                                        "status":  "failed",
+                                                                                        "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stderr.log",
+                                                                                        "stderr_tail":  [
+                                                                                                            "�䤣���������|�C"
+                                                                                                        ],
+                                                                                        "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stdout.log",
+                                                                                        "stdout_tail":  [
+
+                                                                                                        ],
+                                                                                        "succeeded":  false,
+                                                                                        "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                                                    },
+                                                              "job":  {
+                                                                          "accepted_at":  "2026-08-18T19:14:59.7312038Z",
+                                                                          "agent_slot":  2,
+                                                                          "command":  "\"C:\\Python314\\python.exe\" -m coworker.case0005_logged_controller --node-url \"http://127.0.0.1:8787\" bootstrap --workspace \"D:\\AI-Work\\jobs\\0005-SNOW-WHITE\" --manifest \"D:\\AI-Work\\runtime\\openworker\\case-worklists\\0005.json\" --spec \"D:\\AI-Work\\runtime\\openworker\\case-specs\\0005.json\"",
+                                                                          "created_at":  "2026-08-18T19:14:59.7312038Z",
+                                                                          "cwd":  "D:\\AI-Work\\runtime\\openworker",
+                                                                          "dispatch_id":  "local-supervisor-case0005-bootstrap-1787080499731203800",
+                                                                          "env":  {
+                                                                                      "COMFYX_COMFYUI_OUTPUT_ROOT":  "D:\\Comfy-Desktop\\ComfyUI-Installs\\ComfyUI\\ComfyUI\\output",
+                                                                                      "COMFYX_ROOT":  "C:\\github-runners\\ComfyX\\_work\\ComfyX\\ComfyX",
+                                                                                      "COMFYX_STUDIO_ROOT":  "C:\\github-runners\\Comfyx-Studio\\_work\\Comfyx-Studio\\Comfyx-Studio",
+                                                                                      "GO_TOOL_ROOT":  "C:\\ProgramData\\go-tool-runtime\\work-agent",
+                                                                                      "GTR_LOCAL_EXEC_EXE":  "C:\\ProgramData\\go-tool-runtime\\work-agent\\gtr-local-exec.exe",
+                                                                                      "OPENMAIC_ROOT":  "C:\\github-runners\\openmaic-fork\\_work\\openmaic-fork\\openmaic-fork",
+                                                                                      "OPENWORKER_CASE_ID":  "0005",
+                                                                                      "OPENWORKER_ROOT":  "D:\\AI-Work\\runtime\\openworker"
+                                                                                  },
+                                                                          "exit_code":  1,
+                                                                          "finished_at":  "2026-08-18T19:15:00.0052287Z",
+                                                                          "heartbeat_at":  "2026-08-18T19:15:00.0052287Z",
+                                                                          "job_id":  "case0005-bootstrap-1787080499731203800",
+                                                                          "locks":  [
+                                                                                        "case:0005:bootstrap"
+                                                                                    ],
+                                                                          "machine":  "DESKTOP-ODAQN0D",
+                                                                          "pid":  25848,
+                                                                          "priority":  100,
+                                                                          "started_at":  "2026-08-18T19:14:59.9839834Z",
+                                                                          "status":  "failed",
+                                                                          "stderr_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stderr.log",
+                                                                          "stdout_path":  "C:\\ProgramData\\OpenWorker\\node\\logs\\case0005-bootstrap-1787080499731203800.stdout.log",
+                                                                          "timeout_sec":  3600,
+                                                                          "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                                      },
+                                                              "observed_at":  "2026-08-19T05:03:15.000638Z"
+                                                          },
+                                   "ledger":  [
+                                                  {
+                                                      "case_id":  "0005",
+                                                      "event_type":  "go_controller_bootstrap_start",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "timestamp":  "2026-08-19T04:22:47.664691Z",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "case_id":  "0005",
+                                                      "detail":  "native Go bootstrap; Python controller not required",
+                                                      "event_type":  "go_controller_bootstrap_completed",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "ready_step_ids":  [
+                                                                             "0005-010"
+                                                                         ],
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "timestamp":  "2026-08-19T04:22:47.6744715Z",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "case_id":  "0005",
+                                                      "event_type":  "go_controller_bootstrap_start",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "timestamp":  "2026-08-19T04:26:31.4000662Z",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "case_id":  "0005",
+                                                      "detail":  "native Go bootstrap; Python controller not required",
+                                                      "event_type":  "go_controller_bootstrap_completed",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "ready_step_ids":  [
+                                                                             "0005-010"
+                                                                         ],
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "timestamp":  "2026-08-19T04:26:31.4057609Z",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "action_id":  "comfyx-studio.director.preproduction",
+                                                      "case_id":  "0005",
+                                                      "event_type":  "go_step_dispatch_start",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "step_id":  "0005-010",
+                                                      "timestamp":  "2026-08-19T04:27:08.6687337Z",
+                                                      "work_id":  "case0005-0005-010-r000014-17b8b780",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "action_id":  "comfyx-studio.director.preproduction",
+                                                      "case_id":  "0005",
+                                                      "event_type":  "go_step_dispatch_start",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "step_id":  "0005-010",
+                                                      "timestamp":  "2026-08-19T04:55:48.1964699Z",
+                                                      "work_id":  "case0005-0005-010-r000014-17b8b780",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  },
+                                                  {
+                                                      "action_id":  "comfyx-studio.director.preproduction",
+                                                      "case_id":  "0005",
+                                                      "detail":  "go-tool durable local-work accepted with idempotent work_id",
+                                                      "event_type":  "go_step_durable_accepted",
+                                                      "machine":  "DESKTOP-ODAQN0D",
+                                                      "revision":  14,
+                                                      "schema":  "openworker.case-supervisor-ledger/v1",
+                                                      "step_id":  "0005-010",
+                                                      "timestamp":  "2026-08-19T04:55:48.2195064Z",
+                                                      "work_id":  "case0005-0005-010-r000014-17b8b780",
+                                                      "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                  }
+                                              ],
+                                   "ledger_event_count":  7,
+                                   "ledger_path":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE\\.openworker\\case-supervisor-ledger.jsonl",
+                                   "machine":  "DESKTOP-ODAQN0D",
+                                   "node":  {
+                                                "advertise_endpoint":  "http://127.0.0.1:8787",
+                                                "build":  {
+                                                              "build_time":  "2026-08-19T04:56:10.9332299Z",
+                                                              "commit":  "0836118f81048daecc72440aa968ea53547a3b05",
+                                                              "version":  "p2-node"
+                                                          },
+                                                "busy_workers":  0,
+                                                "free_workers":  4,
+                                                "heartbeat_at":  "2026-08-19T05:03:14.4401135Z",
+                                                "inventory":  {
+                                                                  "capabilities":  [
+                                                                                       "case0002",
+                                                                                       "case0005",
+                                                                                       "comfyx",
+                                                                                       "local-supervisor",
+                                                                                       "minimax-h3",
+                                                                                       "presentation",
+                                                                                       "storyboard",
+                                                                                       "video"
+                                                                                   ],
+                                                                  "collected_at":  "2026-08-19T05:03:14.9958991Z",
+                                                                  "gpus":  [
+                                                                               {
+                                                                                   "index":  "0",
+                                                                                   "memory_mib":  "16311",
+                                                                                   "name":  "NVIDIA GeForce RTX 5060 Ti"
+                                                                               },
+                                                                               {
+                                                                                   "index":  "1",
+                                                                                   "memory_mib":  "16311",
+                                                                                   "name":  "NVIDIA GeForce RTX 5060 Ti"
+                                                                               }
+                                                                           ],
+                                                                  "roots":  [
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "OPENWORKER_ROOT",
+                                                                                    "name":  "openworker"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "GO_TOOL_ROOT",
+                                                                                    "name":  "go-tool-runtime"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "TERRAIN_ROOT",
+                                                                                    "name":  "terrain-to-dxf"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "SCENEX_ROOT",
+                                                                                    "name":  "scenex"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "ENGINEERING_OS_ROOT",
+                                                                                    "name":  "engineering-os"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "env":  "OPENWORKER_REVIEW_DRIVE_ROOT",
+                                                                                    "name":  "review-drive"
+                                                                                }
+                                                                            ],
+                                                                  "runner_ready":  false,
+                                                                  "runner_services":  [
+
+                                                                                      ],
+                                                                  "tools":  [
+                                                                                {
+                                                                                    "available":  true,
+                                                                                    "name":  "git",
+                                                                                    "path":  "C:\\Program Files\\Git\\cmd\\git.exe"
+                                                                                },
+                                                                                {
+                                                                                    "available":  true,
+                                                                                    "name":  "go",
+                                                                                    "path":  "C:\\github-runners\\openworker\\_work\\_tool\\go\\1.23.12\\x64\\bin\\go.exe"
+                                                                                },
+                                                                                {
+                                                                                    "available":  true,
+                                                                                    "name":  "python",
+                                                                                    "path":  "C:\\Python314\\python.exe"
+                                                                                },
+                                                                                {
+                                                                                    "available":  true,
+                                                                                    "name":  "powershell",
+                                                                                    "path":  "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+                                                                                },
+                                                                                {
+                                                                                    "available":  false,
+                                                                                    "name":  "blender"
+                                                                                },
+                                                                                {
+                                                                                    "available":  true,
+                                                                                    "name":  "nvidia-smi",
+                                                                                    "path":  "C:\\WINDOWS\\system32\\nvidia-smi.exe"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                "lease_seconds":  15,
+                                                "lease_until":  "2026-08-19T05:03:29.4401135Z",
+                                                "machine":  "DESKTOP-ODAQN0D",
+                                                "max_workers":  4,
+                                                "node_id":  "desktop-odaqn0d",
+                                                "online":  true,
+                                                "queued_jobs":  0,
+                                                "resource_locks":  {
+
+                                                                   },
+                                                "service":  {
+                                                                "running_commit":  "0836118f81048daecc72440aa968ea53547a3b05",
+                                                                "service_started_at":  "2026-08-19T04:56:12.5166008Z",
+                                                                "supervisor_api_version":  "v1",
+                                                                "target_commit":  "0836118f81048daecc72440aa968ea53547a3b05",
+                                                                "upgrade_status":  "VERIFIED",
+                                                                "upgrade_verified":  true
+                                                            },
+                                                "time":  "2026-08-19T05:03:14.44066Z"
+                                            },
+                                   "observed_at":  "2026-08-19T05:03:15.000638Z",
+                                   "schema":  "go-tool.openworker-case-snapshot/v3",
+                                   "transport":  "go-tool-direct-local-http",
+                                   "worklist":  {
+                                                    "assigned_host":  "DESKTOP-ODAQN0D",
+                                                    "case_id":  "0005",
+                                                    "parallel_policy":  {
+                                                                            "approval_artifact_github_allowed":  false,
+                                                                            "approval_artifact_transport":  "google-drive-api",
+                                                                            "authority":  "go-tool-runtime-local-supervisor",
+                                                                            "canonical_controller":  "openworker-go-case-engine/v1",
+                                                                            "drive_cloud_identity_required":  true,
+                                                                            "fanout_join":  [
+                                                                                                {
+                                                                                                    "after":  "0005-027",
+                                                                                                    "dynamic_fanout":  "submit every character/scene asset directly to :8848 durable local-work before one OpenWorker coordinator observes results",
+                                                                                                    "join_step":  "0005-050",
+                                                                                                    "parallel_steps":  [
+                                                                                                                           "0005-030",
+                                                                                                                           "0005-040"
+                                                                                                                       ]
+                                                                                                },
+                                                                                                {
+                                                                                                    "after":  "0005-057",
+                                                                                                    "dynamic_fanout":  "submit every approved shot directly to :8848 durable local-work before one OpenWorker coordinator observes results",
+                                                                                                    "join_step":  "0005-070"
+                                                                                                },
+                                                                                                {
+                                                                                                    "after":  "0005-070",
+                                                                                                    "dynamic_fanout":  "WorkLedger revision and Engineering OS identity execute as independent local-supervisor work items",
+                                                                                                    "join_step":  "0005-085",
+                                                                                                    "parallel_steps":  [
+                                                                                                                           "0005-080",
+                                                                                                                           "0005-082"
+                                                                                                                       ]
+                                                                                                }
+                                                                                            ],
+                                                                            "fanout_queue_owner":  "go-tool-runtime:8848",
+                                                                            "fanout_submit_all_children_before_coordinator":  true,
+                                                                            "github_actions_business_execution_allowed":  false,
+                                                                            "github_actions_fallback_allowed":  false,
+                                                                            "max_local_slots":  4,
+                                                                            "openworker_business_child_jobs_allowed":  false,
+                                                                            "openworker_role_for_fanout":  "single-coordinator-only",
+                                                                            "process_kernel":  "openworker-local-supervisor",
+                                                                            "process_kernel_endpoint":  "http://127.0.0.1:8787",
+                                                                            "python_controller_allowed":  false,
+                                                                            "queue_endpoint":  "http://127.0.0.1:8848/api/execution/local-work",
+                                                                            "required_execution_route":  "local_supervisor",
+                                                                            "required_fresh_claim_slots":  4,
+                                                                            "required_fresh_executor_slots":  4,
+                                                                            "required_supervisor_status":  "OPERATIONAL",
+                                                                            "required_verification_status":  "REAL_VERIFIED",
+                                                                            "review_consumer":  "chatgpt-drive-connector",
+                                                                            "review_receipt_capability":  "openworker.review.await-drive",
+                                                                            "review_receipt_cloud_command_ingress_allowed":  false,
+                                                                            "route_query_endpoint":  "http://127.0.0.1:8848/api/execution/route",
+                                                                            "status_endpoint":  "http://127.0.0.1:8848/api/execution/local-supervisor/status",
+                                                                            "transport_non_blocking":  true,
+                                                                            "verification_endpoint":  "http://127.0.0.1:8848/api/execution/local-supervisor/verification"
+                                                                        },
+                                                    "revision":  14,
+                                                    "schema_version":  "openworker-case-worklist/v1",
+                                                    "steps":  [
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "run_id",
+                                                                                         "director_plan",
+                                                                                         "director_plan_sha256",
+                                                                                         "shot_count",
+                                                                                         "character_count",
+                                                                                         "scene_bible_count"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "comfyx-studio.director.preproduction"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-010",
+                                                                      "title":  "Generate fresh structured Snow White Director preproduction"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "storyboard_request",
+                                                                                         "visual_requirements",
+                                                                                         "visual_asset_count",
+                                                                                         "reference_asset_ids"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "comfyx-studio.storyboard.plan"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-010"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-020",
+                                                                      "title":  "Materialize Snow White storyboard presentation request and visual requirements"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "storyboard_pptx",
+                                                                                         "storyboard_manifest",
+                                                                                         "storyboard_pptx_sha256",
+                                                                                         "slide_count",
+                                                                                         "reopen_receipt",
+                                                                                         "image_count"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "presentation.openmaic"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-020"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-025",
+                                                                      "title":  "Generate text-only Snow White storyboard PPTX through OpenMAIC"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "review_bundle",
+                                                                                         "manifest_sha256",
+                                                                                         "published_artifacts",
+                                                                                         "published_artifact_sha256",
+                                                                                         "drive_receipt",
+                                                                                         "drive_folder_id",
+                                                                                         "drive_revision_web_view_link",
+                                                                                         "drive_file_ids",
+                                                                                         "drive_file_links",
+                                                                                         "transport",
+                                                                                         "chatgpt_review_ready",
+                                                                                         "github_action_used_for_artifact_transport"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.case.publish-artifacts"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-025"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-026",
+                                                                      "title":  "Publish text-only storyboard PPTX from ODA local supervisor to Google Drive for ChatGPT/user approval"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "approved_storyboard_pptx_sha256",
+                                                                                         "approval_decision",
+                                                                                         "approval_receipt"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.review.await-drive"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-026"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-027",
+                                                                      "title":  "Wait in local supervisor for bounded Drive receipt approving text-only Snow White storyboard PPTX"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "character_receipts",
+                                                                                         "character_images",
+                                                                                         "character_sha256"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "image.comfyx.storyboard-real"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-027"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "fanout",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-030",
+                                                                      "title":  "Generate REAL Snow White character master images as per-asset :8848 queue-owned fanout"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "scene_receipts",
+                                                                                         "scene_images",
+                                                                                         "scene_sha256"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "image.comfyx.storyboard-real"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-027"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "fanout",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-040",
+                                                                      "title":  "Generate REAL Snow White scene concept images as per-asset :8848 queue-owned fanout"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "shot_image_receipts",
+                                                                                         "shot_images",
+                                                                                         "shot_image_sha256",
+                                                                                         "bound_storyboard_request"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "comfyx-studio.storyboard.real-bind"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-030",
+                                                                                           "0005-040"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-050",
+                                                                      "title":  "Join character/scene branches, then generate and bind REAL Snow White shot images"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "illustrated_storyboard_pptx",
+                                                                                         "illustrated_storyboard_manifest",
+                                                                                         "illustrated_storyboard_sha256",
+                                                                                         "slide_count",
+                                                                                         "reopen_receipt",
+                                                                                         "bound_image_count"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "presentation.openmaic"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-050"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-055",
+                                                                      "title":  "Generate illustrated Snow White storyboard PPTX through OpenMAIC"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "review_bundle",
+                                                                                         "manifest_sha256",
+                                                                                         "published_artifacts",
+                                                                                         "published_artifact_sha256",
+                                                                                         "drive_receipt",
+                                                                                         "drive_folder_id",
+                                                                                         "drive_revision_web_view_link",
+                                                                                         "drive_file_ids",
+                                                                                         "drive_file_links",
+                                                                                         "transport",
+                                                                                         "chatgpt_review_ready",
+                                                                                         "github_action_used_for_artifact_transport"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.case.publish-artifacts"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-055"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-056",
+                                                                      "title":  "Publish illustrated storyboard PPTX from ODA local supervisor to Google Drive for ChatGPT/user approval"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "approved_illustrated_storyboard_sha256",
+                                                                                         "approval_decision",
+                                                                                         "approval_receipt"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.review.await-drive"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-056"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-057",
+                                                                      "title":  "Wait in local supervisor for bounded Drive receipt approving illustrated Snow White storyboard PPTX"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "shot_job_ids",
+                                                                                         "shot_video_receipts",
+                                                                                         "shot_videos",
+                                                                                         "shot_video_sha256",
+                                                                                         "execution_ledger",
+                                                                                         "all_shots_terminal_succeeded"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "comfyx.production.video.real"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-057"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "fanout",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-060",
+                                                                      "title":  "Fan out every approved Snow White shot directly into :8848 durable local-work"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "final_mp4",
+                                                                                         "final_mp4_sha256",
+                                                                                         "resolution",
+                                                                                         "duration",
+                                                                                         "subtitle_receipt",
+                                                                                         "physical_qc",
+                                                                                         "review_contact_sheet",
+                                                                                         "review_contact_sheet_sha256"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "comfyx-studio.finalize"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-060"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "join",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-070",
+                                                                      "title":  "Join all shot video jobs and assemble canonical Snow White final MP4 with physical QC and contact sheet"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "artifact_ids",
+                                                                                         "revision_id",
+                                                                                         "manifest_sha256",
+                                                                                         "final_mp4_sha256"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.workledger.revision"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-070"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-080",
+                                                                      "title":  "Create immutable local WorkLedger revision for canonical Snow White final MP4"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "project_id",
+                                                                                         "job_id",
+                                                                                         "identity_receipt"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "engineering_os.case0005.identity"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-070"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-082",
+                                                                      "title":  "Create or reuse durable AI-Engineering-OS project and job identity"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "artifact_ids",
+                                                                                         "engineering_os_receipt",
+                                                                                         "project_id",
+                                                                                         "job_id"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "engineering_os.artifact.register"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-080",
+                                                                                           "0005-082"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "join",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-085",
+                                                                      "title":  "Register canonical final MP4 in AI-Engineering-OS after WorkLedger and OS identity join"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "review_bundle",
+                                                                                         "manifest_sha256",
+                                                                                         "published_artifacts",
+                                                                                         "published_artifact_sha256",
+                                                                                         "drive_receipt",
+                                                                                         "drive_folder_id",
+                                                                                         "drive_revision_web_view_link",
+                                                                                         "drive_file_ids",
+                                                                                         "drive_file_links",
+                                                                                         "transport",
+                                                                                         "chatgpt_review_ready",
+                                                                                         "github_action_used_for_artifact_transport"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.case.publish-artifacts"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-085"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-090",
+                                                                      "title":  "Upload final MP4, visual contact sheet, and immutable WorkLedger manifest directly from ODA to Google Drive for ChatGPT review"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "review_receipt",
+                                                                                         "review_decision",
+                                                                                         "accepted_revision_id"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.review.await-drive"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-090"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-100",
+                                                                      "title":  "Wait in local supervisor for bounded ChatGPT Drive review receipt over the physical final artifacts"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "delivery_id",
+                                                                                         "delivery_revision",
+                                                                                         "accepted_revision_id"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "engineering_os.delivery.publish"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-100"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-110",
+                                                                      "title":  "Create approved Snow White Delivery Revision only after ChatGPT PASS"
+                                                                  },
+                                                                  {
+                                                                      "acceptance":  [
+                                                                                         "package_path",
+                                                                                         "final_mp4",
+                                                                                         "final_validation",
+                                                                                         "review_provenance"
+                                                                                     ],
+                                                                      "allow_skip":  false,
+                                                                      "allowed_actions":  [
+                                                                                              "openworker.delivery.validate"
+                                                                                          ],
+                                                                      "blocker":  "",
+                                                                      "dependencies":  [
+                                                                                           "0005-110"
+                                                                                       ],
+                                                                      "evidence":  {
+
+                                                                                   },
+                                                                      "kind":  "work",
+                                                                      "repair_parent_step":  "",
+                                                                      "status":  "PENDING",
+                                                                      "step_id":  "0005-120",
+                                                                      "title":  "Validate final Snow White delivery package and review provenance"
+                                                                  }
+                                                              ],
+                                                    "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                                                },
+                                   "workspace_root":  "D:\\AI-Work\\jobs\\0005-SNOW-WHITE"
+                               }
+                }
+}

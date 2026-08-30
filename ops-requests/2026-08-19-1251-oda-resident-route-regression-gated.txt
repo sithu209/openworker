@@ -1,0 +1,6 @@
+Deploy current main to DESKTOP-ODAQN0D resident OpenWorkerNode.
+Required pre-install gate: go test ./internal/api -count=1.
+Required post-install gate: POST /v1/cases/continue must be present immediately after service startup (non-404).
+Required immutable receipt: evidence/deployments/openworker-node-ODA/<run_id>.json.
+GitHub Actions is control-plane transport/install only; business execution remains false.
+Requested at: 2026-08-19T12:51:00+08:00

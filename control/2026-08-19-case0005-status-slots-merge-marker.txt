@@ -1,0 +1,1 @@
+Final merge trigger for Case 0005 status + 4-slot snapshot.

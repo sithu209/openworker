@@ -1,0 +1,92 @@
+name: Engineering Source Locator Win11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'source-locator-requests/request.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engineering-source-locator-o87
+  cancel-in-progress: false
+
+jobs:
+  locate:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') {
+            throw "wrong fixed machine: expected DESKTOP-O87PJNR, actual $env:COMPUTERNAME"
+          }
+          Write-Host "FIXED_MACHINE_OK label=O87 computer=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+
+      - name: Gate Case 0004 through canonical worklist
+        id: worklist
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          $execution = "github:${{ github.run_id }}:${{ github.run_attempt }}:locator"
+          python scripts/case_worklist_action.py ensure `
+            --workspace-root $workspace `
+            --manifest 'case-worklists\0004.json'
+          python scripts/case_worklist_action.py start `
+            --workspace-root $workspace `
+            --step-id '0004-010' `
+            --action-id 'openworker.source.locate' `
+            --execution-id $execution
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "execution_id=$execution`n", (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Locate exact immutable source
+        id: locate
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          $request = Join-Path (Get-Location) 'source-locator-requests\request.json'
+          if (-not (Test-Path -LiteralPath $request -PathType Leaf)) { throw "missing locator request: $request" }
+          $evidence = Join-Path $env:RUNNER_TEMP "engineering-source-locator-$env:GITHUB_RUN_ID.json"
+          python scripts/engineering_source_locator.py --request $request --evidence $evidence
+
+      - name: Commit locator evidence to Case 0004 worklist
+        if: success()
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-010' --key run_id --value "$env:GITHUB_RUN_ID"
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-010' --key source_path --value '${{ steps.locate.outputs.source_path }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-010' --key sha256 --value 'aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6'
+          python scripts/case_worklist_action.py complete-action `
+            --workspace-root $workspace `
+            --step-id '0004-010' `
+            --action-id 'openworker.source.locate' `
+            --execution-id '${{ steps.worklist.outputs.execution_id }}'
+          python scripts/case_worklist_action.py pass --workspace-root $workspace --step-id '0004-010'
+
+      - name: Block Case 0004 worklist when locator workflow fails
+        if: failure() && steps.worklist.outcome == 'success'
+        continue-on-error: true
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts/case_worklist_action.py block-active `
+            --workspace-root $workspace `
+            --step-id '0004-010' `
+            --reason "source locator workflow failed in GitHub run $env:GITHUB_RUN_ID"
+
+      - name: Upload locator evidence
+        if: always() && steps.locate.outputs.evidence_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: engineering-source-locator-${{ github.run_id }}
+          path: ${{ steps.locate.outputs.evidence_path }}
+          if-no-files-found: warn
+          retention-days: 14

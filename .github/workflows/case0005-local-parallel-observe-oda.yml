@@ -1,0 +1,63 @@
+name: Case 0005 Local Parallel Observe ODA
+
+# Case 0005 bounded observation transport. It never owns long-running work.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  observe:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-observe]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - name: Verify fixed ODA host
+        shell: powershell
+        run: |
+          if (-not $env:COMPUTERNAME.Equals('DESKTOP-ODAQN0D',[StringComparison]::OrdinalIgnoreCase)) { throw "wrong host actual=$env:COMPUTERNAME" }
+      - uses: actions/checkout@v4
+      - name: Read OpenWorker durable parallel state
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='http://127.0.0.1:8787'
+          $node=Invoke-RestMethod -Uri "$base/v1/node/status"
+          $agents=Invoke-RestMethod -Uri "$base/v1/cluster/agents"
+          $jobs=Invoke-RestMethod -Uri "$base/v1/jobs?limit=1000"
+          try{$snapshot=Invoke-RestMethod -Uri "$base/v1/supervisor/snapshot?supervisor_id=CHATGPT-CASE0005"}catch{$snapshot=@{available=$false;error=$_.Exception.Message}}
+          $items=@()
+          if($jobs.jobs){$items=@($jobs.jobs)}elseif($jobs -is [System.Array]){$items=@($jobs)}
+          $caseJobs=@($items | Where-Object { $_.job_id -like 'case0005-*' })
+          $overlaps=@()
+          for($i=0;$i -lt $caseJobs.Count;$i++){
+            for($j=$i+1;$j -lt $caseJobs.Count;$j++){
+              $a=$caseJobs[$i];$b=$caseJobs[$j]
+              if($a.started_at -and $b.started_at){
+                $as=[DateTimeOffset]::Parse($a.started_at);$bs=[DateTimeOffset]::Parse($b.started_at)
+                $ae=if($a.finished_at){[DateTimeOffset]::Parse($a.finished_at)}else{[DateTimeOffset]::UtcNow}
+                $be=if($b.finished_at){[DateTimeOffset]::Parse($b.finished_at)}else{[DateTimeOffset]::UtcNow}
+                if($as -lt $be -and $bs -lt $ae){$overlaps+=@{a=$a.job_id;b=$b.job_id;a_slot=$a.agent_slot;b_slot=$b.agent_slot}}
+              }
+            }
+          }
+          $receipt=[ordered]@{
+            schema='openworker/case0005-parallel-observation/v1';case_id='0005';machine=$env:COMPUTERNAME;observed_at=[DateTimeOffset]::UtcNow.ToString('o');
+            node=$node;agents=$agents;case_jobs=$caseJobs;overlapping_pairs=$overlaps;parallel_verified=($overlaps.Count -gt 0);supervisor_snapshot=$snapshot
+          }
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005'|Out-Null
+          $receipt|ConvertTo-Json -Depth 15|Set-Content -LiteralPath 'case-evidence/0005/local-parallel-observation.json' -Encoding utf8
+          Write-Host "CASE0005_PARALLEL_OBSERVE jobs=$($caseJobs.Count) overlaps=$($overlaps.Count) verified=$($overlaps.Count -gt 0)"
+      - name: Commit bounded observation evidence
+        shell: powershell
+        run: |
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005/local-parallel-observation.json
+          git diff --cached --quiet
+          if($LASTEXITCODE -eq 0){Write-Host 'no evidence change';exit 0}
+          git commit -m 'evidence(case0005): record ODA local parallel observation'
+          git push origin HEAD:main

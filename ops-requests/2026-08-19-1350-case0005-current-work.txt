@@ -1,0 +1,3 @@
+Deploy latest ODA resident Go node and publish Case 0005 current durable work receipt.
+Business execution: false.
+Case work resubmit: forbidden.

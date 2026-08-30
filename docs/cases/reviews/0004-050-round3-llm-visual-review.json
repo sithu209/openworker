@@ -1,0 +1,31 @@
+{
+  "schema_version": "openworker.llm-visual-review-receipt/v1",
+  "case_id": "0004",
+  "worklist_step": "R-0004-050-002",
+  "review_round": 3,
+  "reviewer": "ChatGPT multimodal",
+  "decision": "REWORK",
+  "reviewed_source": {
+    "preview_sha256": "5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e",
+    "focused_run_id": "32016907415",
+    "focused_schema": "case0004.llm-review-focused-plan.v2",
+    "focus_wide_bounds": [0, 500, 300, 210],
+    "focus_tight_bounds": [0, 515, 250, 185],
+    "focus_wide_sha256": "fa15d2b4445efaee19a410a4011d8b8f9600e77ff54101d72b4c3b98b310c78b",
+    "focus_tight_sha256": "cf121568e56820bf2d0135694d44412aa9cabab5362f0d77639419b89339c6b4"
+  },
+  "visual_findings": [
+    "Both focused crops were fully retrieved and SHA-verified before review.",
+    "The left side still contains a vertical stack of multiple small drawing frames.",
+    "The center contains one distinct plan-like drawing frame.",
+    "The right side contains another distinct plan-like drawing frame.",
+    "Therefore neither focus-wide nor focus-tight is a single complete StoryRegion."
+  ],
+  "acceptance_reason": "The focused area is now localized, but still contains at least two separate floor-plan-like drawings plus additional left-side drawings. A StoryRegion must correspond to one complete drawing frame, not their union.",
+  "required_next_action": {
+    "action": "separate_plan_frame_candidates",
+    "instruction": "Crop the central and right plan-like frames separately with small margins, preserve exact source-preview pixel bounds and SHA, then submit each candidate to multimodal review. Only a visually complete single plan with identifiable frame/context may be promoted."
+  },
+  "allows_story_region_promotion": false,
+  "allows_next_worklist_stage": false
+}

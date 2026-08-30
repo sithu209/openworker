@@ -1,0 +1,9 @@
+{
+  "schema": "openworker.command-request.v1",
+  "request_id": "20260820-1432-case0004-directwork-045-003",
+  "command": "directwork_case0004_045",
+  "machine": "DESKTOP-O87PJNR",
+  "case_id": "0004",
+  "requested_by": "chatgpt",
+  "requested_at": "2026-08-20T14:32:00+08:00"
+}

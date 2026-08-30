@@ -1,0 +1,118 @@
+name: Upgrade OpenWorker Nodes V2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  ul7:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[upgrade-openworker-nodes-v2]')
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    env:
+      EXPECTED_MACHINE: DESKTOP-UL7V2VV
+      CAPABILITIES: case0003,bridge,blender,scenex,engineering,drive-review
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mark ACCEPTED
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if($env:COMPUTERNAME -ine $env:EXPECTED_MACHINE){throw "wrong host $env:COMPUTERNAME"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='ACCEPTED';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;accepted_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $json=$receipt|ConvertTo-Json -Depth 10 -Compress
+          $bytes=[Text.Encoding]::UTF8.GetBytes($json);$b64=[Convert]::ToBase64String($bytes)
+          $path="case-evidence/node-upgrade/$env:GITHUB_SHA/ul7-accepted.json"
+          $body=@{message="receipt: UL7 accepted $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+      - name: Build install verify and write VERIFIED receipt
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Push-Location go-runtime
+          go mod tidy
+          $build=[DateTime]::UtcNow.ToString('o')
+          go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node
+          Pop-Location
+          & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities $env:CAPABILITIES -Listen '127.0.0.1:8787'
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status'
+          if($s.machine -ine $env:EXPECTED_MACHINE){throw "node machine=$($s.machine)"}
+          if($s.service.running_commit -ne $env:GITHUB_SHA -or $s.service.target_commit -ne $env:GITHUB_SHA -or -not $s.service.upgrade_verified){throw "upgrade not verified: $($s.service|ConvertTo-Json -Compress)"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='VERIFIED';machine=$s.machine;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;running_commit=$s.service.running_commit;upgrade_status=$s.service.upgrade_status;upgrade_verified=$s.service.upgrade_verified;service_started_at=$s.service.service_started_at;verified_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $json=$receipt|ConvertTo-Json -Depth 10 -Compress;$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json));$path="case-evidence/node-upgrade/$env:GITHUB_SHA/ul7-verified.json";$body=@{message="receipt: UL7 verified $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null
+
+  o87:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[upgrade-openworker-nodes-v2]')
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    env:
+      EXPECTED_MACHINE: DESKTOP-O87PJNR
+      CAPABILITIES: case0004,dwg,story-index,engineering
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mark ACCEPTED
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if($env:COMPUTERNAME -ine $env:EXPECTED_MACHINE){throw "wrong host $env:COMPUTERNAME"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='ACCEPTED';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;accepted_at=[DateTimeOffset]::UtcNow.ToString('o')}
+          $json=$receipt|ConvertTo-Json -Depth 10 -Compress;$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json));$path="case-evidence/node-upgrade/$env:GITHUB_SHA/o87-accepted.json";$body=@{message="receipt: O87 accepted $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+      - name: Build install verify and write VERIFIED receipt
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Push-Location go-runtime;go mod tidy;$build=[DateTime]::UtcNow.ToString('o');go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node;Pop-Location
+          & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities $env:CAPABILITIES -Listen '127.0.0.1:8787'
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status';if($s.machine -ine $env:EXPECTED_MACHINE){throw "node machine=$($s.machine)"};if($s.service.running_commit -ne $env:GITHUB_SHA -or $s.service.target_commit -ne $env:GITHUB_SHA -or -not $s.service.upgrade_verified){throw "upgrade not verified: $($s.service|ConvertTo-Json -Compress)"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='VERIFIED';machine=$s.machine;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;running_commit=$s.service.running_commit;upgrade_status=$s.service.upgrade_status;upgrade_verified=$s.service.upgrade_verified;service_started_at=$s.service.service_started_at;verified_at=[DateTimeOffset]::UtcNow.ToString('o')};$json=$receipt|ConvertTo-Json -Depth 10 -Compress;$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json));$path="case-evidence/node-upgrade/$env:GITHUB_SHA/o87-verified.json";$body=@{message="receipt: O87 verified $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null
+
+  oda:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[upgrade-openworker-nodes-v2]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 15
+    env:
+      EXPECTED_MACHINE: DESKTOP-ODAQN0D
+      CAPABILITIES: case0002,case0005,comfyx,minimax-h3,video,storyboard,presentation,local-supervisor
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mark ACCEPTED
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if($env:COMPUTERNAME -ine $env:EXPECTED_MACHINE){throw "wrong host $env:COMPUTERNAME"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='ACCEPTED';machine=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;accepted_at=[DateTimeOffset]::UtcNow.ToString('o')};$json=$receipt|ConvertTo-Json -Depth 10 -Compress;$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json));$path="case-evidence/node-upgrade/$env:GITHUB_SHA/oda-accepted.json";$body=@{message="receipt: ODA accepted $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: go-runtime/go.sum
+      - name: Build install verify and write VERIFIED receipt
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Push-Location go-runtime;go mod tidy;$build=[DateTime]::UtcNow.ToString('o');go build -ldflags "-X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Version=p2-node -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.Commit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.TargetCommit=$env:GITHUB_SHA -X github.com/liuxb99/openworker/go-runtime/internal/buildinfo.BuildTime=$build" -o openworker-node.exe ./cmd/openworker-node;Pop-Location
+          & "$env:GITHUB_WORKSPACE\scripts\install_openworker_node_service.ps1" -SourceExe "$env:GITHUB_WORKSPACE\go-runtime\openworker-node.exe" -Workers 4 -Capabilities $env:CAPABILITIES -Listen '127.0.0.1:8787'
+          $s=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status';if($s.machine -ine $env:EXPECTED_MACHINE){throw "node machine=$($s.machine)"};if($s.service.running_commit -ne $env:GITHUB_SHA -or $s.service.target_commit -ne $env:GITHUB_SHA -or -not $s.service.upgrade_verified){throw "upgrade not verified: $($s.service|ConvertTo-Json -Compress)"}
+          $receipt=[ordered]@{schema='openworker/node-upgrade-receipt/v1';phase='VERIFIED';machine=$s.machine;runner_name=$env:RUNNER_NAME;target_commit=$env:GITHUB_SHA;running_commit=$s.service.running_commit;upgrade_status=$s.service.upgrade_status;upgrade_verified=$s.service.upgrade_verified;service_started_at=$s.service.service_started_at;verified_at=[DateTimeOffset]::UtcNow.ToString('o')};$json=$receipt|ConvertTo-Json -Depth 10 -Compress;$b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json));$path="case-evidence/node-upgrade/$env:GITHUB_SHA/oda-verified.json";$body=@{message="receipt: ODA verified $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'} -ContentType 'application/json' -Body $body | Out-Null

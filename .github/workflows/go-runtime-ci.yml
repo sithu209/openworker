@@ -1,0 +1,51 @@
+name: OpenWorker Go Runtime CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "go-runtime/**"
+      - ".github/workflows/go-runtime-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "go-runtime/**"
+      - ".github/workflows/go-runtime-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  test-go-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache-dependency-path: go-runtime/go.sum
+      - name: Test Go runtime
+        working-directory: go-runtime
+        run: go test ./...
+      - name: Build AI-OpenSees evidence inspector
+        working-directory: go-runtime
+        run: go build -o ../build/openworker-ai-opensees-evidence ./cmd/openworker-ai-opensees-evidence
+      - name: Write CI receipt
+        shell: bash
+        run: |
+          mkdir -p build
+          {
+            echo "schema=openworker/go-runtime-ci-receipt/v0.1"
+            echo "commit_sha=${GITHUB_SHA}"
+            echo "workflow=${GITHUB_WORKFLOW}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "go_test=pass"
+            echo "evidence_cli_build=pass"
+          } > build/go-runtime-ci-receipt.txt
+      - name: Upload CI receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworker-go-runtime-ci-receipt-${{ github.sha }}
+          path: build/go-runtime-ci-receipt.txt
+          if-no-files-found: error
+          retention-days: 30

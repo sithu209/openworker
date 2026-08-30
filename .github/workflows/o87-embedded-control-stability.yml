@@ -1,0 +1,81 @@
+name: O87 Embedded Control Stability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/o87-embedded-control-stability.yml'
+      - 'control-triggers/o87-embedded-stability-*.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stability:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify exact O87 host
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          Write-Host "O87_STABILITY_HOST_PASS runner=$env:RUNNER_NAME machine=$env:COMPUTERNAME"
+
+      - name: Deploy latest Embedded Control files
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          & .\scripts\install-openworker-runner-hook.ps1 -InstallFilesOnly -OpenWorkerRepoRoot $env:GITHUB_WORKSPACE
+          if($LASTEXITCODE -ne 0){throw "hook files-only install failed exit=$LASTEXITCODE"}
+          foreach($p in @(
+            'C:\ProgramData\OpenWorker\hooks\openworker-job-started-hook.ps1',
+            'C:\ProgramData\OpenWorker\hooks\openworker-job-started.cmd',
+            'C:\ProgramData\OpenWorker\hooks\invoke-openworker-control-envelope-v1.ps1'
+          )){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){throw "missing installed file $p"}}
+          Write-Host 'O87_EMBEDDED_FILES_PASS'
+
+      - name: Run proven 9-round stability harness
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          & .\scripts\test-openworker-embedded-control-stability.ps1 -CaseStatusRounds 5 -SupervisorStatusRounds 2 -CaseId '0004' -ExpectedMachine 'DESKTOP-O87PJNR'
+          if($LASTEXITCODE -ne 0){throw "stability harness failed exit=$LASTEXITCODE"}
+          $p='C:\ProgramData\OpenWorker\hooks\stability-latest.json'
+          if(-not(Test-Path -LiteralPath $p -PathType Leaf)){throw "stability result missing $p"}
+          $r=Get-Content -LiteralPath $p -Raw|ConvertFrom-Json
+          if([int]$r.total_rounds -ne 9){throw "unexpected total_rounds=$($r.total_rounds)"}
+          if([int]$r.successful_rounds -ne 9){throw "unexpected successful_rounds=$($r.successful_rounds)"}
+          Write-Host "O87_EMBEDDED_STABILITY_PASS total=$($r.total_rounds) success=$($r.successful_rounds)"
+
+      - name: Commit durable stability readback
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $src='C:\ProgramData\OpenWorker\hooks\stability-latest.json'
+          $dst='command-results/o87/embedded-control-stability/latest.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $dst -Parent)|Out-Null
+          Copy-Item -LiteralPath $src -Destination $dst -Force
+          $meta=[ordered]@{
+            schema='openworker.o87-embedded-stability-readback/v1'
+            machine=$env:COMPUTERNAME
+            runner=$env:RUNNER_NAME
+            github_run_id=$env:GITHUB_RUN_ID
+            business_execution=$false
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          $meta|ConvertTo-Json -Depth 10|Set-Content -LiteralPath 'command-results/o87/embedded-control-stability/meta.json' -Encoding utf8
+          git config user.name 'openworker-stability-readback'
+          git config user.email 'openworker-stability-readback@users.noreply.github.com'
+          git add -- 'command-results/o87/embedded-control-stability/latest.json' 'command-results/o87/embedded-control-stability/meta.json'
+          git commit -m 'receipt(o87): Embedded Control 9-round stability PASS'
+          if($LASTEXITCODE -ne 0){throw 'failed to commit O87 stability readback'}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'failed to rebase O87 stability readback'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'failed to push O87 stability readback'}

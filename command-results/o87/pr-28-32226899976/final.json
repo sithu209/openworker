@@ -1,0 +1,752 @@
+{
+  "schema": "openworker.command-result.v1",
+  "phase": "o87_accepted",
+  "request_id": "pr-28-32226899976",
+  "command": "case_status",
+  "machine": "DESKTOP-O87PJNR",
+  "case_id": "0004",
+  "transport": "github_actions_transient_dispatch",
+  "accepted": true,
+  "transport_ok": true,
+  "exit_code": 0,
+  "error": "",
+  "github_run_id": "32226899976",
+  "github_run_attempt": "1",
+  "runner_name": "DESKTOP-O87PJNR-R003",
+  "runner_machine": "DESKTOP-O87PJNR",
+  "github_action_used_for_command_transport": true,
+  "github_action_used_for_business_execution": false,
+  "business_completion_claimed": false,
+  "authoritative_business_state": "openworker",
+  "completed_at": "2026-08-19T07:14:29.9985269+00:00",
+  "receipt": {
+    "schema": "openworker.command-transport.v1",
+    "transport": "github_actions_transient_dispatch",
+    "request_id": "pr-28-32226899976",
+    "command": "case_status",
+    "case_id": "0004",
+    "machine": "DESKTOP-O87PJNR",
+    "accepted": true,
+    "exit_code": 0,
+    "error": "",
+    "github_run_id": "32226899976",
+    "github_run_attempt": "1",
+    "runner_name": "DESKTOP-O87PJNR-R003",
+    "runner_machine": "DESKTOP-O87PJNR",
+    "github_action_used_for_command_transport": true,
+    "github_action_used_for_business_execution": false,
+    "business_completion_claimed": false,
+    "authoritative_business_state": "openworker",
+    "started_at": "2026-08-19T07:14:28.8070149+00:00",
+    "dispatched_at": "2026-08-19T07:14:29.9847310+00:00",
+    "result": {
+      "authority": "openworker-go-native-case-controller+local-durable-ledger",
+      "case_id": "0004",
+      "case_jobs": [],
+      "controller": null,
+      "github_action_used_for_business_execution": false,
+      "ledger": [],
+      "ledger_event_count": 0,
+      "ledger_path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\.openworker\\case-supervisor-ledger.jsonl",
+      "machine": "DESKTOP-O87PJNR",
+      "node": {
+        "advertise_endpoint": "http://127.0.0.1:8787",
+        "build": {
+          "build_time": "2026-08-19T05:06:38.0749301Z",
+          "commit": "8aa368b3cf2877598a6c96a46dc208d4d789fc52",
+          "version": "p2-node"
+        },
+        "busy_workers": 0,
+        "free_workers": 4,
+        "heartbeat_at": "2026-08-19T07:14:28.8442021Z",
+        "inventory": {
+          "capabilities": [
+            "case0004",
+            "dwg",
+            "engineering",
+            "story-index"
+          ],
+          "collected_at": "2026-08-19T07:14:29.9518823Z",
+          "gpus": [
+            {
+              "index": "0",
+              "memory_mib": "8188",
+              "name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+            }
+          ],
+          "roots": [
+            {
+              "available": false,
+              "env": "OPENWORKER_ROOT",
+              "name": "openworker"
+            },
+            {
+              "available": false,
+              "env": "GO_TOOL_ROOT",
+              "name": "go-tool-runtime"
+            },
+            {
+              "available": false,
+              "env": "TERRAIN_ROOT",
+              "name": "terrain-to-dxf"
+            },
+            {
+              "available": false,
+              "env": "SCENEX_ROOT",
+              "name": "scenex"
+            },
+            {
+              "available": false,
+              "env": "ENGINEERING_OS_ROOT",
+              "name": "engineering-os"
+            },
+            {
+              "available": false,
+              "env": "OPENWORKER_REVIEW_DRIVE_ROOT",
+              "name": "review-drive"
+            }
+          ],
+          "runner_ready": false,
+          "runner_services": [],
+          "tools": [
+            {
+              "available": true,
+              "name": "git",
+              "path": "C:\\Program Files\\Git\\cmd\\git.exe"
+            },
+            {
+              "available": true,
+              "name": "go",
+              "path": "C:\\github-runners\\openworker\\_work\\_tool\\go\\1.23.12\\x64\\bin\\go.exe"
+            },
+            {
+              "available": true,
+              "name": "python",
+              "path": "C:\\Python314\\python.exe"
+            },
+            {
+              "available": true,
+              "name": "powershell",
+              "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+            },
+            {
+              "available": false,
+              "name": "blender"
+            },
+            {
+              "available": true,
+              "name": "nvidia-smi",
+              "path": "C:\\Windows\\system32\\nvidia-smi.exe"
+            }
+          ]
+        },
+        "lease_seconds": 15,
+        "lease_until": "2026-08-19T07:14:43.8442021Z",
+        "machine": "DESKTOP-O87PJNR",
+        "max_workers": 4,
+        "node_id": "desktop-o87pjnr",
+        "online": true,
+        "queued_jobs": 0,
+        "resource_locks": {},
+        "service": {
+          "running_commit": "8aa368b3cf2877598a6c96a46dc208d4d789fc52",
+          "service_started_at": "2026-08-19T05:06:44.8335751Z",
+          "supervisor_api_version": "v1",
+          "target_commit": "8aa368b3cf2877598a6c96a46dc208d4d789fc52",
+          "upgrade_status": "VERIFIED",
+          "upgrade_verified": true
+        },
+        "time": "2026-08-19T07:14:28.8447942Z"
+      },
+      "observed_at": "2026-08-19T07:14:29.9598687Z",
+      "schema": "go-tool.openworker-case-snapshot/v4",
+      "transport": "go-tool-direct-local-http",
+      "worklist": {
+        "assigned_host": "DESKTOP-O87PJNR",
+        "canonical_next_step_id": "0004-045",
+        "case_id": "0004",
+        "parallel_policy": {
+          "approval_artifact_github_allowed": false,
+          "approval_artifact_transport": "google-drive-api",
+          "authority": "go-tool-runtime-local-supervisor",
+          "canonical_controller": "openworker-go-case-engine/v1",
+          "fanout_join": [
+            {
+              "after": "0004-045",
+              "dynamic_fanout": "0004-047 submits one durable :8848 local-work child per persisted Story Index viewport, up to four concurrent slots",
+              "join_step": "0004-049"
+            },
+            {
+              "after": "0004-049",
+              "dynamic_fanout": "per-story query/review work may run independently for confirmed story_ids while cad.set_story_region remains governed by 0004-050",
+              "join_step": "0004-055"
+            }
+          ],
+          "fanout_queue_owner": "go-tool-runtime:8848",
+          "fanout_submit_all_children_before_coordinator": true,
+          "github_actions_business_execution_allowed": false,
+          "github_actions_fallback_allowed": false,
+          "max_local_slots": 4,
+          "openworker_business_child_jobs_allowed": false,
+          "openworker_role_for_fanout": "single-coordinator-only",
+          "process_kernel": "openworker-local-supervisor",
+          "process_kernel_endpoint": "http://127.0.0.1:8787",
+          "python_controller_allowed": false,
+          "queue_endpoint": "http://127.0.0.1:8848/api/execution/local-work",
+          "required_execution_route": "local_supervisor",
+          "required_fresh_claim_slots": 4,
+          "required_fresh_executor_slots": 4,
+          "required_supervisor_status": "OPERATIONAL",
+          "required_verification_status": "REAL_VERIFIED",
+          "route_query_endpoint": "http://127.0.0.1:8848/api/execution/route",
+          "status_endpoint": "http://127.0.0.1:8848/api/execution/local-supervisor/status",
+          "transport_non_blocking": true,
+          "verification_endpoint": "http://127.0.0.1:8848/api/execution/local-supervisor/verification"
+        },
+        "ready_step_ids": [
+          "0004-045"
+        ],
+        "revision": 146,
+        "running_step_ids": [],
+        "schema_version": "openworker-case-worklist/v1",
+        "steps": [
+          {
+            "acceptance": [
+              "run_id",
+              "source_path",
+              "sha256"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.source.locate"
+            ],
+            "blocker": "",
+            "dependencies": [],
+            "evidence": {
+              "run_id": "32008732425",
+              "sha256": "aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6",
+              "source_path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\input\\source.dwg"
+            },
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PASSED",
+            "step_id": "0004-010",
+            "title": "Locate exact primary DWG on fixed O87 host"
+          },
+          {
+            "acceptance": [
+              "run_id",
+              "project_id",
+              "job_id",
+              "canonical_path",
+              "sha256",
+              "job_binding_path"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.source.ingress"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-010"
+            ],
+            "evidence": {
+              "canonical_path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\input\\source.dwg",
+              "job_binding_path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\.openworker\\job-binding.json",
+              "job_id": "job_f85f3e01cbe1f998c16ac2b772db4fc1",
+              "os_authority_commit": "ca678a1ad47aba8e9386993173aa22eb126120e5",
+              "project_id": "prj_3e0dda459b582aed83e0367c755660e5",
+              "reconciliation_evidence": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\source-ingress\\local-run-32009612975.json",
+              "reconciliation_repair": "R-0004-020-003",
+              "run_id": "32009612975",
+              "sha256": "aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6"
+            },
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PASSED",
+            "step_id": "0004-020",
+            "title": "Canonical source ingress plus OS Project Job and JobBinding"
+          },
+          {
+            "acceptance": [
+              "run_id",
+              "job_id",
+              "receipt",
+              "source_sha256"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.open_dwg"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-020"
+            ],
+            "evidence": {
+              "job_id": "job_f85f3e01cbe1f998c16ac2b772db4fc1",
+              "receipt": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\dwg-cad-local\\case0004-open-32011733568\\receipt.json",
+              "run_id": "32011733568",
+              "source_sha256": "aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6"
+            },
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PASSED",
+            "step_id": "0004-030",
+            "title": "Open primary DWG with latest DWG_todo authority"
+          },
+          {
+            "acceptance": [
+              "extent_receipt",
+              "overview_png",
+              "overview_sha256"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.get_model_extents",
+              "cad.render_png",
+              "cad.list_candidate_regions"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-030"
+            ],
+            "evidence": {
+              "extent_receipt": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\evidence\\dwg-cad-local\\case0004-extents-32011900313\\receipt.json",
+              "overview_png": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\dwg\\exports\\default\\visual-search\\case0004-overview.png",
+              "overview_sha256": "5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e"
+            },
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PASSED",
+            "step_id": "0004-040",
+            "title": "Model extents and raw overview render"
+          },
+          {
+            "acceptance": [
+              "layout_id",
+              "story_count",
+              "stories",
+              "revision",
+              "state",
+              "evidence_root"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.build_story_index"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-040"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "READY",
+            "step_id": "0004-045",
+            "title": "Build persistent Story Index from promotion-grade LLM viewport localization; preserve unresolved floors fail-closed"
+          },
+          {
+            "acceptance": [
+              "source_sha256",
+              "render_manifest",
+              "story_job_ids",
+              "rendered_story_count",
+              "story_pngs",
+              "story_png_sha256s",
+              "all_required_stories_terminal_succeeded"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.render_story_viewports"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-045"
+            ],
+            "evidence": {},
+            "kind": "fanout",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-047",
+            "title": "Fan out one durable local render job per identified Story Index viewport and join all required PNGs"
+          },
+          {
+            "acceptance": [
+              "review_bundle",
+              "llm_review_receipt",
+              "story_index_decision",
+              "per_story_decisions",
+              "confirmed_story_ids",
+              "unresolved_story_ids"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.review.publish",
+              "openworker.review.apply"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-047"
+            ],
+            "evidence": {},
+            "kind": "join",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-049",
+            "title": "Multimodal verify Story Index and every per-floor zoom PNG"
+          },
+          {
+            "acceptance": [
+              "story_regions",
+              "region_evidence",
+              "confirmed_story_ids"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.query_bounds",
+              "cad.query_entities",
+              "cad.set_story_region"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-049"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-050",
+            "title": "Confirm real Story Regions from visually accepted Story Index viewports"
+          },
+          {
+            "acceptance": [
+              "source_sha256",
+              "story_region",
+              "candidate_count",
+              "confirmed_column_handles",
+              "review_decision"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.list_story_column_candidates"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-050"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-055",
+            "title": "List and visually confirm Story column candidates"
+          },
+          {
+            "acceptance": [
+              "design_json",
+              "design_png",
+              "design_sha256",
+              "review_decision"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.design_story_structure"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-055"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-060",
+            "title": "Structural recognition and Story Design"
+          },
+          {
+            "acceptance": [
+              "materialization_receipt",
+              "reopen_query"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.materialize_story_structure"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-060"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-070",
+            "title": "Reviewed structural materialization"
+          },
+          {
+            "acceptance": [
+              "anchor_receipt",
+              "registration_receipt",
+              "residual_validation"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.set_story_anchor",
+              "cad.register_stories",
+              "cad.validate_story_registration"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-070"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-080",
+            "title": "Story anchors registration and residual validation"
+          },
+          {
+            "acceptance": [
+              "structural_model_path",
+              "structural_model_sha256",
+              "v1_building_skeleton_path",
+              "mct_sha256",
+              "nodes",
+              "elements",
+              "result"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "structural.ai_opensees.validate"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-080"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-085",
+            "title": "Validate registered Building structural authority with latest AI-OpenSees"
+          },
+          {
+            "acceptance": [
+              "building_world_manifest",
+              "building_world_sha256"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.build_building_3d"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-085"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-090",
+            "title": "Build Building World Coordinates"
+          },
+          {
+            "acceptance": [
+              "glb_path",
+              "glb_size",
+              "glb_sha256",
+              "glb_validation"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.export_building_glb",
+              "cad.validate_building_3d"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-090"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-100",
+            "title": "Export and validate production building GLB"
+          },
+          {
+            "acceptance": [
+              "blender_version",
+              "mesh_count",
+              "render_path",
+              "render_sha256",
+              "reopen_report"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.blender.render"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-100"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-110",
+            "title": "Blender 5.2 REAL reopen and render"
+          },
+          {
+            "acceptance": [
+              "dwg_path",
+              "dwg_size",
+              "dwg_sha256",
+              "solid_count",
+              "layer_validation"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.build_building_dwg",
+              "cad.export_building_dwg",
+              "cad.validate_building_dwg"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-110"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-120",
+            "title": "Build native AC1032 ACIS Solid3D DWG"
+          },
+          {
+            "acceptance": [
+              "reopen_receipt",
+              "second_validation"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "cad.validate_building_dwg"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-120"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-130",
+            "title": "OpenCAD DwgReader reopen and second validation"
+          },
+          {
+            "acceptance": [
+              "artifact_ids",
+              "current_revisions"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "engineering_os.artifact.register"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-130"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-140",
+            "title": "Register current artifacts in AI-Engineering-OS"
+          },
+          {
+            "acceptance": [
+              "review_bundle",
+              "drive_receipt"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.review.publish"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-140"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-150",
+            "title": "Build and publish bounded Drive Review Bundle"
+          },
+          {
+            "acceptance": [
+              "review_receipt",
+              "review_decision"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.review.apply"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-150"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-160",
+            "title": "Apply ChatGPT semantic and visual review receipt"
+          },
+          {
+            "acceptance": [
+              "delivery_id",
+              "delivery_revision"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "engineering_os.delivery.publish"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-160"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-170",
+            "title": "Create approved Delivery Revision"
+          },
+          {
+            "acceptance": [
+              "package_path",
+              "website_path",
+              "final_validation"
+            ],
+            "allow_skip": false,
+            "allowed_actions": [
+              "openworker.delivery.validate"
+            ],
+            "blocker": "",
+            "dependencies": [
+              "0004-170"
+            ],
+            "evidence": {},
+            "kind": "work",
+            "repair_parent_step": "",
+            "status": "PENDING",
+            "step_id": "0004-180",
+            "title": "Validate final delivery package and website"
+          }
+        ],
+        "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+      },
+      "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+name: Case 0003 Re-review TOOL GAP Apply UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-rereview-tool-gap-apply-ul7.yml'
+
+permissions:
+  contents: read
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_REVISION_ID: rev_6e6e40bd0c5341f6b81a340bf719f237
+  CASE0003_REPAIR_STEP: R-0003-190-REVIEW-6e6e40bd0c53
+  CASE0003_MANIFEST_SHA: cee419702f58909bf1db4247b141073676b2d5ac74b3dde0969864b7684bdeac
+  CASE0003_DRIVE_FOLDER_ID: 1ZA2IDh5zGzrwgYxhhHaaGFK1b6Lx2-y8
+  CASE0003_DRIVE_FILE_ID: 1wqx5fBhbsyLFVwrt_E1VzLOGkMUPsTQq
+  CASE0003_CLOUD_ZIP_SHA: f4c8d7dab8294f48af5683ccf0354c8062e8075f6a7040ed2fab1f6d8d75fce9
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  apply-tool-gap:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Verify exact reviewed bundle and governed repair
+        id: verify
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw 'Case 0003 host mismatch'}
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID)
+          $sha=(Get-Content -LiteralPath (Join-Path $bundle 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+          if($sha -ne $env:CASE0003_MANIFEST_SHA){throw ('review manifest drift '+$sha)}
+          $wlPath=Join-Path $env:CASE0003_WORKSPACE '.openworker\case-worklist.json'
+          $wl=Get-Content -LiteralPath $wlPath -Raw|ConvertFrom-Json
+          $repair=@($wl.steps|Where-Object{$_.step_id -eq $env:CASE0003_REPAIR_STEP})[0]
+          if($null -eq $repair -or [string]$repair.status -ne 'RUNNING'){throw 're-review repair not RUNNING'}
+          if([string]$repair.evidence.__openworker_active_action -ne 'openworker.review.publish'){throw 'publication action is not active'}
+          $publicationExecution=[string]$repair.evidence.__openworker_active_execution
+          if([string]::IsNullOrWhiteSpace($publicationExecution)){throw 'publication execution identity missing'}
+          "publication_execution=$publicationExecution" >> $env:GITHUB_OUTPUT
+          "CASE0003_REVIEW_BUNDLE=$bundle"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Materialize exact ChatGPT TOOL GAP receipt
+        run: |
+          $ErrorActionPreference='Stop'
+          $receipt=Join-Path $env:CASE0003_REVIEW_BUNDLE 'connector-llm-review-receipt.json'
+          $payload=[ordered]@{
+            schema_version='openworker-connector-llm-review-receipt/v1'
+            transport='google-drive-connector'
+            revision_id=$env:CASE0003_REVISION_ID
+            verdict='TOOL_GAP'
+            bundle_manifest_sha256=$env:CASE0003_MANIFEST_SHA
+            summary='Exact connector-bound SceneX screenshot is still a visually near-uniform dark field with no recognizable terrain or bridge form, while the same review bundle Blender render exposes clear terrain relief. Pixel-level luma range and background-delta metrics produced a false positive and are insufficient for semantic visual acceptance.'
+            owning_repo='liuxb99/SceneX'
+            gap_capability='scenex.semantic_visible_terrain_review'
+            gap_description='SceneX REAL browse can report geometry and pixel contrast while producing no reviewer-recognizable terrain structure. Presentation framing/material/lighting and low-frequency semantic visibility validation must fail closed.'
+            verification_plan=@(
+              'Add coarse low-frequency structural contrast validation so renderer noise cannot satisfy visibility.',
+              'Pull camera back enough to expose terrain silhouette and meaningful background boundary.',
+              'Use deterministic readable terrain material and lighting through the production TerrainGeometryAdapter material interface.',
+              'Rerun only SceneX presentation and OpenWorker acceptance while preserving DTM/AOI/Blender provenance.',
+              'Inspect the exact next connector-bound SceneX PNG before any PASS.'
+            )
+            cloud_publication=[ordered]@{
+              drive_revision_folder_id=$env:CASE0003_DRIVE_FOLDER_ID
+              drive_file_id=$env:CASE0003_DRIVE_FILE_ID
+              cloud_zip_sha256=$env:CASE0003_CLOUD_ZIP_SHA
+              bundle_manifest_sha256=$env:CASE0003_MANIFEST_SHA
+            }
+          }
+          [IO.File]::WriteAllText($receipt,($payload|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
+          "CASE0003_REVIEW_RECEIPT=$receipt"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Close publication then record connector inspection
+        run: |
+          $ErrorActionPreference='Stop'
+          $s='openworker\scripts\case_worklist_action.py'
+          python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key drive_receipt --value ('google-drive-connector:folder='+$env:CASE0003_DRIVE_FOLDER_ID+';file='+$env:CASE0003_DRIVE_FILE_ID+';sha256='+$env:CASE0003_CLOUD_ZIP_SHA)
+          if($LASTEXITCODE -ne 0){throw 'failed to bind connector publication evidence'}
+          python $s complete-action --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.publish --execution-id '${{ steps.verify.outputs.publication_execution }}'
+          if($LASTEXITCODE -ne 0){throw 'failed to close publication action'}
+          $inspectExec="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:inspect-drive"
+          python $s start --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.inspect_drive --execution-id $inspectExec
+          if($LASTEXITCODE -ne 0){throw 'failed to lease connector inspection'}
+          python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key review_receipt --value $env:CASE0003_REVIEW_RECEIPT
+          python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key review_decision --value TOOL_GAP
+          python $s complete-action --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.inspect_drive --execution-id $inspectExec
+          if($LASTEXITCODE -ne 0){throw 'failed to close connector inspection'}
+
+      - name: Apply exact review to WorkLedger
+        run: |
+          $ErrorActionPreference='Stop'
+          $s='openworker\scripts\case_worklist_action.py'
+          $applyExec="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:apply-review"
+          python $s start --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.apply --execution-id $applyExec
+          if($LASTEXITCODE -ne 0){throw 'failed to lease WorkLedger apply'}
+          $args=@('openworker\scripts\case0003_apply_connector_review.py','--workspace',$env:CASE0003_WORKSPACE,'--revision-id',$env:CASE0003_REVISION_ID,'--receipt',$env:CASE0003_REVIEW_RECEIPT)
+          $p=Start-Process -FilePath 'python' -ArgumentList $args -NoNewWindow -Wait -PassThru
+          if([int]$p.ExitCode -ne 4){throw ('expected TOOL_GAP exit 4 got '+$p.ExitCode)}
+          python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key ledger_status --value TOOL_GAP_REWORK_REQUIRED
+          python $s complete-action --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.apply --execution-id $applyExec
+          if($LASTEXITCODE -ne 0){throw 'failed to close WorkLedger apply'}
+          python $s block-active --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --reason 'Exact connector review found SceneX semantic visibility TOOL_GAP; rerun repaired SceneX presentation before delivery.'
+          if($LASTEXITCODE -ne 0){throw 'failed to block reviewed repair for next rework'}
+          Write-Host "CASE0003_REREVIEW_TOOL_GAP_PERSISTED revision=$env:CASE0003_REVISION_ID delivery_forbidden=true"

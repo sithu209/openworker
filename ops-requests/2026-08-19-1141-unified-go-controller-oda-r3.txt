@@ -1,0 +1,4 @@
+request=install-unified-go-openworker-r3
+machine=DESKTOP-ODAQN0D
+reason=verify-shared-cli-native-bootstrap-and-windows-commandline-fixes
+requested_at=2026-08-19T11:41:00+08:00

@@ -1,0 +1,92 @@
+name: case0002-external-supervisor-oda
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/case0002-external-supervisor-oda.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify fixed ODA computer
+        shell: powershell
+        run: |
+          if ($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D') { throw "wrong computer: $env:COMPUTERNAME" }
+
+      - name: Inspect durable Case0002 and ask go-tool
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $workspace = 'D:\AI-Example\0002'
+          $evidence = Join-Path $env:GITHUB_WORKSPACE 'evidence\case0002-external-supervisor'
+          New-Item -ItemType Directory -Force -Path $evidence | Out-Null
+
+          $worklistText = python scripts\case_worklist_action.py show --workspace-root $workspace
+          if ($LASTEXITCODE -ne 0) { throw 'failed to read durable Case0002 worklist' }
+          $worklist = ($worklistText -join "`n") | ConvertFrom-Json
+          $next = [string]$worklist.canonical_next_step_id
+          $step = $worklist.steps | Where-Object { $_.step_id -eq $next } | Select-Object -First 1
+          if (-not $step) { throw "canonical step not found: $next" }
+
+          $health = Invoke-RestMethod 'http://127.0.0.1:8848/health' -TimeoutSec 5
+          $question = "Case 0002 canonical next step is $next ($($step.title)). Allowed actions: $([string]::Join(',', $step.allowed_actions)). Tell the supervisor which registered capability to use, owning repo/workflow, canonical inputs, runner/readiness and success criteria. Do not invent unregistered tools."
+          $queryBody = @{
+            session_id = "chatgpt-external-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+            project = 'openworker-case-0002'
+            workspace_root = $workspace
+            question = $question
+            task = 'case 0002 canonical next step'
+          } | ConvertTo-Json -Depth 10
+          $query = Invoke-RestMethod 'http://127.0.0.1:8848/agent/query' -Method Post -ContentType 'application/json' -Body $queryBody -TimeoutSec 40
+          $readiness = Invoke-RestMethod 'http://127.0.0.1:8848/api/execution/readiness' -TimeoutSec 10
+
+          $details = @()
+          foreach ($cap in @($step.allowed_actions)) {
+            try {
+              $details += Invoke-RestMethod ("http://127.0.0.1:8848/api/execution/capabilities/" + $cap) -TimeoutSec 10
+            } catch {
+              $details += @{ capability_id = $cap; error = $_.Exception.Message }
+            }
+          }
+
+          $receipt = [ordered]@{
+            schema_version = 'openworker-case0002-external-supervisor-inspect/v1'
+            observed_at = (Get-Date).ToUniversalTime().ToString('o')
+            run_id = $env:GITHUB_RUN_ID
+            run_attempt = $env:GITHUB_RUN_ATTEMPT
+            computer_name = $env:COMPUTERNAME
+            workspace_root = $workspace
+            canonical_next_step_id = $next
+            canonical_step = $step
+            go_tool_health = $health
+            agent_query = $query
+            execution_readiness = $readiness
+            capability_details = $details
+            action_dispatched = $false
+            authority_note = 'Inspection only. ChatGPT external supervisor decides the next action. Action completion is not business success.'
+          }
+          $json = $receipt | ConvertTo-Json -Depth 50
+          $path = Join-Path $evidence 'latest.json'
+          $json | Out-File -FilePath $path -Encoding utf8
+          Get-Content $path
+
+      - name: Publish inspection receipt to repository
+        shell: powershell
+        run: |
+          git config user.name 'openworker-bot'
+          git config user.email 'openworker-bot@users.noreply.github.com'
+          git add evidence/case0002-external-supervisor/latest.json
+          if (git diff --cached --quiet) { Write-Host 'No receipt change'; exit 0 }
+          git commit -m "evidence: case0002 external supervisor inspect $env:GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin HEAD:main

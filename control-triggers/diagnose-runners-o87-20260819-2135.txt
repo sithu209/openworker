@@ -1,0 +1,3 @@
+target=DESKTOP-O87PJNR
+purpose=verify runner online/busy/labels before embedded-control install
+business_execution=false

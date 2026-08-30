@@ -1,0 +1,4 @@
+request=verify-unified-go-openworker-r10
+machine=DESKTOP-ODAQN0D
+reason=windows-child-log-handle-release-barrier
+requested_at=2026-08-19T12:12:00+08:00

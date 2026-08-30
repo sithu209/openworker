@@ -1,0 +1,3 @@
+DirectWork source probe
+Date: 2026-08-20
+Purpose: verify existing ODA runner service can read the new private liuxb99/DirectWork repository before touching OpenWorkerNode.

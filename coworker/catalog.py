@@ -20,6 +20,8 @@ from typing import Callable
 import aisuite as ai
 
 from .agents.base import AgentContext
+from .engineering.managed_tools import managed_engineering_tools
+from .engineering.media_tools import managed_media_tools
 from .engineering.tools import engineering_os_tools
 from .risk import RiskClass
 from .tools.files import file_tools
@@ -89,8 +91,8 @@ def _todo(context: AgentContext) -> list:
 
 
 def _engineering_os(_context: AgentContext) -> list:
-    """Control-plane tools use the E2 client's localhost default configuration."""
-    return engineering_os_tools()
+    """One vetted surface for OS control-plane plus specialist managed-flow tools."""
+    return [*engineering_os_tools(), *managed_engineering_tools(), *managed_media_tools()]
 
 
 _CAPS: list[Capability] = [
@@ -146,8 +148,8 @@ _CAPS: list[Capability] = [
         id="engineering_os",
         name="Engineering control plane",
         description=(
-            "Inspect AI-Engineering-OS readiness and Projects/Jobs, and create approved Jobs "
-            "through the authoritative engineering control plane."
+            "Inspect and govern AI-Engineering-OS Projects/Jobs/Reviews/Deliveries, and run "
+            "approved authoritative engineering/media specialist flows."
         ),
         build=_engineering_os,
         risk=(RiskClass.READ, RiskClass.EXTERNAL),

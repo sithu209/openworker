@@ -1,0 +1,92 @@
+# trigger: 2026-08-18 case0003 exact connector review apply
+name: Case 0003 Connector Review Apply UL7
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-connector-review-apply-ul7.yml'
+permissions:
+  contents: read
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_REVISION_ID: rev_0851c5ab49ff459d83ee1cb6268ea8d3
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+jobs:
+  apply:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main, path: openworker}
+      - name: Verify exact cloud-reviewed revision
+        run: |
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw 'host mismatch'}
+          $sha=(Get-Content -LiteralPath (Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID+'\manifest.sha256')) -Raw).Trim().ToLowerInvariant()
+          if($sha -ne '349e1c0e2eaad9994cb6989c956cc93c8c38f8bd4a5ff0590eb9870ad788a020'){throw 'bundle SHA mismatch'}
+      - name: Materialize exact ChatGPT review receipt
+        run: |
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID); $receipt=Join-Path $bundle 'connector-llm-review-receipt.json'; $payload=[ordered]@{schema_version='openworker-connector-llm-review-receipt/v1';transport='google-drive-connector';revision_id=$env:CASE0003_REVISION_ID;verdict='TOOL_GAP';bundle_manifest_sha256='349e1c0e2eaad9994cb6989c956cc93c8c38f8bd4a5ff0590eb9870ad788a020';summary='Blender terrain is now visible, but SceneX exact cloud-reviewed screenshot remains visually near-uniform/blank and no recognizable bridge/model is presented. Mechanical counters are insufficient for semantic acceptance.';owning_repo='liuxb99/SceneX';gap_capability='scenex.semantic_visible_terrain_review';gap_description='SceneX reports active terrain geometry but the reviewed 1280x720 screenshot does not expose useful terrain/bridge geometry.';verification_plan=@('Add independent semantic non-blank/readability gate for SceneX screenshots.','Repair SceneX camera/material/lighting/framing.','Verify bridge/model visibility requirement and expose it if required.','Rerun only affected presentation stages; preserve DTM/AOI provenance.');cloud_publication=[ordered]@{drive_revision_folder_id='1dbQDGsbW1_X3SmX7doPbQ27ElIyCtDJh';drive_file_id='15vrTKyhoObSZXxCFCbRfVDbtGTNnGnPA';cloud_zip_sha256='e8a498a6f2b9c80029669cf3b0a9afb9943979eb1317d96e03e1999accd4e6ab';bundle_manifest_sha256='349e1c0e2eaad9994cb6989c956cc93c8c38f8bd4a5ff0590eb9870ad788a020'}}; $payload|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $receipt -Encoding utf8
+      - name: Finish step 170 if already leased then apply WorkLedger review
+        run: |
+          $ErrorActionPreference='Stop'
+          $s='openworker\scripts\case_worklist_action.py'
+          $wlPath=Join-Path $env:CASE0003_WORKSPACE '.openworker\case-worklist.json'
+          $wl=Get-Content $wlPath -Raw|ConvertFrom-Json
+          $step=@($wl.steps|?{$_.step_id -eq '0003-170'})[0]
+          $receipt=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID+'\connector-llm-review-receipt.json')
+          if([string]$step.status -eq 'RUNNING'){
+            $exec=[string]$step.evidence.__openworker_active_execution
+            python $s complete-action --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-170 --action-id openworker.review.inspect_drive --execution-id $exec
+            python $s pass --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-170
+          } elseif([string]$step.status -ne 'PASSED'){
+            throw ('unexpected step170 '+$step.status)
+          }
+          $applyPath=Join-Path $env:CASE0003_WORKSPACE ('acceptance\openworker-final\connector-review-apply-'+$env:CASE0003_REVISION_ID+'.json')
+          $alreadyApplied=$false
+          if(Test-Path -LiteralPath $applyPath -PathType Leaf){
+            $applied=Get-Content -LiteralPath $applyPath -Raw|ConvertFrom-Json
+            $alreadyApplied=([string]$applied.revision_id -eq $env:CASE0003_REVISION_ID -and [string]$applied.status -eq 'TOOL_GAP_REWORK_REQUIRED' -and [string]$applied.verdict -eq 'TOOL_GAP' -and [string]$applied.cloud_publication.bundle_manifest_sha256 -eq '349e1c0e2eaad9994cb6989c956cc93c8c38f8bd4a5ff0590eb9870ad788a020')
+          }
+          if($alreadyApplied){
+            Write-Host "CASE0003_CONNECTOR_REVIEW_ALREADY_APPLIED revision=$env:CASE0003_REVISION_ID"
+          } else {
+            $args=@('openworker\scripts\case0003_apply_connector_review.py','--workspace',$env:CASE0003_WORKSPACE,'--revision-id',$env:CASE0003_REVISION_ID,'--receipt',$receipt)
+            $p=Start-Process -FilePath 'python' -ArgumentList $args -NoNewWindow -Wait -PassThru
+            if([int]$p.ExitCode -ne 4){throw ('expected TOOL_GAP exit 4 got '+$p.ExitCode)}
+          }
+      - name: Govern step 180
+        run: |
+          $ErrorActionPreference='Stop'
+          $s='openworker\scripts\case_worklist_action.py'
+          $wlPath=Join-Path $env:CASE0003_WORKSPACE '.openworker\case-worklist.json'
+          $wl=Get-Content $wlPath -Raw|ConvertFrom-Json
+          $step=@($wl.steps|?{$_.step_id -eq '0003-180'})[0]
+          $receipt=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID+'\connector-llm-review-receipt.json')
+          if([string]$step.status -eq 'READY'){
+            $exec="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:apply-review"
+            python $s start --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180 --action-id openworker.review.apply --execution-id $exec
+            python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180 --key review_receipt --value $receipt
+            python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180 --key ledger_status --value TOOL_GAP_REWORK_REQUIRED
+            python $s record --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180 --key review_decision --value TOOL_GAP
+            python $s complete-action --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180 --action-id openworker.review.apply --execution-id $exec
+            python $s pass --workspace-root $env:CASE0003_WORKSPACE --step-id 0003-180
+          } elseif([string]$step.status -ne 'PASSED'){
+            throw ('unexpected step180 '+$step.status)
+          }
+          Write-Host 'CASE0003_REVIEW_CLOSED verdict=TOOL_GAP delivery_forbidden=true'
+      - name: Upload governance evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0003-connector-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\.openworker\case-worklist.json
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\.openworker\reviews\rev_0851c5ab49ff459d83ee1cb6268ea8d3\connector-llm-review-receipt.json
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\acceptance\openworker-final\connector-review-apply-rev_0851c5ab49ff459d83ee1cb6268ea8d3.json

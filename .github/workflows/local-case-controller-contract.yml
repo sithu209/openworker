@@ -1,0 +1,32 @@
+name: Local Case Controller Contract
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'coworker/case_worklist.py'
+      - 'coworker/case_worklist_runtime.py'
+      - 'coworker/case_controller.py'
+      - 'coworker/case0005_controller.py'
+      - 'tests/test_case_worklist_parallel.py'
+      - 'tests/test_case_controller_local.py'
+      - 'tests/test_case0005_controller.py'
+      - '.github/workflows/local-case-controller-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  python-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused dependencies
+        run: python -m pip install pytest httpx
+      - name: Run local controller contracts
+        run: python -m pytest -q tests/test_case_worklist_parallel.py tests/test_case_controller_local.py tests/test_case0005_controller.py

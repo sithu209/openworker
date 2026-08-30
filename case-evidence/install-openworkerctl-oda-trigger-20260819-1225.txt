@@ -1,0 +1,3 @@
+requested_at=2026-08-19T12:25:00+08:00
+machine=DESKTOP-ODAQN0D
+reason=Case0005 transient transport missing openworkerctl

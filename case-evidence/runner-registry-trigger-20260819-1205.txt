@@ -1,0 +1,3 @@
+requested_at=2026-08-19T12:05:00+08:00
+reason=Case0005 transient transport runner pickup verification
+scope=UL7,O87,ODA

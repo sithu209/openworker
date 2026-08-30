@@ -1,0 +1,148 @@
+name: Case 0004 Google Drive API Visual Publish O87
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0004-drive-api-publish-o87.yml'
+      - 'scripts/case0004_visual_review_handoff.py'
+      - 'coworker/review_drive.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: case-0004-drive-api-publish-o87
+  cancel-in-progress: false
+
+env:
+  CASE0004_ASSIGNED_HOST: DESKTOP-O87PJNR
+  CASE0004_WORKSPACE: 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  publish:
+    name: Publish Case 0004 visual review bundle to Google Drive API slot ${{ matrix.slot }}
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1, 2, 3]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Route candidate to fixed O87 computer name
+        id: route
+        shell: cmd
+        run: |
+          @echo off
+          if /I not "%COMPUTERNAME%"=="DESKTOP-O87PJNR" (
+            echo run=false>>"%GITHUB_OUTPUT%"
+            echo CASE0004_DRIVE_SKIP_WRONG_HOST slot=${{ matrix.slot }} actual=%COMPUTERNAME% runner=%RUNNER_NAME%
+            exit /b 0
+          )
+          echo run=true>>"%GITHUB_OUTPUT%"
+          echo CASE0004_DRIVE_HOST_OK slot=${{ matrix.slot }} machine=%COMPUTERNAME% runner=%RUNNER_NAME%
+
+      - name: Checkout OpenWorker main
+        if: steps.route.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Verify existing Case 0004 visual evidence
+        id: evidence
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          if(-not (Test-Path -LiteralPath $env:CASE0004_WORKSPACE -PathType Container)){throw "CASE0004_WORKSPACE_UNAVAILABLE $env:CASE0004_WORKSPACE"}
+          $required=@(
+            (Join-Path $env:CASE0004_WORKSPACE 'evidence\case0004-inspect-render.json'),
+            (Join-Path $env:CASE0004_WORKSPACE 'evidence\case0004-candidate-regions.json')
+          )
+          foreach($path in $required){
+            if(-not (Test-Path -LiteralPath $path -PathType Leaf)){throw "CASE0004_REQUIRED_EVIDENCE_MISSING $path"}
+            if((Get-Item -LiteralPath $path).Length -le 0){throw "CASE0004_REQUIRED_EVIDENCE_EMPTY $path"}
+          }
+          $overview=Join-Path $env:CASE0004_WORKSPACE 'dwg\exports\default\visual-search\case0004-overview.png'
+          if(-not (Test-Path -LiteralPath $overview -PathType Leaf)){throw "CASE0004_OVERVIEW_MISSING $overview"}
+          $sha=(Get-FileHash -LiteralPath $overview -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($sha -ne '5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e'){throw "CASE0004_OVERVIEW_SHA_MISMATCH $sha"}
+          Write-Host "CASE0004_VISUAL_EVIDENCE_READY overview_sha256=$sha"
+
+      - name: Publish immutable Case 0004 visual review bundle
+        id: publish
+        if: steps.route.outputs.run == 'true'
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if([string]::IsNullOrWhiteSpace($env:OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN)){throw 'OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN secret unavailable'}
+          python -m scripts.case0004_visual_review_handoff --workspace $env:CASE0004_WORKSPACE --run-id $env:GITHUB_RUN_ID
+          if($LASTEXITCODE -ne 0){throw "CASE0004_DRIVE_API_PUBLISH_FAILED exit=$LASTEXITCODE"}
+
+      - name: Verify Drive API receipt
+        id: receipt
+        if: steps.route.outputs.run == 'true'
+        run: |
+          $ErrorActionPreference='Stop'
+          $path=Join-Path $env:CASE0004_WORKSPACE ('evidence\case0004-visual-drive-handoff-'+$env:GITHUB_RUN_ID+'.json')
+          if(-not (Test-Path -LiteralPath $path -PathType Leaf)){throw "CASE0004_DRIVE_RECEIPT_MISSING $path"}
+          $r=Get-Content -LiteralPath $path -Raw -Encoding UTF8|ConvertFrom-Json
+          if([string]$r.transport -ne 'google-drive-api'){throw "CASE0004_DRIVE_TRANSPORT_MISMATCH $($r.transport)"}
+          if([string]$r.status -ne 'WAITING_LLM_VISUAL_REVIEW'){throw "CASE0004_DRIVE_STATUS_MISMATCH $($r.status)"}
+          if([string]::IsNullOrWhiteSpace([string]$r.drive_revision_folder_id)){throw 'CASE0004_DRIVE_REVISION_FOLDER_MISSING'}
+          if([int]$r.published_file_count -le 0){throw 'CASE0004_DRIVE_PUBLISHED_FILE_COUNT_ZERO'}
+          Write-Host "CASE0004_DRIVE_API_PUBLISH_PASS review_id=$($r.review_id) revision_folder_id=$($r.drive_revision_folder_id) published=$($r.published_file_count)"
+
+      - name: Persist bounded transport diagnostic
+        if: always() && steps.route.outputs.run == 'true'
+        continue-on-error: true
+        env:
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+        run: |
+          $receiptPath=Join-Path $env:CASE0004_WORKSPACE ('evidence\case0004-visual-drive-handoff-'+$env:GITHUB_RUN_ID+'.json')
+          $payload=[ordered]@{
+            schema_version='case0004-openworker-drive-transport-diagnostic/v1'
+            case_id='0004'
+            run_id=$env:GITHUB_RUN_ID
+            run_attempt=$env:GITHUB_RUN_ATTEMPT
+            slot='${{ matrix.slot }}'
+            machine=$env:COMPUTERNAME
+            runner_name=$env:RUNNER_NAME
+            route='${{ steps.route.outcome }}'
+            evidence='${{ steps.evidence.outcome }}'
+            publish='${{ steps.publish.outcome }}'
+            receipt='${{ steps.receipt.outcome }}'
+            secret_present=(-not [string]::IsNullOrWhiteSpace($env:OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN))
+            receipt_exists=(Test-Path -LiteralPath $receiptPath -PathType Leaf)
+            observed_at=(Get-Date).ToUniversalTime().ToString('o')
+          }
+          $dest='evidence/case0004/latest-openworker-drive-transport-diagnostic.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
+          $payload|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $dest -Encoding UTF8
+          git config user.name 'case0004-openworker-bot'
+          git config user.email 'case0004-openworker-bot@users.noreply.github.com'
+          git add $dest
+          git diff --cached --quiet
+          if($LASTEXITCODE -eq 0){Write-Host 'CASE0004_OPENWORKER_DRIVE_DIAGNOSTIC_UNCHANGED'; exit 0}
+          git commit -m "evidence(case0004): record OpenWorker Drive transport $env:GITHUB_RUN_ID"
+          git push origin HEAD:main
+
+      - name: Upload bounded receipt evidence
+        if: always() && steps.route.outputs.run == 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0004-drive-api-publication-${{ github.run_id }}-${{ matrix.slot }}
+          path: |
+            D:\AI-Work\jobs\0004-DWG-TO-3D\evidence\case0004-visual-drive-handoff-${{ github.run_id }}.json
+            D:\AI-Work\jobs\0004-DWG-TO-3D\.openworker\reviews\case0004-visual-${{ github.run_id }}\review-publish-receipt.json
+            D:\AI-Work\jobs\0004-DWG-TO-3D\.openworker\reviews\case0004-visual-${{ github.run_id }}\manifest.json
+          if-no-files-found: warn
+          retention-days: 14

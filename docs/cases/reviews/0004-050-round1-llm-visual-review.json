@@ -1,0 +1,31 @@
+{
+  "schema_version": "openworker.llm-visual-review-receipt/v1",
+  "case_id": "0004",
+  "worklist_step": "R-0004-050-002",
+  "review_round": 1,
+  "reviewer": "ChatGPT multimodal",
+  "decision": "REWORK",
+  "reviewed_source": {
+    "preview_name": "candidate-overview.png",
+    "preview_sha256": "5cee03340cbbcad51e412b46b85bda9dcaac22b193586b953bbfd5134039103e",
+    "source_width": 1200,
+    "source_height": 800,
+    "microtile_run_id": "32015633583",
+    "microtile_schema": "case0004.llm-review-microtiles.v1"
+  },
+  "visual_findings": [
+    "r1c1/top-left visibly mixes tabular permit information, site/context graphics and other drawing content; it is not a single floor StoryRegion.",
+    "r1c2/top-middle contains mixed graphics/color fields and is not visually safe to promote as a single floor StoryRegion.",
+    "r2c1/bottom-left visibly contains several separate architectural drawing frames/plans; this is the only reviewed area that clearly warrants finer floor-plan slicing.",
+    "right-side reviewed tiles are mostly blank or low-information and are not current StoryRegion candidates."
+  ],
+  "acceptance_reason": "The current cuts are too coarse to identify one authoritative floor-plan region. Advancing to cad.set_story_region would risk promoting multiple drawings as one StoryRegion.",
+  "required_next_action": {
+    "action": "reslice_for_visual_review",
+    "focus_source_preview_bounds": [0, 400, 400, 400],
+    "focus_tile": "r2c1",
+    "instruction": "Subdivide the bottom-left high-information area into smaller non-overlapping tiles at higher effective resolution, then submit every resulting slice to a second multimodal LLM review. Do not promote StoryRegion until one slice is visually confirmed as a single target floor plan."
+  },
+  "allows_story_region_promotion": false,
+  "allows_next_worklist_stage": false
+}

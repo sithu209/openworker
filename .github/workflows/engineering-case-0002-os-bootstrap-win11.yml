@@ -1,0 +1,169 @@
+name: Case 0002 OpenWorker OS Bootstrap Win11
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/engineering-case-0002-os-bootstrap-win11.yml
+      - coworker/engineering/project_lifecycle.py
+      - coworker/engineering/engineering_os.py
+      - tests/test_engineering_project_lifecycle.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0002-openworker-os-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap-case-0002:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Runner identity
+        run: |
+          Write-Host "machine=$env:COMPUTERNAME"
+          Write-Host "runner=$env:RUNNER_NAME"
+          python --version
+          git --version
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Checkout AI-Engineering-OS
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/AI-Engineering-OS
+          ref: main
+          path: ai-engineering-os
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ai-engineering-os/go.mod
+          cache: false
+
+      - name: Start or reuse local AI-Engineering-OS
+        working-directory: ai-engineering-os
+        run: |
+          $base = 'http://127.0.0.1:8080'
+          $healthy = $false
+          try {
+            $h = Invoke-RestMethod -Uri "$base/healthz" -Method Get -TimeoutSec 3
+            $healthy = ($h.status -eq 'ok')
+          } catch {}
+          if ($healthy) {
+            Write-Host 'Reusing healthy AI-Engineering-OS at 127.0.0.1:8080'
+            exit 0
+          }
+          $evidenceRoot = Join-Path $env:GITHUB_WORKSPACE 'case-0002-evidence'
+          New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
+          $stdout = Join-Path $evidenceRoot 'os.stdout.log'
+          $stderr = Join-Path $evidenceRoot 'os.stderr.log'
+          $p = Start-Process -FilePath 'go' -ArgumentList @('run','./cmd/engineering-os') -WorkingDirectory (Get-Location) -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+          $p.Id | Set-Content (Join-Path $evidenceRoot 'os.pid')
+          for ($i=0; $i -lt 90; $i++) {
+            Start-Sleep -Seconds 2
+            try {
+              $h = Invoke-RestMethod -Uri "$base/healthz" -Method Get -TimeoutSec 3
+              if ($h.status -eq 'ok') {
+                Write-Host "AI-Engineering-OS ready pid=$($p.Id)"
+                exit 0
+              }
+            } catch {}
+            if ($p.HasExited) {
+              Get-Content $stderr -ErrorAction SilentlyContinue
+              throw "AI-Engineering-OS exited before health became ready: exit=$($p.ExitCode)"
+            }
+          }
+          throw 'AI-Engineering-OS did not become healthy within 180 seconds'
+
+      - name: OpenWorker creates authoritative CASE-0002 Project and Job
+        working-directory: openworker
+        env:
+          OPENWORKER_OS_URL: http://127.0.0.1:8080
+        run: |
+          $evidenceRoot = Join-Path $env:GITHUB_WORKSPACE 'case-0002-evidence'
+          New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
+          @'
+          import json
+          import os
+          import platform
+          from pathlib import Path
+          from coworker.engineering.engineering_os import EngineeringOSConfig
+          from coworker.engineering.project_lifecycle import EngineeringOSProjectClient
+
+          base = os.environ.get('OPENWORKER_OS_URL', 'http://127.0.0.1:8080')
+          client = EngineeringOSProjectClient(EngineeringOSConfig(base, timeout_seconds=15))
+          project = client.ensure_project(
+              code='CASE-0002',
+              name='阿拉丁神燈 AI 自主製片案例',
+              description='OpenWorker → go-tool → local Action → AI-Engineering-OS → Comfyx-Studio → ComfyX closure case',
+              metadata={'case_id':'0002','source':'openworker','execution_channel':'self-hosted-action'},
+          )
+          project_id = str(project['id'])
+          jobs = client.list_jobs(project_id=project_id)
+          matches = [j for j in jobs if str(j.get('code','')).strip() == 'JOB-0002-ALADDIN']
+          if len(matches) > 1:
+              raise RuntimeError('multiple JOB-0002-ALADDIN jobs exist')
+          if matches:
+              job = matches[0]
+          else:
+              job = client.create_job(
+                  project_id=project_id,
+                  code='JOB-0002-ALADDIN',
+                  name='阿拉丁神燈 20 秒影片與交付網站',
+                  user_request='將阿拉丁在乾旱古城找到神燈、召喚藍色精靈、許願為城市求水、降雨後城市復甦並帶燈離開的故事，製作為約 20 秒、4 鏡頭、1280x720 的真實影片，包含 Story/Style/Scene Bible、分鏡、字幕、final.mp4 與可離線交付網站。',
+                  expected_deliverables=['story-bible','style-bible','scene-bible','storyboard','shot-videos','subtitles','final-video','delivery-website'],
+                  priority='high',
+                  metadata={'case_id':'0002','source':'openworker','target_resolution':'1280x720'},
+              )
+          evidence = {
+              'case_id': '0002',
+              'status': 'OS_JOB_BOOTSTRAPPED',
+              'project_id': project_id,
+              'project_code': project.get('code'),
+              'job_id': str(job['id']),
+              'job_code': job.get('code'),
+              'job_status': job.get('status'),
+              'runner_machine': platform.node(),
+              'github_run_id': os.environ.get('GITHUB_RUN_ID',''),
+              'openworker_sha': os.environ.get('GITHUB_SHA',''),
+              'os_url': base,
+          }
+          out = Path(os.environ['GITHUB_WORKSPACE']) / 'case-0002-evidence' / '01-openworker-os-bootstrap.json'
+          out.write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(evidence, ensure_ascii=False, indent=2))
+          '@ | python -
+
+      - name: Verify CASE-0002 bootstrap evidence
+        run: |
+          $path = Join-Path $env:GITHUB_WORKSPACE 'case-0002-evidence\01-openworker-os-bootstrap.json'
+          if (-not (Test-Path $path)) { throw 'CASE-0002 evidence file missing' }
+          $e = Get-Content $path -Raw | ConvertFrom-Json
+          if ($e.case_id -ne '0002') { throw 'wrong case id' }
+          if ($e.status -ne 'OS_JOB_BOOTSTRAPPED') { throw 'bootstrap did not reach terminal success' }
+          if ([string]::IsNullOrWhiteSpace($e.project_id)) { throw 'project id missing' }
+          if ([string]::IsNullOrWhiteSpace($e.job_id)) { throw 'job id missing' }
+          if ($e.job_code -ne 'JOB-0002-ALADDIN') { throw 'wrong job code' }
+          Write-Host "CASE-0002 OS bootstrap VERIFIED project=$($e.project_id) job=$($e.job_id)"
+
+      - name: Upload local evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0002-openworker-os-bootstrap-${{ github.run_id }}
+          path: case-0002-evidence/**
+          if-no-files-found: warn
+          retention-days: 14

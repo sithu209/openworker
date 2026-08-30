@@ -1,0 +1,56 @@
+name: Case 0003 SceneX Review Log Handoff UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-scenex-review-log-handoff-ul7.yml'
+
+permissions:
+  contents: read
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_REVISION_ID: rev_61b0104b041c4d1f8740e831a5b1d8eb
+  CASE0003_EXPECTED_PNG_SHA: 1035305b3186499af007990dc9e23accdf6171934ac70b6152dcdd83cced779d
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  handoff:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+      - name: Verify exact new SceneX review artifact
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw 'host mismatch'}
+          $state=Get-Content -LiteralPath (Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json') -Raw|ConvertFrom-Json
+          if([string]$state.revision_id -ne $env:CASE0003_REVISION_ID){throw ('revision drift '+[string]$state.revision_id)}
+          $png=Join-Path $env:CASE0003_WORKSPACE 'scenex\terrain-browse.png'
+          $sha=(Get-FileHash -LiteralPath $png -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($sha -ne $env:CASE0003_EXPECTED_PNG_SHA){throw ('PNG SHA mismatch '+$sha)}
+          $bundlePng=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID+'\artifacts\scenex-browse.png')
+          if(-not (Test-Path -LiteralPath $bundlePng -PathType Leaf)){throw 'exact review bundle PNG missing'}
+          $bundleSha=(Get-FileHash -LiteralPath $bundlePng -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($bundleSha -ne $sha){throw ('bundle PNG SHA mismatch '+$bundleSha)}
+          Write-Host "CASE0003_EXACT_REVIEW_PNG_VERIFIED revision=$env:CASE0003_REVISION_ID sha256=$sha bytes=$((Get-Item $bundlePng).Length)"
+          "CASE0003_BUNDLE_PNG=$bundlePng"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Emit exact PNG as bounded base64 review transport
+        run: |
+          $ErrorActionPreference='Stop'
+          $bytes=[IO.File]::ReadAllBytes($env:CASE0003_BUNDLE_PNG)
+          if($bytes.Length -gt 1500000){throw ('review PNG exceeds bounded log handoff: '+$bytes.Length)}
+          $b64=[Convert]::ToBase64String($bytes)
+          Write-Host 'CASE0003_SCENEX_PNG_BASE64_BEGIN'
+          for($i=0;$i -lt $b64.Length;$i+=4096){Write-Host $b64.Substring($i,[Math]::Min(4096,$b64.Length-$i))}
+          Write-Host 'CASE0003_SCENEX_PNG_BASE64_END'

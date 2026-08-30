@@ -1,0 +1,198 @@
+name: OpenWorker Publish Review Bundle to Drive Win11
+
+on:
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: Absolute OpenWorker workspace path
+        required: true
+        type: string
+      work_code:
+        description: Authoritative WorkLedger work code
+        required: true
+        type: string
+      revision_id:
+        description: Exact WorkLedger revision whose immutable review bundle is published
+        required: true
+        type: string
+      assigned_host:
+        description: Exact COMPUTERNAME allowed to publish this workspace
+        required: true
+        type: string
+      runner_label:
+        description: Fixed self-hosted runner label such as O87, ODA or UL7
+        required: true
+        type: string
+      case_id:
+        description: Optional case id metadata
+        required: false
+        default: ''
+        type: string
+      job_id:
+        description: Optional OS job id metadata
+        required: false
+        default: ''
+        type: string
+      case_step:
+        description: OpenWorker CaseWorklist step id; required for governed workspaces
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-drive-review-${{ inputs.work_code }}-${{ inputs.revision_id }}
+  cancel-in-progress: false
+
+env:
+  OPENWORKER_REVIEW_DRIVE_FOLDER_ID: ${{ vars.OPENWORKER_REVIEW_DRIVE_FOLDER_ID }}
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  publish:
+    runs-on: [self-hosted, Windows, X64, '${{ inputs.runner_label }}']
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify host, bundle and governance contract
+        id: contract
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_ASSIGNED_HOST: ${{ inputs.assigned_host }}
+          OW_REVISION_ID: ${{ inputs.revision_id }}
+          OW_CASE_STEP: ${{ inputs.case_step }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:OW_ASSIGNED_HOST){
+            throw "OPENWORKER_ASSIGNED_HOST_MISMATCH host=$env:COMPUTERNAME assigned=$env:OW_ASSIGNED_HOST"
+          }
+          if(-not (Test-Path -LiteralPath $env:OW_WORKSPACE -PathType Container)){
+            throw "OPENWORKER_WORKSPACE_UNAVAILABLE $env:OW_WORKSPACE"
+          }
+          $bundle=Join-Path $env:OW_WORKSPACE ('.openworker\reviews\'+$env:OW_REVISION_ID)
+          if(-not (Test-Path -LiteralPath $bundle -PathType Container)){throw "review bundle unavailable: $bundle"}
+          foreach($required in @('manifest.json','manifest.sha256','review-request.json')){
+            $p=Join-Path $bundle $required
+            if(-not (Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){throw "review bundle missing/empty: $required"}
+          }
+          $worklistPath=Join-Path $env:OW_WORKSPACE '.openworker\case-worklist.json'
+          $governed=Test-Path -LiteralPath $worklistPath -PathType Leaf
+          if($governed -and [string]::IsNullOrWhiteSpace($env:OW_CASE_STEP)){throw "case_step is required for governed workspace: $worklistPath"}
+          if(-not $governed -and -not [string]::IsNullOrWhiteSpace($env:OW_CASE_STEP)){throw "case_step supplied but CaseWorklist is absent: $worklistPath"}
+          "bundle=$bundle" >> $env:GITHUB_OUTPUT
+          "worklist_exists=$($governed.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "case_step=$($env:OW_CASE_STEP.Trim())" >> $env:GITHUB_OUTPUT
+          Write-Host "OPENWORKER_DRIVE_PUBLISH_INPUT_READY host=$env:COMPUTERNAME revision=$env:OW_REVISION_ID governed=$governed"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Gate canonical CaseWorklist publish action
+        id: worklist
+        if: ${{ steps.contract.outputs.worklist_exists == 'true' }}
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          $execution="github:${{ github.run_id }}:${{ github.run_attempt }}:review-publish"
+          python openworker\scripts\case_worklist_action.py start --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id 'openworker.review.publish' --execution-id $execution
+          "execution_id=$execution" >> $env:GITHUB_OUTPUT
+
+      - name: Publish immutable bundle through existing Drive API contract
+        id: publish
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_WORK_CODE: ${{ inputs.work_code }}
+          OW_REVISION_ID: ${{ inputs.revision_id }}
+          OW_BUNDLE: ${{ steps.contract.outputs.bundle }}
+          OW_CASE_ID: ${{ inputs.case_id }}
+          OW_JOB_ID: ${{ inputs.job_id }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $args=@('openworker\scripts\publish_review_bundle_to_drive.py','--workspace',$env:OW_WORKSPACE,'--revision-id',$env:OW_REVISION_ID,'--work-code',$env:OW_WORK_CODE,'--bundle',$env:OW_BUNDLE,'--machine-id',$env:COMPUTERNAME,'--run-id',$env:GITHUB_RUN_ID)
+          if($env:OW_CASE_ID){$args += @('--case-id',$env:OW_CASE_ID)}
+          if($env:OW_JOB_ID){$args += @('--job-id',$env:OW_JOB_ID)}
+          if(-not [string]::IsNullOrWhiteSpace($env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID)){$args += @('--drive-folder-id',$env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID)}
+          & python @args
+          if($LASTEXITCODE -ne 0){throw "Google Drive review publish failed exit=$LASTEXITCODE"}
+          $receipt=Join-Path $env:OW_BUNDLE 'review-publish-receipt.json'
+          if(-not (Test-Path -LiteralPath $receipt -PathType Leaf) -or (Get-Item -LiteralPath $receipt).Length -le 0){throw 'review publish receipt missing/empty'}
+          $r=Get-Content -LiteralPath $receipt -Raw|ConvertFrom-Json
+          if($r.schema_version -ne 'openworker-review-publish-receipt/v1'){throw 'review publish receipt schema mismatch'}
+          if($r.transport -ne 'google-drive-api' -or $r.status -ne 'WAITING_LLM_REVIEW'){throw 'review publish receipt state mismatch'}
+          if([string]$r.revision_id -ne [string]$env:OW_REVISION_ID){throw 'review publish receipt revision mismatch'}
+          if([string]::IsNullOrWhiteSpace([string]$r.drive_revision_folder_id)){throw 'Drive revision folder id missing'}
+          if([string]::IsNullOrWhiteSpace([string]$r.drive_revision_web_view_link)){throw 'Drive revision web view link missing'}
+          if(@($r.files).Count -lt 3){throw 'Drive publication file list unexpectedly small'}
+          foreach($f in @($r.files)){if([string]::IsNullOrWhiteSpace([string]$f.drive_file_id) -or [string]::IsNullOrWhiteSpace([string]$f.sha256)){throw 'Drive published file missing cloud id or SHA'}}
+          "receipt=$receipt" >> $env:GITHUB_OUTPUT
+          "drive_folder_id=$($r.drive_revision_folder_id)" >> $env:GITHUB_OUTPUT
+          Write-Host "OPENWORKER_DRIVE_PUBLISH_PASS revision=$env:OW_REVISION_ID folder=$($r.drive_revision_folder_id)"
+
+      - name: Verify WorkLedger publication gate
+        id: ledger
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_REVISION_ID: ${{ inputs.revision_id }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $code=@'
+          import os
+          from pathlib import Path
+          from coworker.work_ledger import WorkLedger
+          workspace=Path(os.environ['OW_WORKSPACE']); rid=os.environ['OW_REVISION_ID']; ledger=WorkLedger(workspace/'.openworker'/'work-ledger.sqlite')
+          try:
+              rev=ledger.get_revision(rid); snap=ledger.snapshot(rev['work_id']); current=next(item for item in snap['revisions'] if item['revision_id']==rid)
+              checks={item['name']: item for item in current['checks']}; pub=checks.get('Google Drive Review Publication')
+              if not pub or pub['status']!='passed' or not pub['required']: raise SystemExit('Google Drive Review Publication required check not passed')
+              if rev['status']!='blocked': raise SystemExit(f'revision must remain blocked waiting LLM review, got {rev["status"]}')
+              if snap['work'].get('accepted_revision_id') or snap['work'].get('delivered_revision_id'): raise SystemExit('accept/deliver pointer moved before LLM review')
+          finally: ledger.close()
+          print('LEDGER_PUBLICATION_GATE_PASS')
+          '@
+          $code|python -
+          if($LASTEXITCODE -ne 0){throw 'WorkLedger publication verification failed'}
+
+      - name: Advance CaseWorklist to waiting LLM review
+        if: ${{ success() && steps.contract.outputs.worklist_exists == 'true' }}
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key review_bundle --value '${{ steps.contract.outputs.bundle }}'
+          python openworker\scripts\case_worklist_action.py record --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --key drive_receipt --value '${{ steps.publish.outputs.receipt }}'
+          python openworker\scripts\case_worklist_action.py complete-action --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --action-id 'openworker.review.publish' --execution-id '${{ steps.worklist.outputs.execution_id }}'
+          python openworker\scripts\case_worklist_action.py pass --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP
+
+      - name: Block CaseWorklist when Drive publication fails
+        if: ${{ failure() && steps.contract.outputs.worklist_exists == 'true' && steps.worklist.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          OW_WORKSPACE: ${{ inputs.workspace }}
+          OW_CASE_STEP: ${{ steps.contract.outputs.case_step }}
+        run: |
+          python openworker\scripts\case_worklist_action.py block-active --workspace-root $env:OW_WORKSPACE --step-id $env:OW_CASE_STEP --reason "Drive review publication workflow failed run=${{ github.run_id }}"
+
+      - name: Upload bounded publication receipt evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: openworker-drive-review-${{ inputs.revision_id }}-${{ github.run_id }}
+          path: |
+            ${{ steps.contract.outputs.bundle }}\review-publish-receipt.json
+            ${{ steps.contract.outputs.bundle }}\manifest.json
+            ${{ steps.contract.outputs.bundle }}\manifest.sha256
+          if-no-files-found: warn
+          retention-days: 14

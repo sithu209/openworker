@@ -1,0 +1,37 @@
+name: Case Worklist Focused Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'coworker/case_worklist.py'
+      - 'coworker/case_worklist_runtime.py'
+      - 'coworker/engineering/case_worklist.py'
+      - 'scripts/case_worklist_action.py'
+      - 'scripts/verify_case_worklist.py'
+      - 'case-worklists/**'
+      - 'tests/test_case_worklist.py'
+      - 'tests/test_case_worklist_cli.py'
+      - '.github/workflows/case-worklist-focused.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-worklist-focused-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  worklist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run isolated worklist state-machine verifier
+        run: python scripts/verify_case_worklist.py
+      - name: Compile worklist surface
+        run: python -m py_compile coworker/case_worklist.py coworker/case_worklist_runtime.py coworker/engineering/case_worklist.py scripts/case_worklist_action.py scripts/verify_case_worklist.py

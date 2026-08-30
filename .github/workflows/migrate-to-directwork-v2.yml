@@ -1,0 +1,110 @@
+name: Migrate OpenWorker Go to DirectWork V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/directwork-migration-v2-trigger.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  oda:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    env:
+      DIRECTWORK_COMMIT: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.23.x'}
+      - name: Verify source and computer
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D'){throw "wrong computer: $env:COMPUTERNAME"}
+          $src=Join-Path $env:GITHUB_WORKSPACE 'migration\directwork-src'
+          $pin=(Get-Content (Join-Path $src 'SOURCE_COMMIT.txt') -Raw).Trim()
+          if($pin -ne $env:DIRECTWORK_COMMIT){throw "vendored source pin mismatch: $pin"}
+          "DIRECTWORK_SOURCE=$src"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build and test before touching OpenWorker
+        shell: powershell
+        run: |
+          Set-Location $env:DIRECTWORK_SOURCE
+          go mod download
+          go test ./... -count=1
+          if($LASTEXITCODE -ne 0){throw 'DirectWork tests failed; OpenWorker untouched'}
+          go build -ldflags "-X github.com/liuxb99/DirectWork/internal/buildinfo.Version=p1 -X github.com/liuxb99/DirectWork/internal/buildinfo.Commit=$env:DIRECTWORK_COMMIT -X github.com/liuxb99/DirectWork/internal/buildinfo.TargetCommit=$env:DIRECTWORK_COMMIT" -o directwork-node.exe ./cmd/directwork-node
+          if($LASTEXITCODE -ne 0){throw 'DirectWork build failed; OpenWorker untouched'}
+      - name: Deploy REAL smoke and retire old OpenWorker Go
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-Location $env:DIRECTWORK_SOURCE
+          .\scripts\deploy-and-smoke.ps1 -Binary .\directwork-node.exe -ExpectedMachine 'DESKTOP-ODAQN0D' -NodeKey 'oda' -TargetCommit $env:DIRECTWORK_COMMIT -RunId '${{ github.run_id }}' -Peers 'http://DESKTOP-O87PJNR:8787,http://DESKTOP-UL7V2VV:8787'
+          $old=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue
+          if($old){Stop-Service OpenWorkerNode -Force -ErrorAction SilentlyContinue;sc.exe config OpenWorkerNode start= disabled|Out-Null;sc.exe delete OpenWorkerNode|Out-Null}
+          Start-Sleep -Seconds 1
+          $s=Invoke-RestMethod http://127.0.0.1:8787/v1/node/status -TimeoutSec 5
+          if(-not $s.online -or $s.commit -ne $env:DIRECTWORK_COMMIT){throw 'DirectWork failed after OpenWorker retirement'}
+          $r=Join-Path $env:GITHUB_WORKSPACE 'verification-receipts\${{ github.run_id }}\oda.json'
+          if(-not(Test-Path $r)){throw 'node verification receipt missing'}
+          $out=Join-Path $env:GITHUB_WORKSPACE 'migration-receipts\${{ github.run_id }}';New-Item -ItemType Directory -Force -Path $out|Out-Null;Copy-Item $r (Join-Path $out 'oda.json') -Force
+          [ordered]@{schema='directwork/openworker-retirement-receipt/v1';verified=$true;node='oda';machine=$env:COMPUTERNAME;directwork_commit=$env:DIRECTWORK_COMMIT;directwork_service=(Get-Service DirectWorkNode).Status.ToString();openworker_service_present=[bool](Get-Service OpenWorkerNode -ErrorAction SilentlyContinue);openworker_data_preserved=(Test-Path 'C:\ProgramData\OpenWorker');directwork_data=(Test-Path 'C:\ProgramData\DirectWork');verified_at=(Get-Date).ToUniversalTime().ToString('o')}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $out 'oda-retirement.json') -Encoding UTF8
+      - name: Persist ODA receipts
+        shell: powershell
+        run: |
+          git config user.name 'directwork-migration';git config user.email 'directwork-migration@users.noreply.github.com'
+          git add migration-receipts/${{ github.run_id }}/oda*.json
+          git commit -m 'receipt: ODA migrated to DirectWork run ${{ github.run_id }}'
+          git push origin HEAD:main
+
+  o87:
+    needs: oda
+    runs-on: [self-hosted, Windows, X64, O87]
+    env:
+      DIRECTWORK_COMMIT: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.23.x'}
+      - name: Build test deploy smoke and retire
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ne 'DESKTOP-O87PJNR'){throw "wrong computer: $env:COMPUTERNAME"}
+          $src=Join-Path $env:GITHUB_WORKSPACE 'migration\directwork-src';$pin=(Get-Content (Join-Path $src 'SOURCE_COMMIT.txt') -Raw).Trim();if($pin -ne $env:DIRECTWORK_COMMIT){throw 'source pin mismatch'}
+          Set-Location $src;go mod download;go test ./... -count=1;if($LASTEXITCODE -ne 0){throw 'tests failed; OpenWorker untouched'}
+          go build -ldflags "-X github.com/liuxb99/DirectWork/internal/buildinfo.Version=p1 -X github.com/liuxb99/DirectWork/internal/buildinfo.Commit=$env:DIRECTWORK_COMMIT -X github.com/liuxb99/DirectWork/internal/buildinfo.TargetCommit=$env:DIRECTWORK_COMMIT" -o directwork-node.exe ./cmd/directwork-node;if($LASTEXITCODE -ne 0){throw 'build failed'}
+          .\scripts\deploy-and-smoke.ps1 -Binary .\directwork-node.exe -ExpectedMachine 'DESKTOP-O87PJNR' -NodeKey 'o87' -TargetCommit $env:DIRECTWORK_COMMIT -RunId '${{ github.run_id }}' -Peers 'http://DESKTOP-ODAQN0D:8787,http://DESKTOP-UL7V2VV:8787'
+          $old=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue;if($old){Stop-Service OpenWorkerNode -Force -ErrorAction SilentlyContinue;sc.exe config OpenWorkerNode start= disabled|Out-Null;sc.exe delete OpenWorkerNode|Out-Null};Start-Sleep 1
+          $s=Invoke-RestMethod http://127.0.0.1:8787/v1/node/status;if(-not $s.online -or $s.commit -ne $env:DIRECTWORK_COMMIT){throw 'post-retirement verify failed'}
+          $r=Join-Path $env:GITHUB_WORKSPACE 'verification-receipts\${{ github.run_id }}\o87.json';if(-not(Test-Path $r)){throw 'receipt missing'};$out=Join-Path $env:GITHUB_WORKSPACE 'migration-receipts\${{ github.run_id }}';New-Item -ItemType Directory -Force -Path $out|Out-Null;Copy-Item $r (Join-Path $out 'o87.json') -Force
+          [ordered]@{schema='directwork/openworker-retirement-receipt/v1';verified=$true;node='o87';machine=$env:COMPUTERNAME;directwork_commit=$env:DIRECTWORK_COMMIT;directwork_service=(Get-Service DirectWorkNode).Status.ToString();openworker_service_present=[bool](Get-Service OpenWorkerNode -ErrorAction SilentlyContinue);openworker_data_preserved=(Test-Path 'C:\ProgramData\OpenWorker');verified_at=(Get-Date).ToUniversalTime().ToString('o')}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $out 'o87-retirement.json') -Encoding UTF8
+      - name: Persist O87 receipts
+        shell: powershell
+        run: git config user.name 'directwork-migration'; git config user.email 'directwork-migration@users.noreply.github.com'; git add migration-receipts/${{ github.run_id }}/o87*.json; git commit -m 'receipt: O87 migrated to DirectWork run ${{ github.run_id }}'; git push origin HEAD:main
+
+  ul7:
+    needs: o87
+    runs-on: [self-hosted, Windows, X64, UL7]
+    env:
+      DIRECTWORK_COMMIT: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.23.x'}
+      - name: Build test deploy smoke and retire
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ne 'DESKTOP-UL7V2VV'){throw "wrong computer: $env:COMPUTERNAME"}
+          $src=Join-Path $env:GITHUB_WORKSPACE 'migration\directwork-src';$pin=(Get-Content (Join-Path $src 'SOURCE_COMMIT.txt') -Raw).Trim();if($pin -ne $env:DIRECTWORK_COMMIT){throw 'source pin mismatch'}
+          Set-Location $src;go mod download;go test ./... -count=1;if($LASTEXITCODE -ne 0){throw 'tests failed; OpenWorker untouched'}
+          go build -ldflags "-X github.com/liuxb99/DirectWork/internal/buildinfo.Version=p1 -X github.com/liuxb99/DirectWork/internal/buildinfo.Commit=$env:DIRECTWORK_COMMIT -X github.com/liuxb99/DirectWork/internal/buildinfo.TargetCommit=$env:DIRECTWORK_COMMIT" -o directwork-node.exe ./cmd/directwork-node;if($LASTEXITCODE -ne 0){throw 'build failed'}
+          .\scripts\deploy-and-smoke.ps1 -Binary .\directwork-node.exe -ExpectedMachine 'DESKTOP-UL7V2VV' -NodeKey 'ul7' -TargetCommit $env:DIRECTWORK_COMMIT -RunId '${{ github.run_id }}' -Peers 'http://DESKTOP-ODAQN0D:8787,http://DESKTOP-O87PJNR:8787'
+          $old=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue;if($old){Stop-Service OpenWorkerNode -Force -ErrorAction SilentlyContinue;sc.exe config OpenWorkerNode start= disabled|Out-Null;sc.exe delete OpenWorkerNode|Out-Null};Start-Sleep 1
+          $s=Invoke-RestMethod http://127.0.0.1:8787/v1/node/status;if(-not $s.online -or $s.commit -ne $env:DIRECTWORK_COMMIT){throw 'post-retirement verify failed'}
+          $r=Join-Path $env:GITHUB_WORKSPACE 'verification-receipts\${{ github.run_id }}\ul7.json';if(-not(Test-Path $r)){throw 'receipt missing'};$out=Join-Path $env:GITHUB_WORKSPACE 'migration-receipts\${{ github.run_id }}';New-Item -ItemType Directory -Force -Path $out|Out-Null;Copy-Item $r (Join-Path $out 'ul7.json') -Force
+          [ordered]@{schema='directwork/openworker-retirement-receipt/v1';verified=$true;node='ul7';machine=$env:COMPUTERNAME;directwork_commit=$env:DIRECTWORK_COMMIT;directwork_service=(Get-Service DirectWorkNode).Status.ToString();openworker_service_present=[bool](Get-Service OpenWorkerNode -ErrorAction SilentlyContinue);openworker_data_preserved=(Test-Path 'C:\ProgramData\OpenWorker');verified_at=(Get-Date).ToUniversalTime().ToString('o')}|ConvertTo-Json -Depth 8|Set-Content (Join-Path $out 'ul7-retirement.json') -Encoding UTF8
+      - name: Persist UL7 receipts
+        shell: powershell
+        run: git config user.name 'directwork-migration'; git config user.email 'directwork-migration@users.noreply.github.com'; git add migration-receipts/${{ github.run_id }}/ul7*.json; git commit -m 'receipt: UL7 migrated to DirectWork run ${{ github.run_id }}'; git push origin HEAD:main

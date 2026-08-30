@@ -1,0 +1,6 @@
+case_id=0004
+machine=DESKTOP-O87PJNR
+request_id=case0004-status-20260819-d1
+command=CASE.STATUS
+transport=github_transient_only
+business_execution=false

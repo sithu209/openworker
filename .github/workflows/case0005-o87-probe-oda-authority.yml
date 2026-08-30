@@ -1,0 +1,53 @@
+name: Case 0005 O87 Probe ODA Authority
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[case0005-o87-probe-oda]')
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify O87 authority
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host $env:COMPUTERNAME"}
+          $h=Invoke-RestMethod 'http://127.0.0.1:8787/healthz'
+          if(-not $h.ok){throw 'O87 OpenWorkerNode unhealthy'}
+      - name: Probe cluster authority for ODA
+        id: probe
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Continue'
+          $base='http://127.0.0.1:8787'
+          $errors=@(); $status=$null; $endpoints=$null; $connectivity=$null; $route=$null; $jobs=$null
+          try{$status=Invoke-RestMethod "$base/v1/cluster/status"}catch{$errors+="status: $($_.Exception.Message)"}
+          try{$endpoints=Invoke-RestMethod "$base/v1/cluster/endpoints"}catch{$errors+="endpoints: $($_.Exception.Message)"}
+          try{$connectivity=Invoke-RestMethod "$base/v1/cluster/connectivity?limit=500"}catch{$errors+="connectivity: $($_.Exception.Message)"}
+          try{$route=Invoke-RestMethod "$base/v1/cluster/route?machine=DESKTOP-ODAQN0D&capabilities=case0005,comfyx,local-supervisor"}catch{$errors+="route: $($_.Exception.Message)"}
+          try{$jobs=Invoke-RestMethod "$base/v1/cluster/jobs?limit=200"}catch{$errors+="jobs: $($_.Exception.Message)"}
+          $receipt=[ordered]@{schema='openworker/case0005-o87-probe-oda/v1';case_id='0005';authority_machine=$env:COMPUTERNAME;observed_at=[DateTimeOffset]::UtcNow.ToString('o');status=$status;endpoints=$endpoints;connectivity=$connectivity;route=$route;jobs=$jobs;errors=$errors}
+          New-Item -ItemType Directory -Force -Path 'case-evidence/0005'|Out-Null
+          $receipt|ConvertTo-Json -Depth 40|Set-Content 'case-evidence/0005/o87-probe-oda.json' -Encoding utf8
+          if($errors.Count -gt 0){Write-Warning ($errors -join '; ')}
+      - name: Commit bounded probe evidence
+        if: always()
+        shell: powershell
+        run: |
+          git config user.name 'openworker-evidence-bot'
+          git config user.email 'openworker-evidence-bot@users.noreply.github.com'
+          git add -- case-evidence/0005/o87-probe-oda.json
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'evidence(case0005): probe ODA authority from O87'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }

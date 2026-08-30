@@ -1,0 +1,81 @@
+# Case 0003 imagery diagnostic retrigger: 2026-08-18
+name: Case 0003 Current Workspace Diagnostic UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-current-workspace-diagnostic-ul7.yml'
+
+permissions:
+  contents: write
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_DIAG_BRANCH: case0003-current-workspace-diagnostic
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  diagnostic:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed UL7 host
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw ('wrong host '+$env:COMPUTERNAME)}
+          if(-not(Test-Path -LiteralPath $env:CASE0003_WORKSPACE -PathType Container)){throw 'Case 0003 workspace unavailable'}
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Stage current Case 0003 workspace evidence
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path (Get-Location) 'diagnostic-handoff\case0003\current'
+          if(Test-Path -LiteralPath $root){Remove-Item -LiteralPath $root -Recurse -Force}
+          New-Item -ItemType Directory -Force $root|Out-Null
+          $items=[ordered]@{final_acceptance='acceptance\openworker-final\work-ledger-final-acceptance.json';scenex_png='scenex\terrain-browse.png';scenex_evidence='scenex\terrain-browse-evidence.json';scenex_workspace='scenex\scenex-workspace.json';launcher='Open-Case0003-SceneX.bat';launcher_evidence='scenex\scenex-launcher-evidence.json';worklist='.openworker\case-worklist.json';streetview_semantic='streetview\streetview-semantic-acceptance.json';nlsc_imagery='imagery\nlsc-site-imagery.json';textured_assembly='imagery\scenex-textured-assembly.json';imagery_repair='imagery\case0003-imagery-repair.json'}
+          $summary=[ordered]@{schema_version='openworker-case0003-current-workspace-diagnostic/v3';case_id='0003';assigned_host=$env:CASE0003_ASSIGNED_HOST;computer_name=$env:COMPUTERNAME;runner_name=$env:RUNNER_NAME;github_run_id=$env:GITHUB_RUN_ID;workspace=$env:CASE0003_WORKSPACE;files=[ordered]@{}}
+          foreach($entry in $items.GetEnumerator()){
+            $src=Join-Path $env:CASE0003_WORKSPACE $entry.Value;$record=[ordered]@{relative_path=$entry.Value;exists=$false}
+            if(Test-Path -LiteralPath $src -PathType Leaf){$record.exists=$true;$record.size=(Get-Item -LiteralPath $src).Length;$record.sha256=(Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash.ToLowerInvariant();Copy-Item -LiteralPath $src -Destination (Join-Path $root ([IO.Path]::GetFileName($src))) -Force}
+            $summary.files[$entry.Key]=$record
+          }
+          $sv=Join-Path $env:CASE0003_WORKSPACE 'streetview\streetview-semantic-acceptance.json';if(Test-Path -LiteralPath $sv -PathType Leaf){$j=Get-Content -Raw -LiteralPath $sv|ConvertFrom-Json;$summary.streetview_semantic_visible=$j.semantic_visible;$summary.streetview_render_count=@($j.renders).Count}
+          $tx=Join-Path $env:CASE0003_WORKSPACE 'imagery\scenex-textured-assembly.json';if(Test-Path -LiteralPath $tx -PathType Leaf){$j=Get-Content -Raw -LiteralPath $tx|ConvertFrom-Json;$summary.textured_schema=[string]$j.schema;$summary.texture_path=[string]$j.texture_path;$summary.texture_sha256=[string]$j.texture_sha256}
+          $sx=Join-Path $env:CASE0003_WORKSPACE 'scenex\scenex-workspace.json';if(Test-Path -LiteralPath $sx -PathType Leaf){$j=Get-Content -Raw -LiteralPath $sx|ConvertFrom-Json;$summary.scenex_imagery_required=$j.imagery_required;$summary.scenex_imagery_texture_sha256=[string]$j.imagery_texture_sha256}
+          $runsRoot=Join-Path $env:CASE0003_WORKSPACE 'runs'
+          $latest=Get-ChildItem -LiteralPath $runsRoot -Directory -Filter 'imagery-*' -ErrorAction SilentlyContinue|Sort-Object LastWriteTimeUtc -Descending|Select-Object -First 1
+          if($latest){
+            $summary.latest_imagery_run=[ordered]@{path=$latest.FullName;name=$latest.Name;last_write_utc=$latest.LastWriteTimeUtc.ToString('o');files=@()}
+            foreach($f in Get-ChildItem -LiteralPath $latest.FullName -File -ErrorAction SilentlyContinue){
+              $rec=[ordered]@{name=$f.Name;size=$f.Length;sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+              if($f.Extension -in @('.log','.json')){Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $root ('latest-imagery-'+$f.Name)) -Force}
+              $summary.latest_imagery_run.files += $rec
+            }
+          }
+          $statePath=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          if(Test-Path -LiteralPath $statePath -PathType Leaf){$state=Get-Content -LiteralPath $statePath -Raw|ConvertFrom-Json;$summary.revision_id=[string]$state.revision_id;$summary.acceptance_status=[string]$state.status}
+          [IO.File]::WriteAllText((Join-Path $root 'diagnostic-summary.json'),($summary|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
+          Write-Host ('CASE0003_CURRENT_DIAGNOSTIC_STAGED imagery_run='+[string]$summary.latest_imagery_run.name+' streetview='+[string]$summary.streetview_semantic_visible+' imagery='+[string]$summary.textured_schema)
+
+      - name: Publish diagnostic branch
+        run: |
+          $ErrorActionPreference='Stop'
+          git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B $env:CASE0003_DIAG_BRANCH
+          git add -- diagnostic-handoff/case0003/current
+          git commit -m 'case0003: publish current UL7 imagery run diagnostic'
+          if($LASTEXITCODE -ne 0){throw 'failed to commit Case 0003 diagnostic handoff'}
+          git push --force origin ("HEAD:refs/heads/"+$env:CASE0003_DIAG_BRANCH)
+          if($LASTEXITCODE -ne 0){throw 'failed to publish Case 0003 diagnostic branch'}

@@ -1,0 +1,46 @@
+name: Probe ODA Runner
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-oda-runner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify ODA runner accepted the job
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $receipt=[ordered]@{
+            schema='openworker/oda-runner-probe/v1'
+            machine=$env:COMPUTERNAME
+            runner_name=$env:RUNNER_NAME
+            runner_os=$env:RUNNER_OS
+            run_id=$env:GITHUB_RUN_ID
+            source_sha=$env:GITHUB_SHA
+            observed_at=[DateTimeOffset]::UtcNow.ToString('o')
+          }
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+          New-Item -ItemType Directory -Force -Path 'evidence/runner-probes'|Out-Null
+          [IO.File]::WriteAllText('evidence/runner-probes/oda-latest.json',($receipt|ConvertTo-Json -Depth 10)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+      - name: Publish probe evidence
+        shell: powershell
+        run: |
+          git config user.name 'openworker-runner-probe'
+          git config user.email 'openworker-runner-probe@users.noreply.github.com'
+          git add -- evidence/runner-probes/oda-latest.json
+          git commit -m 'evidence: ODA runner accepted probe'
+          if($LASTEXITCODE -ne 0){throw 'failed to commit ODA runner probe'}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'failed to rebase ODA runner probe'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'failed to push ODA runner probe'}

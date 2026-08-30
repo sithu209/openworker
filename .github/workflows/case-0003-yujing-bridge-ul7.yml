@@ -1,0 +1,233 @@
+name: Case 0003 Yujing Bridge OpenWorker Final Acceptance UL7
+
+on:
+  workflow_dispatch:
+    inputs:
+      refresh_scenex:
+        description: 'Refresh SceneX REAL browse before Final Acceptance'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-yujing-bridge-ul7.yml'
+      - 'scripts/case0003_final_acceptance.py'
+      - 'scripts/case0003_review_handoff.py'
+      - 'scripts/case0003_apply_llm_review.py'
+      - 'coworker/review_cycle.py'
+      - 'coworker/review_gap.py'
+      - 'coworker/review_bundle_binding.py'
+      - 'coworker/work_ledger.py'
+      - 'coworker/runtimes/work_ledger_bridge.py'
+      - 'coworker/runtimes/job_binding.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0003-openworker-final-acceptance-ul7
+  cancel-in-progress: true
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  OPENWORKER_REVIEW_DRIVE_ROOT: ${{ vars.OPENWORKER_REVIEW_DRIVE_ROOT }}
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  final-acceptance:
+    name: OpenWorker REAL Final Acceptance + ChatGPT Handoff
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify assigned UL7 host fail closed
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){
+            throw "CASE0003_ASSIGNED_HOST_MISMATCH host=$env:COMPUTERNAME assigned=$env:CASE0003_ASSIGNED_HOST"
+          }
+          if(-not (Test-Path -LiteralPath $env:CASE0003_WORKSPACE -PathType Container)){
+            throw "CASE0003_WORKSPACE_UNAVAILABLE $env:CASE0003_WORKSPACE"
+          }
+          Write-Host "CASE0003_UL7_FINAL_ACCEPTANCE_HOST_OK host=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Verify existing SceneX REAL evidence for scoped rework
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.refresh_scenex }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          $paths=@(
+            (Join-Path $root 'scenex\terrain.region.json'),
+            (Join-Path $root 'scenex\terrain-browse.png'),
+            (Join-Path $root 'scenex\terrain-browse-evidence.json'),
+            (Join-Path $root 'scenex\scenex-workspace.json')
+          )
+          foreach($p in $paths){
+            $full=[IO.Path]::GetFullPath($p)
+            if(-not $full.StartsWith($root+'\',[StringComparison]::OrdinalIgnoreCase)){throw ('SceneX evidence escapes workspace: '+$full)}
+            if(-not (Test-Path -LiteralPath $full -PathType Leaf) -or (Get-Item -LiteralPath $full).Length -le 0){throw ('SceneX scoped-rework evidence missing/empty: '+$full)}
+          }
+          $ev=Get-Content -LiteralPath $paths[2] -Raw|ConvertFrom-Json
+          $manifest=Get-Content -LiteralPath $paths[3] -Raw|ConvertFrom-Json
+          if($ev.schema_version -ne 'scenex-real-browse/v1' -or $ev.ok -ne $true){throw 'existing SceneX REAL browse evidence rejected'}
+          if([string]$ev.region_id -eq 'fallback-generated'){throw 'existing SceneX fallback-generated region forbidden'}
+          if([int]$ev.terrain_diagnostics.active_chunk_count -le 0){throw 'existing SceneX has no active terrain chunk'}
+          if([int]$ev.geometry_diagnostics.terrain_geometry_count -le 0){throw 'existing SceneX built no terrain geometry'}
+          if([int]$ev.viewport.width -ne 1280 -or [int]$ev.viewport.height -ne 720){throw 'existing SceneX viewport mismatch'}
+          if($manifest.ok -ne $true){throw 'existing SceneX workspace manifest rejected'}
+          Write-Host "CASE0003_SCENEX_SCOPED_REWORK_REUSE_PASS active=$($ev.terrain_diagnostics.active_chunk_count) geometry=$($ev.geometry_diagnostics.terrain_geometry_count)"
+
+      - name: Checkout SceneX production source
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_scenex }}
+        uses: actions/checkout@v4
+        with:
+          repository: liuxb99/SceneX
+          ref: master
+          path: scenex-src
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Resolve canonical Terrain inputs for fresh SceneX browse
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_scenex }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          function Require-Bounded([string]$rel){
+            if([IO.Path]::IsPathRooted($rel)){throw ('input must be workspace-relative: '+$rel)}
+            $full=[IO.Path]::GetFullPath((Join-Path $root $rel))
+            if(-not ($full -ieq $root) -and -not $full.StartsWith($root+'\',[StringComparison]::OrdinalIgnoreCase)){throw ('input escapes workspace: '+$rel)}
+            if(-not (Test-Path -LiteralPath $full -PathType Leaf) -or (Get-Item -LiteralPath $full).Length -le 0){throw ('input missing/empty: '+$full)}
+            return $full
+          }
+          $grid=Require-Bounded 'terrain\terrain-grid.json'
+          $context=Require-Bounded 'terrain\terrain-context.json'
+          $geo=Require-Bounded 'geo\geolocation.json'
+          $contextJson=Get-Content -LiteralPath $context -Raw|ConvertFrom-Json
+          if($contextJson.schema_version -ne 'terrain-context/v1'){throw 'terrain context schema mismatch'}
+          $project=[string]$contextJson.project_id
+          if([string]::IsNullOrWhiteSpace($project)){throw 'terrain project_id missing'}
+          $safe=($project -replace '[^A-Za-z0-9._-]','-').Trim('-')
+          if([string]::IsNullOrWhiteSpace($safe)){$safe='terrain'}
+          $out=Join-Path $root 'scenex'
+          New-Item -ItemType Directory -Force $out|Out-Null
+          "SCENEX_GRID=$grid"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_CONTEXT=$context"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_GEO=$geo"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_OUT=$out"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "SCENEX_REGION_ID=scenex-$safe"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_SCENEX_INPUTS_READY project=$project"
+
+      - name: Build fresh SceneX Region Pack from canonical Terrain grid
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_scenex }}
+        working-directory: scenex-src
+        run: |
+          $ErrorActionPreference='Stop'
+          $pack=Join-Path $env:SCENEX_OUT 'terrain.region.json'
+          python tools\build_region_pack_from_terrain_grid.py --grid $env:SCENEX_GRID --geo $env:SCENEX_GEO --terrain-context $env:SCENEX_CONTEXT --output $pack --region-id $env:SCENEX_REGION_ID --name 'OpenWorker Case 0003 Final Acceptance'
+          if($LASTEXITCODE -ne 0){throw 'SceneX Region Pack rebuild failed'}
+          if(-not (Test-Path -LiteralPath $pack) -or (Get-Item -LiteralPath $pack).Length -le 0){throw 'fresh SceneX Region Pack missing/empty'}
+          $json=Get-Content -LiteralPath $pack -Raw|ConvertFrom-Json
+          if([string]$json.region.id -eq 'fallback-generated'){throw 'fallback Region Pack is forbidden'}
+          if(@($json.terrain_chunks).Count -le 0){throw 'fresh Region Pack has no terrain chunks'}
+          "SCENEX_REGION_PACK=$pack"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_SCENEX_REGION_REBUILD_PASS path=$pack"
+
+      - name: Resolve canonical Godot 4.6.3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_scenex }}
+        working-directory: scenex-src
+        run: .\tools\resolve_godot_for_ci.ps1
+
+      - name: Execute fresh REAL SceneX Godot browse and screenshot
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_scenex }}
+        working-directory: scenex-src
+        timeout-minutes: 6
+        run: |
+          $ErrorActionPreference='Stop'
+          if(-not $env:GODOT_EXE -or -not (Test-Path -LiteralPath $env:GODOT_EXE)){throw 'GODOT_EXE unavailable'}
+          $shot=Join-Path $env:SCENEX_OUT 'terrain-browse.png'
+          $evidence=Join-Path $env:SCENEX_OUT 'terrain-browse-evidence.json'
+          $manifestPath=Join-Path $env:SCENEX_OUT 'scenex-workspace.json'
+          $stdout=Join-Path $env:RUNNER_TEMP ("case0003-scenex-"+$env:GITHUB_RUN_ID+'.out.log')
+          $stderr=Join-Path $env:RUNNER_TEMP ("case0003-scenex-"+$env:GITHUB_RUN_ID+'.err.log')
+          foreach($p in @($shot,$evidence,$manifestPath,$stdout,$stderr)){if(Test-Path -LiteralPath $p){Remove-Item -LiteralPath $p -Force}}
+          $godotProject=Join-Path (Get-Location) 'godot'
+          $args=@('--path',$godotProject,'--resolution','1280x720','--rendering-method','forward_plus','--rendering-driver','d3d12','--audio-driver','Dummy','--script','res://tests/workspace_region_pack_browse.gd','--',("--region-pack="+$env:SCENEX_REGION_PACK),("--screenshot="+$shot),("--evidence="+$evidence))
+          $p=Start-Process -FilePath $env:GODOT_EXE -ArgumentList $args -WorkingDirectory (Get-Location) -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          $deadline=[DateTime]::UtcNow.AddMinutes(5)
+          while(-not $p.HasExited){
+            if([DateTime]::UtcNow -ge $deadline){Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue; throw 'SceneX Godot REAL browse exceeded bounded 5 minute deadline'}
+            Start-Sleep -Seconds 2
+            $p.Refresh()
+          }
+          $p.WaitForExit()
+          if(Test-Path $stdout){Get-Content $stdout|Select-Object -Last 160|ForEach-Object{Write-Host $_}}
+          if(Test-Path $stderr){Get-Content $stderr|Select-Object -Last 160|ForEach-Object{Write-Host $_}}
+          if([int]$p.ExitCode -ne 0){throw ('SceneX Godot REAL browse failed exit='+$p.ExitCode)}
+          foreach($path in @($shot,$evidence)){if(-not (Test-Path -LiteralPath $path) -or (Get-Item -LiteralPath $path).Length -le 0){throw ('SceneX fresh artifact missing/empty: '+$path)}}
+          $ev=Get-Content -LiteralPath $evidence -Raw|ConvertFrom-Json
+          if($ev.schema_version -ne 'scenex-real-browse/v1' -or $ev.ok -ne $true){throw 'SceneX fresh REAL browse evidence rejected'}
+          if([string]$ev.region_id -eq 'fallback-generated'){throw 'SceneX loaded fallback-generated region'}
+          if([int]$ev.terrain_diagnostics.active_chunk_count -le 0){throw 'SceneX has no active terrain chunk'}
+          if([int]$ev.geometry_diagnostics.terrain_geometry_count -le 0){throw 'SceneX built no terrain geometry'}
+          if([int]$ev.viewport.width -ne 1280 -or [int]$ev.viewport.height -ne 720){throw 'SceneX fresh viewport mismatch'}
+          $shotSha=(Get-FileHash -LiteralPath $shot -Algorithm SHA256).Hash.ToLowerInvariant()
+          $packSha=(Get-FileHash -LiteralPath $env:SCENEX_REGION_PACK -Algorithm SHA256).Hash.ToLowerInvariant()
+          $manifest=[ordered]@{schema_version='scenex-workspace-browse/v1';ok=$true;run_id=$env:GITHUB_RUN_ID;producer_commit='SceneX/master';runner_name=$env:RUNNER_NAME;computer_name=$env:COMPUTERNAME;assigned_host=$env:CASE0003_ASSIGNED_HOST;workspace_root=$env:CASE0003_WORKSPACE;region_id=[string]$ev.region_id;region_pack=[ordered]@{path=$env:SCENEX_REGION_PACK;sha256=$packSha};screenshot=[ordered]@{path=$shot;sha256=$shotSha;width=1280;height=720};evidence=$evidence;active_chunks=[int]$ev.terrain_diagnostics.active_chunk_count;terrain_geometry_count=[int]$ev.geometry_diagnostics.terrain_geometry_count}
+          [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
+          Write-Host "CASE0003_SCENEX_FRESH_REAL_BROWSE_PASS screenshot_sha256=$shotSha pack_sha256=$packSha"
+
+      - name: Run mechanical checks and prepare immutable Review Bundle
+        env:
+          PYTHONPATH: ${{ github.workspace }}\openworker
+        run: |
+          $ErrorActionPreference='Stop'
+          $argv=@('openworker\scripts\case0003_review_handoff.py','--workspace',$env:CASE0003_WORKSPACE)
+          if(-not [string]::IsNullOrWhiteSpace($env:OPENWORKER_REVIEW_DRIVE_ROOT)){$argv += @('--drive-sync-root',$env:OPENWORKER_REVIEW_DRIVE_ROOT)}
+          python @argv
+          $code=$LASTEXITCODE
+          if($code -ne 0 -and $code -ne 3){throw "OpenWorker review preparation failed exit=$code"}
+          if($code -eq 3){Write-Host 'CASE0003_REVIEW_BUNDLE_READY_FOR_DRIVE_API'}
+
+      - name: Verify WorkLedger is ready for Drive API review publication and not accepted
+        run: |
+          $ErrorActionPreference='Stop'
+          $path=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          if(-not (Test-Path -LiteralPath $path) -or (Get-Item -LiteralPath $path).Length -le 0){throw 'Final Acceptance evidence missing/empty'}
+          $ev=Get-Content -LiteralPath $path -Raw|ConvertFrom-Json
+          if(@('WAITING_DRIVE_HANDOFF','WAITING_LLM_REVIEW') -notcontains [string]$ev.status){throw ('Review preparation not ready: '+$ev.status)}
+          if([string]::IsNullOrWhiteSpace([string]$ev.revision_id)){throw 'revision_id missing'}
+          if([string]::IsNullOrWhiteSpace([string]$ev.review_bundle)){throw 'review_bundle missing'}
+          if([string]::IsNullOrWhiteSpace([string]$ev.bundle_manifest_sha256)){throw 'bundle_manifest_sha256 missing'}
+          if(-not [string]::IsNullOrWhiteSpace([string]$ev.accepted_revision_id)){throw 'accepted pointer moved before LLM review'}
+          if(-not [string]::IsNullOrWhiteSpace([string]$ev.delivered_revision_id)){throw 'delivered pointer moved before LLM review'}
+          if([string]$ev.status -eq 'WAITING_DRIVE_HANDOFF'){
+            Write-Host "CASE0003_OPENWORKER_READY_FOR_DRIVE_API revision=$($ev.revision_id) bundle=$($ev.review_bundle) manifest_sha256=$($ev.bundle_manifest_sha256)"
+          } else {
+            Write-Host "CASE0003_OPENWORKER_WAITING_LLM_REVIEW revision=$($ev.revision_id) drive=$($ev.drive_handoff_path)"
+          }
+
+      - name: Upload bounded Final Acceptance and Review Bundle evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0003-openworker-final-acceptance-${{ github.run_id }}
+          path: |
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\acceptance\openworker-final\**
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\.openworker\reviews\**
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\scenex\terrain.region.json
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\scenex\terrain-browse.png
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\scenex\terrain-browse-evidence.json
+            D:\AI-Work\jobs\0003-YUJING-BRIDGE\scenex\scenex-workspace.json
+          if-no-files-found: warn
+          retention-days: 14

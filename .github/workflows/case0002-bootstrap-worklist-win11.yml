@@ -1,0 +1,65 @@
+name: Case 0002 Bootstrap Governed Worklist Win11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'case-worklists/0002.json'
+      - '.github/workflows/case0002-bootstrap-worklist-win11.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-case0002-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed ODA machine authority
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D'){
+            throw "CASE0002_HOST_MISMATCH expected=DESKTOP-ODAQN0D actual=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+          }
+          Write-Host "CASE0002_HOST_OK machine=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+
+      - name: Ensure governed workspace and canonical CaseWorklist
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Example\0002'
+          if(-not(Test-Path -LiteralPath $workspace -PathType Container)){
+            New-Item -ItemType Directory -Path $workspace -Force | Out-Null
+          }
+          python scripts\case_worklist_action.py ensure `
+            --workspace-root $workspace `
+            --manifest case-worklists\0002.json
+          if($LASTEXITCODE -ne 0){throw 'CASE0002 worklist ensure failed'}
+
+      - name: Verify canonical next step and assigned host
+        run: |
+          $ErrorActionPreference='Stop'
+          $workspace='D:\AI-Example\0002'
+          $path=Join-Path $workspace '.openworker\case-worklist.json'
+          if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "CASE0002 worklist missing: $path"}
+          $w=Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+          if($w.schema_version -ne 'openworker-case-worklist/v1'){throw 'CASE0002 worklist schema mismatch'}
+          if([string]$w.case_id -ne '0002'){throw 'CASE0002 worklist case_id mismatch'}
+          if([string]$w.assigned_host -ne 'DESKTOP-ODAQN0D'){throw 'CASE0002 assigned_host mismatch'}
+          if([string]::IsNullOrWhiteSpace([string]$w.canonical_next_step_id)){throw 'CASE0002 canonical next step is empty'}
+          Write-Host "CASE0002_WORKLIST_READY next=$($w.canonical_next_step_id) revision=$($w.revision)"
+
+      - name: Show canonical worklist
+        run: |
+          python scripts\case_worklist_action.py show --workspace-root 'D:\AI-Example\0002'
+          if($LASTEXITCODE -ne 0){throw 'CASE0002 worklist show failed'}

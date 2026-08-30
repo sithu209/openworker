@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -16,6 +17,12 @@ from .secrets import state_dir
 
 
 def main(argv: Optional[list[str]] = None) -> None:
+    raw_argv = list(sys.argv[1:] if argv is None else argv)
+    if raw_argv and raw_argv[0] == "queue-drain":
+        from .queue_drain import main as queue_drain_main
+
+        raise SystemExit(queue_drain_main(raw_argv[1:]))
+
     cfg = load_config()
     parser = argparse.ArgumentParser(
         prog="openworker", description="Agent coworker (TUI)."
@@ -34,7 +41,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         help="permission mode",
     )
     parser.add_argument("--resume", default=None, help="resume a session id")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(raw_argv)
 
     workspace = Path(args.cwd).expanduser().resolve()
     # Unified global store shared with the GUI/server (one place for all conversations).

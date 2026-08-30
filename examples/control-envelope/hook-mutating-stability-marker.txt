@@ -1,0 +1,4 @@
+Case0005 mutating embedded-control trigger
+2026-08-19 21:10 +08:00
+intent=queue-clear-plus-idempotent-continue
+machine=DESKTOP-ODAQN0D

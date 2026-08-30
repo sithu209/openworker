@@ -6,6 +6,7 @@ from coworker.tools.registry import ToolRegistry
 class FakeClient:
     def __init__(self):
         self.created = None
+        self.executed_flow = None
         self.reviewed = None
         self.published = None
 
@@ -18,6 +19,9 @@ class FakeClient:
     def list_jobs(self, *, project_id=None): return [{"id":"job-1","project_id":project_id or "project-1","name":"RC Column"}]
     def get_job(self, job_id): return {"id":job_id,"status":"review"}
     def create_job(self, **kwargs): self.created=kwargs; return {"id":"job-created",**kwargs}
+    def execute_rc_column_flow(self, **kwargs):
+        self.executed_flow=kwargs
+        return {"job":{"id":kwargs["job_id"]},"tasks":[],"stages":[],"artifacts":[]}
     def approval_status(self, job_id): return {"job_id":job_id,"approved":False,"total":1,"approved_count":0,"pending_artifact_ids":["art-1"],"latest_reviews":{}}
     def list_job_reviews(self, job_id): return [{"id":"rev-1","job_id":job_id,"artifact_id":"art-1","decision":"approved"}]
     def submit_artifact_review(self, **kwargs): self.reviewed=kwargs; return {"id":"rev-new",**kwargs}
@@ -33,8 +37,9 @@ def test_facade_exposes_stable_tool_names():
     assert _registry().names() == [
         "engineering_system_readiness","engineering_list_projects","engineering_get_project",
         "engineering_list_jobs","engineering_get_job","engineering_create_job",
-        "engineering_get_approval_status","engineering_list_job_reviews",
-        "engineering_submit_artifact_review","engineering_list_deliveries","engineering_publish_job",
+        "engineering_execute_rc_column_flow","engineering_get_approval_status",
+        "engineering_list_job_reviews","engineering_submit_artifact_review",
+        "engineering_list_deliveries","engineering_publish_job",
     ]
 
 
@@ -51,7 +56,8 @@ def test_read_tools_do_not_require_approval_but_mutations_do():
                  "engineering_list_jobs","engineering_get_job","engineering_get_approval_status",
                  "engineering_list_job_reviews","engineering_list_deliveries"]:
         assert registry.get(name).metadata.requires_approval is False
-    for name in ["engineering_create_job","engineering_submit_artifact_review","engineering_publish_job"]:
+    for name in ["engineering_create_job","engineering_execute_rc_column_flow",
+                 "engineering_submit_artifact_review","engineering_publish_job"]:
         tool=registry.get(name)
         assert tool.metadata.requires_approval is True
         assert tool.metadata.category=="engineering"
@@ -76,6 +82,15 @@ def test_create_job_preserves_payload_and_decodes_metadata_json():
         "priority":"high","metadata_json":'{"source":"openworker"}'})
     assert result["id"]=="job-created"
     assert client.created["metadata"]=={"source":"openworker"}
+
+
+def test_rc_column_flow_uses_existing_client_and_requires_approval_metadata():
+    client=FakeClient(); registry=_registry(client)
+    payload={"component_id":"C1","width_mm":400}
+    result=registry.execute("engineering_execute_rc_column_flow",{"job_id":"job-1","column":payload})
+    assert result["job"]["id"]=="job-1"
+    assert client.executed_flow=={"job_id":"job-1","column":payload}
+    assert registry.get("engineering_execute_rc_column_flow").metadata.requires_approval is True
 
 
 def test_governance_mutation_tools_delegate_exact_user_decision():

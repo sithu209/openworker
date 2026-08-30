@@ -1,0 +1,57 @@
+name: OPS Clear Actions Queue
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/triggers/clear-actions-queue.txt'
+      - '.github/workflows/ops-clear-actions-queue.yml'
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  clear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Cancel and verify every other non-terminal run
+        shell: bash
+        working-directory: go-runtime
+        run: |
+          set -uo pipefail
+          state="${RUNNER_TEMP}/queue-clear.json"
+          go run ./cmd/openworker-actions-queue-clear \
+            -repo "${GH_REPO}" -exclude-run-id "${GITHUB_RUN_ID}" \
+            -run-id "${GITHUB_RUN_ID}" -source-sha "${GITHUB_SHA}" \
+            -timeout 7m -poll 5s -stuck-after 30m > "${state}"
+      - name: Publish queue-clear evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "${RUNNER_TEMP}/queue-clear.json"
+          mkdir -p evidence/ops
+          cp "${RUNNER_TEMP}/queue-clear.json" evidence/ops/latest-queue-clear.json
+          git config user.name 'openworker-ops-bot'
+          git config user.email '121744662+liuxb99@users.noreply.github.com'
+          git add evidence/ops/latest-queue-clear.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'evidence(ops): publish latest queue clear'
+          for attempt in $(seq 1 5); do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            git rebase --abort >/dev/null 2>&1 || true
+            sleep $((attempt*2))
+          done
+          exit 1

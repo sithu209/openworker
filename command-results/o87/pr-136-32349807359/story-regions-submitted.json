@@ -1,0 +1,23 @@
+{
+  "schema": "case0004.directwork-050-submit.v1",
+  "request_id": "pr-136-32349807359",
+  "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+  "authority": "DirectWork",
+  "api": "POST /v1/work",
+  "submitted_work": {
+    "work_id": "dw-20260820T083831-efc1b644d6d5966c",
+    "dispatch_id": "pr-136-32349807359",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-050-story-regions.ps1 -RequestId pr-136-32349807359",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "pending",
+    "exit_code": 0,
+    "created_at": "2026-08-20T08:38:31.1595968Z"
+  },
+  "github_action_used_for_business_execution": false,
+  "observed_at": "2026-08-20T08:38:31.3170758+00:00"
+}

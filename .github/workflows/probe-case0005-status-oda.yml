@@ -1,0 +1,44 @@
+name: Probe Case0005 Status ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'diagnostic-requests/case0005-status.json'
+
+permissions:
+  contents: write
+
+jobs:
+  status:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 2
+    concurrency:
+      group: openworker-case0005-status-oda
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read OpenWorker canonical Case status
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw 'wrong machine'}; $ctl=Join-Path $env:ProgramData 'OpenWorker\bin\openworker.exe'; if(-not(Test-Path -LiteralPath $ctl -PathType Leaf)){throw 'canonical openworker.exe missing'}; $raw=& $ctl case status 0005 2>&1 | Out-String; if($LASTEXITCODE -ne 0){throw ('case status failed: '+$raw)}; $status=$raw|ConvertFrom-Json -ErrorAction Stop; $out=[ordered]@{schema='openworker.case0005-status-probe/v1';case_id='0005';machine=$env:COMPUTERNAME;github_run_id=$env:GITHUB_RUN_ID;github_run_attempt=$env:GITHUB_RUN_ATTEMPT;github_action_used_for_business_execution=$false;authority='openworker-go-native-case-controller+local-durable-ledger';observed_at=[DateTimeOffset]::UtcNow.ToString('o');status=$status}; $dir=Join-Path $env:GITHUB_WORKSPACE 'case-evidence\case0005-status'; New-Item -ItemType Directory -Force -Path $dir|Out-Null; $json=$out|ConvertTo-Json -Depth 60; [IO.File]::WriteAllText((Join-Path $dir ('status-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.json')),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false)); [IO.File]::WriteAllText((Join-Path $dir 'latest.json'),$json+[Environment]::NewLine,[Text.UTF8Encoding]::new($false)); Write-Host $json"
+      - name: Publish immutable status evidence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git config user.name 'openworker-status-probe'
+          git config user.email 'openworker-status-probe@users.noreply.github.com'
+          git add -- case-evidence/case0005-status
+          git commit -m "evidence: Case0005 status $env:GITHUB_RUN_ID"
+          if($LASTEXITCODE -ne 0){throw 'status evidence commit failed'}
+          $pushed=$false
+          for($i=0;$i -lt 4;$i++){
+            git pull --rebase origin main
+            if($LASTEXITCODE -ne 0){git rebase --abort 2>$null;Start-Sleep -Seconds 1;continue}
+            git push origin HEAD:main
+            if($LASTEXITCODE -eq 0){$pushed=$true;break}
+            Start-Sleep -Seconds 2
+          }
+          if(-not $pushed){throw 'status evidence push failed'}

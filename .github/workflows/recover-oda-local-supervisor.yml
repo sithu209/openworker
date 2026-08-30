@@ -1,0 +1,33 @@
+name: Recover ODA Local Supervisor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'command-requests/oda-recover-local-supervisor.txt'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'command-requests/oda-recover-local-supervisor.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    name: Recover ODA go-tool local supervisor
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Sync go-tool main, activate and REAL verify local supervisor
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%GITHUB_WORKSPACE%\scripts\recover-case0005-local-supervisor.ps1"
+      - name: Persist recovery receipt
+        if: github.event_name == 'push'
+        shell: cmd
+        run: >-
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $dir=Join-Path $env:GITHUB_WORKSPACE 'control-results\recovery'; New-Item -ItemType Directory -Force -Path $dir|Out-Null; $p=Join-Path $dir 'oda-local-supervisor-latest.json'; $status=Invoke-RestMethod -Method Get -Uri 'http://127.0.0.1:8848/api/execution/local-supervisor/status?machine=DESKTOP-ODAQN0D&limit=200' -TimeoutSec 10; $r=[ordered]@{schema='openworker.oda-recovery-receipt.v1';machine='DESKTOP-ODAQN0D';status='OPERATIONAL';github_run_id=$env:GITHUB_RUN_ID;observed_at=[DateTimeOffset]::UtcNow.ToString('o');supervisor=$status}; [IO.File]::WriteAllText($p,($r|ConvertTo-Json -Depth 50)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false)); git config user.name 'openworker-recovery-bot'; git config user.email 'openworker-recovery-bot@users.noreply.github.com'; git add -- 'control-results/recovery/oda-local-supervisor-latest.json'; git commit -m 'receipt: ODA local supervisor recovered'; git pull --rebase origin main; git push origin HEAD:main"

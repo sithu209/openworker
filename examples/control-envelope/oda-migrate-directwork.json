@@ -1,0 +1,12 @@
+{
+  "schema": "node.migration-secret.v1",
+  "request_id": "oda-migrate-directwork-20260821-r01",
+  "command": "NODE.MIGRATE_DIRECTWORK",
+  "machine": "DESKTOP-ODAQN0D",
+  "handoff": {
+    "source_commit": "149a7c86beb7ce573ad89be860770aa500522d6c",
+    "binary_sha256": "21471f1d3fd5f5d2e5fe4483a6407ddf98eea462736cb74dc5c711789c2fbd17",
+    "zip_sha256": "299c3caa9ea4a4744eb9e6980d2722855f603b45de873c166deb1cc4569acd3f",
+    "url": "http://DESKTOP-O87PJNR:8787/v1/work/dw-20260821T055857-719154aa60b24ce3/artifact?path=directwork-node.zip"
+  }
+}

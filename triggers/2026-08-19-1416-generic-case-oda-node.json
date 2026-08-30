@@ -1,0 +1,7 @@
+{
+  "schema": "openworker.generic-case-verification/v1",
+  "machine": "DESKTOP-ODAQN0D",
+  "purpose": "run full Go suite and deploy generic Case engine without executing Case business work",
+  "business_execution": false,
+  "requested_at": "2026-08-19T14:16:00+08:00"
+}

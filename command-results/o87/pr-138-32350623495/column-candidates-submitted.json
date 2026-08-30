@@ -1,0 +1,23 @@
+{
+  "schema": "case0004.directwork-055-submit.v1",
+  "request_id": "pr-138-32350623495",
+  "work_id": "dw-20260820T084846-9d2ec5343662e329",
+  "authority": "DirectWork",
+  "api": "POST /v1/work",
+  "submitted_work": {
+    "work_id": "dw-20260820T084846-9d2ec5343662e329",
+    "dispatch_id": "pr-138-32350623495",
+    "case_id": "0004",
+    "project": "DWG_todo",
+    "machine": "DESKTOP-O87PJNR",
+    "command": "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\\github-runners\\openworker\\_work\\openworker\\openworker\\scripts\\case0004-directwork-055-column-candidates.ps1 -RequestId pr-138-32350623495",
+    "cwd": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+    "timeout_sec": 1800,
+    "status": "pending",
+    "exit_code": 0,
+    "created_at": "2026-08-20T08:48:46.4602373Z"
+  },
+  "github_action_used_for_business_execution": false,
+  "observed_at": "2026-08-20T08:48:46.5902797+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "openworker.case-r15-verification/v1",
+  "machine": "DESKTOP-ODAQN0D",
+  "case_id": "0005",
+  "source_revision": 15,
+  "purpose": "full Go gate for generic APIs, safe definition refresh, typed action metadata, durable fanout, and storyboard chain through illustrated approval",
+  "business_execution": false,
+  "requested_at": "2026-08-19T14:40:00+08:00"
+}

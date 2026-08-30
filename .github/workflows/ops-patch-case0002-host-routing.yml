@@ -1,0 +1,43 @@
+name: OPS Patch Case 0002 Host Routing
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ops-patch-case0002-host-routing.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TARGET: .github/workflows/case0002-resume-image-real-win11.yml
+    steps:
+      - name: Replace runner-label routing with computer-name authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="repos/${GH_REPO}/contents/${TARGET}"
+          sha="$(gh api "$api" --jq '.sha')"
+          content="$(gh api "$api" --jq '.content' | tr -d '\n' | base64 -d)"
+          old='    runs-on: [self-hosted, Windows, X64, ODA]'
+          new='    runs-on: [self-hosted, Windows, X64]'
+          count="$(printf '%s' "$content" | grep -Fxc "$old" || true)"
+          if [[ "$count" != "1" ]]; then
+            echo "expected exactly one ODA runs-on line, got $count" >&2
+            exit 1
+          fi
+          patched="$(printf '%s' "$content" | sed "s/^    runs-on: \[self-hosted, Windows, X64, ODA\]$/    runs-on: [self-hosted, Windows, X64]/")"
+          encoded="$(printf '%s' "$patched" | base64 -w0)"
+          gh api --method PUT "$api" \
+            -f message='fix(case0002): route by authoritative computer name only' \
+            -f content="$encoded" \
+            -f sha="$sha" \
+            -f branch='main' >/dev/null
+          echo 'CASE0002_HOST_ROUTING_PATCHED'

@@ -1,0 +1,63 @@
+name: Bootstrap O87 OpenWorker Local Authority
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bootstrap-o87-local-authority.yml'
+      - 'scripts/engineering_local_source_ingress_action.py'
+      - 'scripts/engineering_source_locator.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify O87
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') { throw "wrong host: $env:COMPUTERNAME" }
+          Write-Host "OPENWORKER_O87_AUTHORITY_HOST_OK runner=$env:RUNNER_NAME"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Snapshot tracked OpenWorker authority
+        run: |
+          $sha = (& git rev-parse HEAD).Trim()
+          if ([string]::IsNullOrWhiteSpace($sha)) { throw 'missing OpenWorker commit SHA' }
+          $base = Join-Path $env:ProgramData 'go-tool-runtime\work-agent\authorities'
+          $dest = Join-Path $base ('openworker-' + $sha.Substring(0,12))
+          New-Item -ItemType Directory -Force -Path $base | Out-Null
+          if (-not (Test-Path -LiteralPath $dest -PathType Container)) {
+            $zip = Join-Path $base ('openworker-' + $sha.Substring(0,12) + '.zip')
+            & git archive --format=zip --output=$zip HEAD
+            if ($LASTEXITCODE -ne 0) { throw 'git archive OpenWorker failed' }
+            Expand-Archive -LiteralPath $zip -DestinationPath $dest -Force
+            Remove-Item -LiteralPath $zip -Force
+          }
+          foreach ($required in @(
+            'pyproject.toml',
+            'scripts\engineering_local_source_ingress_action.py',
+            'scripts\engineering_source_locator.py',
+            'source-locator-requests\request.json'
+          )) {
+            if (-not (Test-Path -LiteralPath (Join-Path $dest $required))) { throw "OpenWorker snapshot missing $required" }
+          }
+          $receipt = [ordered]@{
+            schema_version = 'gtr-local-authority/v1'
+            authority = 'openworker'
+            assigned_host = $env:COMPUTERNAME
+            commit = $sha
+            root = $dest
+            installed_at = [DateTime]::UtcNow.ToString('o')
+          }
+          $receiptPath = Join-Path $base 'openworker-current.json'
+          [IO.File]::WriteAllText($receiptPath, ($receipt | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
+          Write-Host "OPENWORKER_O87_AUTHORITY_READY host=$env:COMPUTERNAME commit=$sha root=$dest receipt=$receiptPath"

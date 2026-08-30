@@ -1,0 +1,80 @@
+name: Case 0004 Main Locator UTF8 Repair O87
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0004-source-locator-main-repair.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') { throw "wrong fixed machine: $env:COMPUTERNAME" }
+          Write-Host "CASE0004_MAIN_LOCATOR_REPAIR_O87_OK machine=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+
+      - name: Add governed repair child
+        run: |
+          python scripts/case_worklist_add_repair.py `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --parent-step '0004-010' `
+            --step-id 'R-0004-010-002' `
+            --title 'Main source locator UTF-8 console and GitHub output contract' `
+            --allowed-action 'openworker.source.locator.repair.main-utf8' `
+            --acceptance repair_commit `
+            --acceptance workflow_path `
+            --acceptance contract_check
+
+      - name: Start governed repair
+        id: gate
+        run: |
+          $execution = "github:${{ github.run_id }}:${{ github.run_attempt }}:main-locator-utf8-repair"
+          python scripts/case_worklist_action.py start `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id 'R-0004-010-002' `
+            --action-id 'openworker.source.locator.repair.main-utf8' `
+            --execution-id $execution
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "execution_id=$execution`n", (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Verify repaired main locator contract
+        run: |
+          $path = '.github\workflows\engineering-source-locator-win11.yml'
+          $text = Get-Content -LiteralPath $path -Raw
+          if ($text -notmatch 'PYTHONIOENCODING:\s*utf-8') { throw 'main locator missing PYTHONIOENCODING utf-8' }
+          if ($text -notmatch 'UTF8Encoding\(\$false\)') { throw 'main locator does not write GITHUB_OUTPUT as UTF-8 no BOM' }
+          Write-Host 'CASE0004_MAIN_LOCATOR_UTF8_CONTRACT_PASS'
+
+      - name: Complete repair and return parent to READY
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-010-002' --key repair_commit --value 'a89981d108ed795a7d9b3c98a0232eec296becd6'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-010-002' --key workflow_path --value '.github/workflows/engineering-source-locator-win11.yml'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-010-002' --key contract_check --value 'PYTHONIOENCODING=utf-8; GITHUB_OUTPUT=UTF8-no-BOM'
+          python scripts/case_worklist_action.py complete-action `
+            --workspace-root $workspace `
+            --step-id 'R-0004-010-002' `
+            --action-id 'openworker.source.locator.repair.main-utf8' `
+            --execution-id '${{ steps.gate.outputs.execution_id }}'
+          python scripts/case_worklist_action.py pass --workspace-root $workspace --step-id 'R-0004-010-002'
+
+      - name: Block repair on failure
+        if: failure() && steps.gate.outcome == 'success'
+        continue-on-error: true
+        run: |
+          python scripts/case_worklist_action.py block-active `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id 'R-0004-010-002' `
+            --reason "main locator UTF-8 repair failed in run $env:GITHUB_RUN_ID"

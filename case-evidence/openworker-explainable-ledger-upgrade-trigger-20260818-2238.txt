@@ -1,0 +1,4 @@
+2026-08-18T22:38:00+08:00
+Deploy OpenWorker explainable execution ledger changes to fixed local nodes.
+ODA must upgrade OpenWorkerNode first, verify running commit, then bootstrap Case 0005 through local supervisor.
+Business execution remains local; GitHub Actions is upgrade/bootstrap ingress only.

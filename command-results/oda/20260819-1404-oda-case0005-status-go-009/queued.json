@@ -1,0 +1,19 @@
+{
+  "schema": "openworker.command-result.v1",
+  "phase": "queued_for_oda",
+  "request_id": "20260819-1404-oda-case0005-status-go-009",
+  "command": "case_status",
+  "machine": "DESKTOP-ODAQN0D",
+  "case_id": "0005",
+  "transport": "github_actions_transient_dispatch",
+  "accepted": false,
+  "transport_ok": false,
+  "github_run_id": "32222034297",
+  "github_run_attempt": "1",
+  "github_action_used_for_command_transport": true,
+  "github_action_used_for_business_execution": false,
+  "business_completion_claimed": false,
+  "authoritative_business_state": "openworker",
+  "queued_for_oda_at": "2026-08-19T10:26:24.2799135+00:00",
+  "note": "GitHub ingress validated; waiting for ODA self-hosted runner. This is not local acceptance."
+}

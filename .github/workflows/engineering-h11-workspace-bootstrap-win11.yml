@@ -1,0 +1,94 @@
+name: Engineering H11 Workspace Bootstrap Win11
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/engineering-h11-workspace-bootstrap-win11.yml'
+      - 'pyproject.toml'
+      - 'coworker/engineering_cli.py'
+      - 'coworker/engineering/**'
+      - 'coworker/runtimes/tool_runtime_bootstrap.py'
+      - 'coworker/runtimes/engineering_scope.py'
+      - 'coworker/runtimes/engineering_harness_bootstrap.py'
+      - 'coworker/runtimes/engineering_host.py'
+      - 'coworker/runtimes/engineering_launch.py'
+      - 'coworker/runtimes/harness_*.py'
+      - 'coworker/runtimes/runtime_h11_policy.py'
+      - 'tests/runtimes/test_tool_runtime_bootstrap.py'
+      - 'tests/runtimes/test_engineering_scope.py'
+      - 'tests/runtimes/test_engineering_harness_bootstrap.py'
+      - 'tests/runtimes/test_engineering_host.py'
+      - 'tests/runtimes/test_engineering_launch.py'
+      - 'tests/runtimes/test_harness_*.py'
+      - 'tests/runtimes/test_runtime_h11_policy.py'
+      - 'tests/test_engineering_runtime_ab.py'
+      - 'tests/test_engineering_comfyx_long_job.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-engineering-h11-workspace-bootstrap-win11
+  cancel-in-progress: true
+
+jobs:
+  focused-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install focused runtime dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+      - name: Workspace information authority tests
+        run: python -m pytest -q tests/runtimes/test_tool_runtime_bootstrap.py tests/runtimes/test_engineering_scope.py tests/runtimes/test_engineering_harness_bootstrap.py tests/runtimes/test_engineering_host.py tests/runtimes/test_engineering_launch.py
+      - name: Managed Harness governance tests
+        run: python -m pytest -q tests/runtimes/test_harness_jobs.py tests/runtimes/test_harness_managed.py tests/runtimes/test_harness_permissions.py tests/runtimes/test_harness_engineering_tools.py tests/runtimes/test_harness_context_ingress.py
+      - name: H8-H11 non-regression tests
+        run: python -m pytest -q tests/test_engineering_runtime_ab.py tests/test_engineering_comfyx_long_job.py tests/runtimes/test_harness_packaging.py tests/runtimes/test_runtime_h11_policy.py
+      - name: CLI import smoke
+        run: |
+          python -m coworker.engineering_cli --help
+          python -m coworker.engineering.harness_verify --help
+
+  h11-workspace-bootstrap:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - name: Runner identity
+        run: |
+          echo machine=%COMPUTERNAME%
+          ver
+          python --version
+          git --version
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install focused runtime dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+
+      - name: Compile H11 workspace runtime
+        run: python -m compileall -q coworker tests\runtimes tests\test_engineering_runtime_ab.py tests\test_engineering_comfyx_long_job.py
+
+      - name: Workspace information authority tests
+        run: python -m pytest -q tests\runtimes\test_tool_runtime_bootstrap.py tests\runtimes\test_engineering_scope.py tests\runtimes\test_engineering_harness_bootstrap.py tests\runtimes\test_engineering_host.py tests\runtimes\test_engineering_launch.py
+
+      - name: Managed Harness governance tests
+        run: python -m pytest -q tests\runtimes\test_harness_jobs.py tests\runtimes\test_harness_managed.py tests\runtimes\test_harness_permissions.py tests\runtimes\test_harness_engineering_tools.py tests\runtimes\test_harness_context_ingress.py
+
+      - name: H8-H11 non-regression tests
+        run: python -m pytest -q tests\test_engineering_runtime_ab.py tests\test_engineering_comfyx_long_job.py tests\runtimes\test_harness_packaging.py tests\runtimes\test_runtime_h11_policy.py
+
+      - name: CLI contract smoke
+        run: |
+          openworker-engineering --help
+          openworker-harness-evidence --help

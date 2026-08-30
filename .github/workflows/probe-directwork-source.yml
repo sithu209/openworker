@@ -1,0 +1,46 @@
+name: Probe DirectWork Source Access
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/directwork-source-probe.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify computer
+        shell: powershell
+        run: if ($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D') { throw "wrong computer: $env:COMPUTERNAME" }
+      - name: Probe private DirectWork source access
+        id: probe
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $env:GIT_TERMINAL_PROMPT='0'
+          $dst=Join-Path $env:RUNNER_TEMP 'DirectWork-probe'
+          Remove-Item $dst -Recurse -Force -ErrorAction SilentlyContinue
+          $method='none';$ok=$false;$err=''
+          try { git clone --depth 1 https://github.com/liuxb99/DirectWork.git $dst 2>&1 | Out-File "$env:RUNNER_TEMP\dw-clone.log"; if($LASTEXITCODE -eq 0){$method='git-https';$ok=$true} } catch { $err=$_.Exception.Message }
+          if(-not $ok -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+            Remove-Item $dst -Recurse -Force -ErrorAction SilentlyContinue
+            try { gh repo clone liuxb99/DirectWork $dst -- --depth 1 2>&1 | Out-File "$env:RUNNER_TEMP\dw-gh.log"; if($LASTEXITCODE -eq 0){$method='gh';$ok=$true} } catch { $err=$_.Exception.Message }
+          }
+          $head=''
+          if($ok){$head=(git -C $dst rev-parse HEAD).Trim()}
+          $receipt=[ordered]@{schema='directwork/source-access-probe/v1';machine=$env:COMPUTERNAME;ok=$ok;method=$method;head=$head;error=$err;time=(Get-Date).ToUniversalTime().ToString('o')}
+          $dir='migration-receipts/source-probe';New-Item -ItemType Directory -Force -Path $dir|Out-Null;$receipt|ConvertTo-Json -Depth 5|Set-Content "$dir/oda-${{ github.run_id }}.json" -Encoding UTF8
+      - name: Persist probe receipt
+        if: always()
+        shell: powershell
+        run: |
+          git config user.name 'directwork-migration'
+          git config user.email 'directwork-migration@users.noreply.github.com'
+          git add migration-receipts/source-probe/*.json
+          git commit -m 'receipt: ODA DirectWork source probe ${{ github.run_id }}'
+          git push origin HEAD:main

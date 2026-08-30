@@ -1,0 +1,18 @@
+{
+    "schema":  "openworker.oda-resident-node-deployment/v1",
+    "machine":  "DESKTOP-ODAQN0D",
+    "github_run_id":  "32321869371",
+    "github_run_attempt":  "1",
+    "requested_commit":  "a05a54f8e94e2892f7c835b55bd115eba3bcbd77",
+    "running_commit":  "a05a54f8e94e2892f7c835b55bd115eba3bcbd77",
+    "target_commit":  "a05a54f8e94e2892f7c835b55bd115eba3bcbd77",
+    "upgrade_status":  "VERIFIED",
+    "upgrade_verified":  true,
+    "service_started_at":  "2026-08-20T01:41:26.3097703Z",
+    "supervisor_api_version":  "v1",
+    "case_continue_route_status":  400,
+    "case_continue_route_present":  true,
+    "python_controller_allowed":  false,
+    "github_action_used_for_business_execution":  false,
+    "verified_at":  "2026-08-20T01:41:29.1239656+00:00"
+}

@@ -1,0 +1,61 @@
+name: Case 0004 Reconcile Source Ingress
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0004-reconcile-source-ingress.yml'
+      - 'scripts/case0004_reconcile_source_ingress.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case0004-reconcile-source-ingress-o87
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') {
+            throw "wrong fixed machine: expected DESKTOP-O87PJNR, actual $env:COMPUTERNAME"
+          }
+          Write-Host "FIXED_MACHINE_OK label=O87 computer=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+        with:
+          path: openworker
+
+      - name: Verify O87 system Python
+        run: |
+          python -c "import sys; assert sys.version_info >= (3,10), sys.version"
+          if ($LASTEXITCODE -ne 0) { throw 'O87 system Python unavailable or too old' }
+
+      - name: Install OpenWorker
+        working-directory: openworker
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Reconcile existing REAL source ingress evidence
+        working-directory: openworker
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          $execution = "github:${{ github.run_id }}:${{ github.run_attempt }}:R-0004-020-003"
+          python scripts/case0004_reconcile_source_ingress.py `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --execution-id $execution
+
+      - name: Show canonical Case 0004 next step
+        working-directory: openworker
+        run: |
+          python scripts/case_worklist_action.py show `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D'

@@ -1,0 +1,59 @@
+name: case0002-local-supervisor-oda
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/case0002-local-supervisor-oda.yml'
+      - 'coworker/case2_local_supervisor.py'
+
+concurrency:
+  group: case0002-local-supervisor-oda
+  cancel-in-progress: true
+
+jobs:
+  supervise:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify fixed ODA computer
+        shell: powershell
+        run: |
+          if ($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D') { throw "wrong computer: $env:COMPUTERNAME" }
+
+      - name: Verify OpenWorker go-tool llama and Case0002 workspace
+        shell: powershell
+        run: |
+          $ow = Invoke-RestMethod 'http://127.0.0.1:8787/healthz' -TimeoutSec 5
+          if (-not $ow.ok) { throw 'OpenWorker node unhealthy' }
+          $gt = Invoke-RestMethod 'http://127.0.0.1:8848/health' -TimeoutSec 5
+          $models = Invoke-RestMethod 'http://127.0.0.1:8080/v1/models' -TimeoutSec 10
+          if (-not $models.data -or $models.data.Count -lt 1) { throw 'llama.cpp OpenAI /v1/models returned no model' }
+          if (-not (Test-Path 'D:\AI-Example\0002\.openworker\case-worklist.json')) { throw 'Case0002 durable worklist missing' }
+          "OPENWORKER_LLAMA_MODEL=$($models.data[0].id)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "llama_model=$($models.data[0].id)"
+
+      - name: Run Case0002 Local Supervisor once
+        shell: powershell
+        run: |
+          $evidenceDir = 'D:\AI-Example\0002\.openworker\evidence\local-supervisor'
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          $out = python -m coworker.case2_local_supervisor --message 'Continue Case 0002 using the new Local Supervisor. First read durable CaseWorklist. Then ask go-tool /agent/query and inspect the exact allowed capability. If the canonical step is 0002-025 and presentation.openmaic is allowed and ready, dispatch it using canonical inputs. Once a durable dispatch receipt is returned, record a supervisor decision and STOP; do not wait for the PPT job to finish. Never cross the 0002-027 user approval gate.' 2>&1
+          $code = $LASTEXITCODE
+          $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+          $path = Join-Path $evidenceDir "case0002-supervisor-$stamp.txt"
+          $out | Out-File -FilePath $path -Encoding utf8
+          Copy-Item $path (Join-Path $evidenceDir 'latest.txt') -Force
+          Get-Content $path
+          if ($code -ne 0) { throw "Local Supervisor failed exit=$code evidence=$path" }
+
+      - name: Snapshot durable state after supervisor turn
+        if: always()
+        shell: powershell
+        run: |
+          $evidenceDir = 'D:\AI-Example\0002\.openworker\evidence\local-supervisor'
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          try { Invoke-RestMethod 'http://127.0.0.1:8787/v1/supervisor/snapshot?supervisor_id=ODA-CODER-01' | ConvertTo-Json -Depth 30 | Out-File (Join-Path $evidenceDir 'latest-supervisor-snapshot.json') -Encoding utf8 } catch { $_ | Out-String | Out-File (Join-Path $evidenceDir 'latest-supervisor-snapshot-error.txt') -Encoding utf8 }
+          python scripts\case_worklist_action.py show --workspace-root 'D:\AI-Example\0002' | Out-File (Join-Path $evidenceDir 'latest-case-worklist.txt') -Encoding utf8

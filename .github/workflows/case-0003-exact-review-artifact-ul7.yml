@@ -1,0 +1,70 @@
+name: Case 0003 Exact Review Artifact UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-exact-review-artifact-ul7.yml'
+
+permissions:
+  contents: read
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_REVISION_ID: rev_61b0104b041c4d1f8740e831a5b1d8eb
+  CASE0003_EXPECTED_PNG_SHA: 1035305b3186499af007990dc9e23accdf6171934ac70b6152dcdd83cced779d
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  handoff:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Prepare exact PNG, PDF proxy, and SceneX diagnostics
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw 'host mismatch'}
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID)
+          $png=Join-Path $bundle 'artifacts\scenex-browse.png'
+          $sha=(Get-FileHash -LiteralPath $png -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($sha -ne $env:CASE0003_EXPECTED_PNG_SHA){throw ('PNG SHA mismatch '+$sha)}
+          $stage=Join-Path $env:RUNNER_TEMP ('case0003-review-artifact-'+$env:GITHUB_RUN_ID)
+          New-Item -ItemType Directory -Force $stage|Out-Null
+          $outPng=Join-Path $stage 'scenex-browse.png'
+          $pdf=Join-Path $stage 'scenex-browse-review.pdf'
+          Copy-Item -LiteralPath $png -Destination $outPng -Force
+          foreach($pair in @(
+            @((Join-Path $env:CASE0003_WORKSPACE 'scenex\terrain-browse-evidence.json'),'terrain-browse-evidence.json'),
+            @((Join-Path $env:CASE0003_WORKSPACE 'scenex\terrain.region.json'),'terrain.region.json'),
+            @((Join-Path $env:CASE0003_WORKSPACE 'scenex\scenex-workspace.json'),'scenex-workspace.json'),
+            @((Join-Path $bundle 'manifest.json'),'review-manifest.json'),
+            @((Join-Path $bundle 'manifest.sha256'),'review-manifest.sha256')
+          )){
+            if(-not (Test-Path -LiteralPath $pair[0] -PathType Leaf)){throw ('diagnostic missing '+$pair[0])}
+            Copy-Item -LiteralPath $pair[0] -Destination (Join-Path $stage $pair[1]) -Force
+          }
+          $env:CASE0003_SRC_PNG=$png; $env:CASE0003_DST_PDF=$pdf
+          @'
+          from PIL import Image
+          import os
+          Image.open(os.environ['CASE0003_SRC_PNG']).convert('RGB').save(os.environ['CASE0003_DST_PDF'],'PDF',resolution=144.0,quality=95,subsampling=0)
+          '@ | python -
+          if($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $pdf -PathType Leaf)){throw 'PDF proxy creation failed'}
+          $manifest=[ordered]@{revision_id=$env:CASE0003_REVISION_ID;source_png_sha256=$sha;pdf_sha256=(Get-FileHash -LiteralPath $pdf -Algorithm SHA256).Hash.ToLowerInvariant()}
+          [IO.File]::WriteAllText((Join-Path $stage 'review-artifact-manifest.json'),($manifest|ConvertTo-Json),[Text.UTF8Encoding]::new($false))
+          "CASE0003_STAGE=$stage"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Upload exact visual review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: case0003-rev61-exact-diagnostic-review-${{ github.run_id }}
+          path: ${{ env.CASE0003_STAGE }}\*
+          if-no-files-found: error
+          retention-days: 3
+
+# trigger nonce: diagnostics-20260817-1

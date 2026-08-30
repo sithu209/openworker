@@ -1,0 +1,9 @@
+DirectWork production cutover retry
+Date: 2026-08-21T09:44+08:00
+Request: openworker-to-directwork-20260821-r03
+Sequence: best-effort queue cleanup -> deterministic migration V2 -> ODA -> O87 -> UL7
+Bootstrap target: DirectWork 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+Post-cutover policy: upgrade DirectWork to verified one-way retirement authority a4210aa16453f8dad29730c0784adc2eeec9346d
+Replace: OpenWorkerNode service -> DirectWorkNode service
+Ghost Actions: non-blocking
+Preserve: C:\ProgramData\OpenWorker historical evidence

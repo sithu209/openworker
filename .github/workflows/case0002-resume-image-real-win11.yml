@@ -1,0 +1,222 @@
+name: Case 0002 Resume Governed REAL Images Win11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0002-resume-image-real-win11.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openworker-case0002-oda-production
+  cancel-in-progress: false
+
+env:
+  CASE0002_WORKSPACE: D:\AI-Example\0002
+  CASE0002_SOURCE_RUN: '31994303493'
+  CASE0002_REQUIRED_STUDIO_HEAD: 34129c51786964de0daf218ee708d31bc3a9cdd9
+  CASE0002_REQUIRED_COMFYX_HEAD: b6b66c4e77eb630e5fc9e7bb09cdeb6ada257c2c
+  COMFYX_COMFYUI_OUTPUT_ROOT: D:\Comfy-Desktop\ComfyUI-Shared\output
+
+jobs:
+  resume-real-images:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed ODA machine authority
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ne 'DESKTOP-ODAQN0D'){
+            throw "CASE0002_HOST_MISMATCH expected=DESKTOP-ODAQN0D actual=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+          }
+          Write-Host "CASE0002_HOST_OK machine=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+
+      - name: Ensure canonical CaseWorklist
+        run: |
+          $ErrorActionPreference='Stop'
+          python scripts\case_worklist_action.py ensure --workspace-root $env:CASE0002_WORKSPACE --manifest case-worklists\0002.json
+          if($LASTEXITCODE -ne 0){throw 'CASE0002 worklist ensure failed'}
+
+      - name: Verify bounded Studio and ComfyX authorities
+        id: authority
+        run: |
+          $ErrorActionPreference='Stop'
+          $studio='C:\github-runners\Comfyx-Studio\_work\Comfyx-Studio\Comfyx-Studio'
+          $comfyx='C:\github-runners\ComfyX\_work\ComfyX\ComfyX'
+          foreach($p in @($studio,$comfyx)){if(-not(Test-Path -LiteralPath (Join-Path $p 'go.mod') -PathType Leaf)){throw "bounded source missing: $p"}}
+          $studioHead=(git -C $studio rev-parse HEAD).Trim()
+          $comfyxHead=(git -C $comfyx rev-parse HEAD).Trim()
+          if($studioHead -ne $env:CASE0002_REQUIRED_STUDIO_HEAD){throw "Studio authority mismatch expected=$env:CASE0002_REQUIRED_STUDIO_HEAD actual=$studioHead"}
+          if($comfyxHead -ne $env:CASE0002_REQUIRED_COMFYX_HEAD){throw "ComfyX authority mismatch expected=$env:CASE0002_REQUIRED_COMFYX_HEAD actual=$comfyxHead"}
+          "studio=$studio" >> $env:GITHUB_OUTPUT
+          "comfyx=$comfyx" >> $env:GITHUB_OUTPUT
+          Write-Host "CASE0002_AUTHORITIES_OK studio=$studioHead comfyx=$comfyxHead"
+
+      - name: Adopt already verified Director preproduction into Worklist
+        run: |
+          $ErrorActionPreference='Stop'
+          $step='0002-010'; $action='comfyx-studio.director.preproduction'; $execution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:adopt-director"
+          $runDir=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:CASE0002_SOURCE_RUN)
+          $plan=Join-Path $runDir 'director\project-plan.json'
+          $evidence=Join-Path $runDir 'evidence\00-director-plan-source.json'
+          if(-not(Test-Path -LiteralPath $plan -PathType Leaf)){throw "Director plan missing: $plan"}
+          if(-not(Test-Path -LiteralPath $evidence -PathType Leaf)){throw "Director evidence missing: $evidence"}
+          $j=Get-Content -LiteralPath $evidence -Raw -Encoding UTF8|ConvertFrom-Json
+          if($j.status -ne 'succeeded' -or [int]$j.shot_count -lt 4 -or [int]$j.character_count -lt 1 -or [int]$j.scene_bible_count -lt 1){throw 'prior Director evidence does not satisfy canonical acceptance'}
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key run_id --value $env:CASE0002_SOURCE_RUN
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key director_plan --value $plan
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key director_plan_sha256 --value ([string]$j.workspace_sha256)
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key shot_count --value ([string]$j.shot_count)
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key character_count --value ([string]$j.character_count)
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key scene_bible_count --value ([string]$j.scene_bible_count)
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py pass --workspace-root $env:CASE0002_WORKSPACE --step-id $step
+
+      - name: Adopt verified storyboard requirements into Worklist
+        run: |
+          $ErrorActionPreference='Stop'
+          $step='0002-020'; $action='comfyx-studio.storyboard.plan'; $execution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:adopt-storyboard"
+          $runDir=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:CASE0002_SOURCE_RUN)
+          $request=Join-Path $runDir 'presentation\storyboard-request.json'
+          $requirements=Join-Path $runDir 'visual-assets\requirements.json'
+          if(-not(Test-Path -LiteralPath $request -PathType Leaf)){throw "storyboard request missing: $request"}
+          if(-not(Test-Path -LiteralPath $requirements -PathType Leaf)){throw "visual requirements missing: $requirements"}
+          $req=Get-Content -LiteralPath $requirements -Raw -Encoding UTF8|ConvertFrom-Json
+          $assets=@($req.requirements)
+          $refs=@($assets|ForEach-Object {@($_.reference_asset_ids)}|Where-Object {$_}|Select-Object -Unique)
+          if($assets.Count -lt 7){throw "visual asset requirements unexpectedly small: $($assets.Count)"}
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key storyboard_request --value $request
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key visual_requirements --value $requirements
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key visual_asset_count --value ([string]$assets.Count)
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key reference_asset_ids --value ($refs -join ',')
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py pass --workspace-root $env:CASE0002_WORKSPACE --step-id $step
+
+      - name: Build latest graph-discovered REAL IMAGE executable
+        id: build
+        run: |
+          $ErrorActionPreference='Stop'
+          $comfyx='${{ steps.authority.outputs.comfyx }}'
+          $exe=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:GITHUB_RUN_ID+'\comfyx-storyboard-image-real.exe')
+          New-Item -ItemType Directory -Path (Split-Path $exe -Parent) -Force|Out-Null
+          Push-Location $comfyx
+          try{go build -trimpath -o $exe ./cmd/comfyx-storyboard-image-real;if($LASTEXITCODE -ne 0){throw 'latest ComfyX REAL IMAGE build failed'}}finally{Pop-Location}
+          "exe=$exe" >> $env:GITHUB_OUTPUT
+
+      - name: Generate all REAL character masters under Worklist ownership
+        run: |
+          $ErrorActionPreference='Stop'
+          $step='0002-030'; $action='comfyx.storyboard.image.real'; $execution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:characters"
+          $runDir=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:CASE0002_SOURCE_RUN)
+          $req=Get-Content -LiteralPath (Join-Path $runDir 'visual-assets\requirements.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          $assets=@($req.requirements|Where-Object {$_.role -eq 'character_master'})
+          if($assets.Count -lt 1){throw 'no character_master assets'}
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          $receipts=@(); $images=@(); $hashes=@(); $i=0
+          foreach($asset in $assets){
+            $i++; $receipt=Join-Path $runDir ("evidence\ow-character-$i-real.json")
+            & '${{ steps.build.outputs.exe }}' --workspace $runDir --asset-id ([string]$asset.asset_id) --url 'http://127.0.0.1:8188' --runtime-id 'oda-desktop-local' --output-root $env:COMFYX_COMFYUI_OUTPUT_ROOT --timeout 20m | Tee-Object -FilePath $receipt
+            if($LASTEXITCODE -ne 0){throw "REAL character failed asset=$($asset.asset_id)"}
+            $j=Get-Content -LiteralPath $receipt -Raw -Encoding UTF8|ConvertFrom-Json
+            if($j.status -ne 'succeeded'){throw "character receipt non-success asset=$($asset.asset_id)"}
+            $physical=Join-Path $runDir (([string]$j.data.workspace_relpath)-replace '/', '\\')
+            if(-not(Test-Path -LiteralPath $physical -PathType Leaf) -or (Get-Item -LiteralPath $physical).Length -le 0){throw "character artifact missing/empty: $physical"}
+            $receipts += $receipt; $images += $physical; $hashes += [string]$j.data.workspace_artifact.sha256
+          }
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key character_receipts --value ($receipts -join ',')
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key character_images --value ($images -join ',')
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key character_sha256 --value ($hashes -join ',')
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py pass --workspace-root $env:CASE0002_WORKSPACE --step-id $step
+
+      - name: Generate REAL scene concept under Worklist ownership
+        run: |
+          $ErrorActionPreference='Stop'
+          $step='0002-040'; $action='comfyx.storyboard.image.real'; $execution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:scene"
+          $runDir=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:CASE0002_SOURCE_RUN)
+          $req=Get-Content -LiteralPath (Join-Path $runDir 'visual-assets\requirements.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          $assets=@($req.requirements|Where-Object {$_.role -eq 'scene_concept'})
+          if($assets.Count -ne 1){throw "expected exactly one scene_concept, got $($assets.Count)"}
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          $receipt=Join-Path $runDir 'evidence\ow-scene-real.json'
+          & '${{ steps.build.outputs.exe }}' --workspace $runDir --asset-id ([string]$assets[0].asset_id) --url 'http://127.0.0.1:8188' --runtime-id 'oda-desktop-local' --output-root $env:COMFYX_COMFYUI_OUTPUT_ROOT --timeout 20m | Tee-Object -FilePath $receipt
+          if($LASTEXITCODE -ne 0){throw 'REAL scene concept failed'}
+          $j=Get-Content -LiteralPath $receipt -Raw -Encoding UTF8|ConvertFrom-Json
+          if($j.status -ne 'succeeded'){throw 'scene receipt non-success'}
+          $physical=Join-Path $runDir (([string]$j.data.workspace_relpath)-replace '/', '\\')
+          if(-not(Test-Path -LiteralPath $physical -PathType Leaf) -or (Get-Item -LiteralPath $physical).Length -le 0){throw "scene artifact missing/empty: $physical"}
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key scene_receipt --value $receipt
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key scene_image --value $physical
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key scene_sha256 --value ([string]$j.data.workspace_artifact.sha256)
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $action --execution-id $execution
+          python scripts\case_worklist_action.py pass --workspace-root $env:CASE0002_WORKSPACE --step-id $step
+
+      - name: Generate all four REAL storyboard shots and bind receipts
+        run: |
+          $ErrorActionPreference='Stop'
+          $step='0002-050'; $imageAction='comfyx.storyboard.image.real'; $bindAction='comfyx-studio.storyboard.bind'
+          $imageExecution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:shots"
+          $bindExecution="github:$env:GITHUB_RUN_ID:$env:GITHUB_RUN_ATTEMPT:bind"
+          $runDir=Join-Path $env:CASE0002_WORKSPACE ('runs\'+$env:CASE0002_SOURCE_RUN)
+          $req=Get-Content -LiteralPath (Join-Path $runDir 'visual-assets\requirements.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          $assets=@($req.requirements|Where-Object {$_.role -eq 'shot_storyboard'})
+          if($assets.Count -lt 4){throw "expected at least four shot_storyboard assets, got $($assets.Count)"}
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $imageAction --execution-id $imageExecution
+          $receipts=@(); $images=@(); $hashes=@(); $i=0
+          foreach($asset in $assets){
+            $i++; $receipt=Join-Path $runDir ("evidence\ow-shot-$i-real.json")
+            & '${{ steps.build.outputs.exe }}' --workspace $runDir --asset-id ([string]$asset.asset_id) --url 'http://127.0.0.1:8188' --runtime-id 'oda-desktop-local' --output-root $env:COMFYX_COMFYUI_OUTPUT_ROOT --timeout 20m | Tee-Object -FilePath $receipt
+            if($LASTEXITCODE -ne 0){throw "REAL shot failed asset=$($asset.asset_id)"}
+            $j=Get-Content -LiteralPath $receipt -Raw -Encoding UTF8|ConvertFrom-Json
+            if($j.status -ne 'succeeded'){throw "shot receipt non-success asset=$($asset.asset_id)"}
+            $physical=Join-Path $runDir (([string]$j.data.workspace_relpath)-replace '/', '\\')
+            if(-not(Test-Path -LiteralPath $physical -PathType Leaf) -or (Get-Item -LiteralPath $physical).Length -le 0){throw "shot artifact missing/empty: $physical"}
+            $receipts += $receipt; $images += $physical; $hashes += [string]$j.data.workspace_artifact.sha256
+          }
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $imageAction --execution-id $imageExecution
+          python scripts\case_worklist_action.py start --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $bindAction --execution-id $bindExecution
+          $studio='${{ steps.authority.outputs.studio }}'
+          $relativeReceipts=@($receipts|ForEach-Object {$_.Substring($runDir.Length).TrimStart('\') -replace '\\','/'})
+          Push-Location $studio
+          try{
+            go run ./cmd/comfyx-studio-storyboard-bind --workspace $runDir --receipts ($relativeReceipts -join ',') --output 'presentation/storyboard-request.bound.json' | Tee-Object -FilePath (Join-Path $runDir 'evidence\ow-studio-bind.json')
+            if($LASTEXITCODE -ne 0){throw 'Studio REAL receipt binding failed'}
+          }finally{Pop-Location}
+          $bound=Join-Path $runDir 'presentation\storyboard-request.bound.json'
+          if(-not(Test-Path -LiteralPath $bound -PathType Leaf) -or (Get-Item -LiteralPath $bound).Length -le 0){throw 'bound storyboard request missing/empty'}
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key shot_image_receipts --value ($receipts -join ',')
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key shot_images --value ($images -join ',')
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key shot_image_sha256 --value ($hashes -join ',')
+          python scripts\case_worklist_action.py record --workspace-root $env:CASE0002_WORKSPACE --step-id $step --key bound_storyboard_request --value $bound
+          python scripts\case_worklist_action.py complete-action --workspace-root $env:CASE0002_WORKSPACE --step-id $step --action-id $bindAction --execution-id $bindExecution
+          python scripts\case_worklist_action.py pass --workspace-root $env:CASE0002_WORKSPACE --step-id $step
+          Write-Host "CASE0002_REAL_IMAGES_COMPLETE characters_and_scene_plus_shots=$($assets.Count) next=0002-060"
+
+      - name: Block active Worklist step on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          $path=Join-Path $env:CASE0002_WORKSPACE '.openworker\case-worklist.json'
+          if(-not(Test-Path -LiteralPath $path -PathType Leaf)){exit 0}
+          $w=Get-Content -LiteralPath $path -Raw -Encoding UTF8|ConvertFrom-Json
+          $active=@($w.steps|Where-Object {$_.status -eq 'RUNNING'})|Select-Object -First 1
+          if($null -ne $active){
+            python scripts\case_worklist_action.py block-active --workspace-root $env:CASE0002_WORKSPACE --step-id ([string]$active.step_id) --reason "Case 0002 governed REAL image workflow failed run=$env:GITHUB_RUN_ID"
+          }
+
+      - name: Show governed next step
+        if: always()
+        continue-on-error: true
+        run: |
+          python scripts\case_worklist_action.py show --workspace-root $env:CASE0002_WORKSPACE

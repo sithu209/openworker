@@ -1,0 +1,109 @@
+name: Case 0005 Logged Local Bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0005-logged-local-bootstrap.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0005-logged-local-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        slot: [1,2,3,4,5,6,7,8,9,10,11,12]
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Route only by COMPUTERNAME and submit logged bootstrap once
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){
+            Write-Host "CASE0005_SKIP machine=$env:COMPUTERNAME slot=${{ matrix.slot }}"
+            exit 0
+          }
+
+          $runMarker="C:\ProgramData\OpenWorker\case0005-logged-bootstrap-$env:GITHUB_RUN_ID.done"
+          try {
+            $marker=[IO.File]::Open($runMarker,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+            $marker.Dispose()
+          } catch {
+            Write-Host "CASE0005_LOGGED_BOOTSTRAP_DUPLICATE_SKIP run=$env:GITHUB_RUN_ID slot=${{ matrix.slot }}"
+            exit 0
+          }
+
+          $resident='D:\AI-Work\runtime\openworker'
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          New-Item -ItemType Directory -Force -Path $resident,$workspace | Out-Null
+          foreach($name in @('coworker','case-worklists','case-specs')){
+            $src=Join-Path $env:GITHUB_WORKSPACE $name
+            $dst=Join-Path $resident $name
+            if(Test-Path -LiteralPath $dst){Remove-Item -LiteralPath $dst -Recurse -Force}
+            Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+          }
+          if(Test-Path -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'pyproject.toml')){
+            Copy-Item -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'pyproject.toml') -Destination (Join-Path $resident 'pyproject.toml') -Force
+          }
+
+          $python='C:\Python314\python.exe'
+          if(-not(Test-Path -LiteralPath $python -PathType Leaf)){throw "python authority missing: $python"}
+          $envMap=@{
+            GO_TOOL_ROOT='C:\ProgramData\go-tool-runtime\work-agent'
+            GTR_LOCAL_EXEC_EXE='C:\ProgramData\go-tool-runtime\work-agent\gtr-local-exec.exe'
+            COMFYX_ROOT='C:\github-runners\ComfyX\_work\ComfyX\ComfyX'
+            COMFYX_STUDIO_ROOT='C:\github-runners\Comfyx-Studio\_work\Comfyx-Studio\Comfyx-Studio'
+            OPENMAIC_ROOT='C:\github-runners\openmaic-fork\_work\openmaic-fork\openmaic-fork'
+            COMFYX_COMFYUI_OUTPUT_ROOT='D:\Comfy-Desktop\ComfyUI-Installs\ComfyUI\ComfyUI\output'
+          }
+          foreach($pair in $envMap.GetEnumerator()){
+            if(-not(Test-Path -LiteralPath $pair.Value)){throw "required local authority missing $($pair.Key)=$($pair.Value)"}
+          }
+
+          $status=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 5
+          if(-not $status.online){throw 'OpenWorker resident node offline'}
+          if($status.machine -ine 'DESKTOP-ODAQN0D'){throw "wrong OpenWorker machine=$($status.machine)"}
+          if([int]$status.max_workers -lt 4){throw "OpenWorker max_workers=$($status.max_workers), require >=4"}
+
+          $body=@{
+            case_id='0005'
+            machine='DESKTOP-ODAQN0D'
+            workspace_root=$workspace
+            openworker_root=$resident
+            controller_module='coworker.case0005_logged_controller'
+            manifest_path='case-worklists/0005.json'
+            spec_path='case-specs/0005.json'
+            python_exe=$python
+            env=$envMap
+          } | ConvertTo-Json -Depth 10
+          $ack=Invoke-RestMethod -Method Post 'http://127.0.0.1:8787/v1/cases/bootstrap' -ContentType 'application/json' -Body $body -TimeoutSec 15
+          if(-not $ack.job.accepted){throw 'logged bootstrap was not durably accepted'}
+          Write-Host ("CASE0005_LOGGED_BOOTSTRAP_ACCEPTED job={0} queue={1} workers={2}" -f $ack.job.job_id,$ack.job.queue_position,$status.max_workers)
+
+          $jobId=[string]$ack.job.job_id
+          $terminal=$null
+          for($i=0;$i -lt 60;$i++){
+            Start-Sleep -Milliseconds 500
+            $j=Invoke-RestMethod "http://127.0.0.1:8787/v1/jobs/$jobId" -TimeoutSec 5
+            if($j.status -in @('succeeded','failed','cancelled','timed_out')){$terminal=$j;break}
+          }
+          if($terminal){Write-Host ("CASE0005_LOGGED_BOOTSTRAP_TERMINAL status={0} exit={1}" -f $terminal.status,$terminal.exit_code)}
+          else{Write-Host 'CASE0005_LOGGED_BOOTSTRAP_STILL_RUNNING'}
+
+          $ledger=Join-Path $workspace '.openworker\case-supervisor-ledger.jsonl'
+          $worklist=Join-Path $workspace '.openworker\case-worklist.json'
+          Write-Host "CASE0005_LEDGER_EXISTS=$([bool](Test-Path -LiteralPath $ledger -PathType Leaf)) path=$ledger"
+          Write-Host "CASE0005_WORKLIST_EXISTS=$([bool](Test-Path -LiteralPath $worklist -PathType Leaf)) path=$worklist"

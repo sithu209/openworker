@@ -1,0 +1,18 @@
+{
+  "schema": "openworker.command-result.v1",
+  "phase": "queued_for_o87",
+  "request_id": "20260819-1449-o87-case0004-status-001",
+  "command": "case_status",
+  "machine": "DESKTOP-O87PJNR",
+  "case_id": "0004",
+  "transport": "github_actions_transient_dispatch",
+  "accepted": false,
+  "transport_ok": false,
+  "github_run_id": "32225220909",
+  "github_run_attempt": "1",
+  "github_action_used_for_command_transport": true,
+  "github_action_used_for_business_execution": false,
+  "business_completion_claimed": false,
+  "authoritative_business_state": "openworker",
+  "queued_at": "2026-08-19T11:11:54.3983952+00:00"
+}

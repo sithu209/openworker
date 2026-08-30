@@ -1,0 +1,145 @@
+name: Engineering Local Source Ingress Win11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'local-source-ingress-requests/request.json'
+      - '.github/workflows/engineering-local-source-ingress-win11.yml'
+      - 'scripts/engineering_local_source_ingress_action.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engineering-local-source-ingress-o87
+  cancel-in-progress: false
+
+jobs:
+  local-source-ingress:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') {
+            throw "wrong fixed machine: expected DESKTOP-O87PJNR, actual $env:COMPUTERNAME"
+          }
+          Write-Host "FIXED_MACHINE_OK label=O87 computer=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+        with:
+          path: openworker
+
+      - name: Gate Case 0004 canonical source ingress step
+        id: worklist
+        working-directory: openworker
+        run: |
+          $execution = "github:${{ github.run_id }}:${{ github.run_attempt }}:ingress"
+          python scripts/case_worklist_action.py start `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id '0004-020' `
+            --action-id 'openworker.source.ingress' `
+            --execution-id $execution
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "execution_id=$execution`n", (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Resolve O87 local AI-Engineering-OS authority
+        id: osroot
+        run: |
+          $markerPath = Join-Path $env:ProgramData 'go-tool-runtime\work-agent\authorities\ai-engineering-os-current.json'
+          if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+            throw "AI-Engineering-OS authority marker missing: $markerPath"
+          }
+          $marker = Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json
+          if ($marker.schema_version -ne 'gtr-local-authority/v1') { throw 'unsupported OS authority marker schema' }
+          if ($marker.authority -ne 'ai-engineering-os') { throw 'wrong authority marker kind' }
+          if ($marker.assigned_host -ine $env:COMPUTERNAME) { throw "OS authority marker belongs to $($marker.assigned_host), current $env:COMPUTERNAME" }
+          if ($marker.module -ne 'github.com/liuxb99/ai-engineering-os') { throw 'wrong OS authority module' }
+          $root = [string]$marker.root
+          if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path -LiteralPath $root -PathType Container)) { throw "OS authority root missing: $root" }
+          $goMod = Join-Path $root 'go.mod'
+          if (-not (Test-Path -LiteralPath $goMod -PathType Leaf)) { throw "OS authority go.mod missing: $goMod" }
+          $moduleLine = (Get-Content -LiteralPath $goMod -TotalCount 1).Trim()
+          if ($moduleLine -ne 'module github.com/liuxb99/ai-engineering-os') { throw "OS authority module mismatch: $moduleLine" }
+          $sha = [string]$marker.commit
+          if (Test-Path -LiteralPath (Join-Path $root '.git') -PathType Container) {
+            $actual = (& git -C $root rev-parse HEAD).Trim()
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($actual)) { throw 'cannot resolve OS authority HEAD' }
+            if ($sha -ne $actual) { throw "OS authority marker/HEAD mismatch: marker=$sha actual=$actual" }
+          }
+          Write-Host "AI_ENGINEERING_OS_LOCAL_AUTHORITY root=$root commit=$sha marker=$markerPath"
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "root=$root`n", (New-Object System.Text.UTF8Encoding($false)))
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "go_mod=$goMod`n", (New-Object System.Text.UTF8Encoding($false)))
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "commit=$sha`n", (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ steps.osroot.outputs.go_mod }}
+          cache: false
+
+      - name: Verify O87 system Python
+        run: |
+          $version = python -c "import sys; print('.'.join(map(str, sys.version_info[:3])))"
+          if ($LASTEXITCODE -ne 0) { throw 'system python unavailable on O87' }
+          python -c "import sys; assert sys.version_info >= (3,10), sys.version"
+          if ($LASTEXITCODE -ne 0) { throw "O87 system Python too old: $version" }
+          Write-Host "O87_SYSTEM_PYTHON_OK version=$version"
+
+      - name: Install OpenWorker
+        working-directory: openworker
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Run fixed-host local source ingress
+        id: ingress
+        working-directory: openworker
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python scripts/engineering_local_source_ingress_action.py `
+            --request 'local-source-ingress-requests\request.json' `
+            --os-root '${{ steps.osroot.outputs.root }}'
+
+      - name: Commit ingress evidence to Case 0004 worklist
+        if: success()
+        working-directory: openworker
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key run_id --value "$env:GITHUB_RUN_ID"
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key project_id --value '${{ steps.ingress.outputs.project_id }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key job_id --value '${{ steps.ingress.outputs.job_id }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key canonical_path --value '${{ steps.ingress.outputs.canonical_path }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key sha256 --value '${{ steps.ingress.outputs.sha256 }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key job_binding_path --value '${{ steps.ingress.outputs.job_binding_path }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id '0004-020' --key os_authority_commit --value '${{ steps.osroot.outputs.commit }}'
+          python scripts/case_worklist_action.py complete-action `
+            --workspace-root $workspace `
+            --step-id '0004-020' `
+            --action-id 'openworker.source.ingress' `
+            --execution-id '${{ steps.worklist.outputs.execution_id }}'
+          python scripts/case_worklist_action.py pass --workspace-root $workspace --step-id '0004-020'
+
+      - name: Block Case 0004 worklist when ingress workflow fails
+        if: failure() && steps.worklist.outcome == 'success'
+        continue-on-error: true
+        working-directory: openworker
+        run: |
+          python scripts/case_worklist_action.py block-active `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id '0004-020' `
+            --reason "local source ingress workflow failed in GitHub run $env:GITHUB_RUN_ID"
+
+      - name: Upload convenience evidence
+        if: always() && steps.ingress.outputs.evidence_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: engineering-local-source-ingress-${{ github.run_id }}
+          path: ${{ steps.ingress.outputs.evidence_path }}
+          if-no-files-found: warn
+          retention-days: 14

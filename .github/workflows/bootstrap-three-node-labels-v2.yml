@@ -1,0 +1,56 @@
+name: Bootstrap OpenWorker Three Node Labels V2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  bootstrap:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[bootstrap-three-node-labels-v2]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Reconcile UL7 O87 ODA labels and persist runner registry evidence
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/runners?per_page=100"
+          $payload=Invoke-RestMethod -Uri $uri -Headers $headers
+          $targets=@(
+            @{prefix='DESKTOP-UL7V2VV';label='UL7';node='ul7'},
+            @{prefix='DESKTOP-O87PJNR';label='O87';node='o87'},
+            @{prefix='DESKTOP-ODAQN0D';label='ODA';node='oda'}
+          )
+          $result=@()
+          foreach($t in $targets){
+            $matches=@($payload.runners | Where-Object { $_.name -like "$($t.prefix)*" })
+            if($matches.Count -lt 1){
+              $result += [ordered]@{node=$t.node;machine_prefix=$t.prefix;registered=$false;status='missing';busy=$false;required_label=$t.label;labels=@();observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+              continue
+            }
+            foreach($runner in $matches){
+              $existing=@($runner.labels | ForEach-Object {[string]$_.name})
+              $labels=@($existing + $t.label | Sort-Object -Unique)
+              if(-not ($existing -contains $t.label)){
+                $body=@{labels=$labels}|ConvertTo-Json -Compress
+                Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/actions/runners/$($runner.id)/labels" -Headers $headers -ContentType 'application/json' -Body $body | Out-Null
+              }
+              $result += [ordered]@{node=$t.node;machine_prefix=$t.prefix;registered=$true;runner=$runner.name;runner_id=$runner.id;status=$runner.status;busy=$runner.busy;required_label=$t.label;labels=$labels;observed_at=[DateTimeOffset]::UtcNow.ToString('o')}
+            }
+          }
+          $receipt=[ordered]@{schema='openworker/runner-registry/v1';source_runner=$env:RUNNER_NAME;source_machine=$env:RUNNER_NAME;source_run_id=$env:GITHUB_RUN_ID;source_sha=$env:GITHUB_SHA;observed_at=[DateTimeOffset]::UtcNow.ToString('o');nodes=$result}
+          $json=$receipt|ConvertTo-Json -Depth 20
+          $b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          $path="case-evidence/runner-registry/$env:GITHUB_SHA.json"
+          $body=@{message="receipt: runner registry $env:GITHUB_SHA";content=$b64;branch=$env:GITHUB_REF_NAME}|ConvertTo-Json
+          Invoke-RestMethod -Method Put -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path" -Headers $headers -ContentType 'application/json' -Body $body | Out-Null
+          $result | ConvertTo-Json -Depth 10
+          Write-Host 'THREE_NODE_LABEL_BOOTSTRAP_PASS'

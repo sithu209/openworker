@@ -167,6 +167,46 @@ class EngineeringOSClient:
         return self._object("POST", f"/api/v1/jobs/{job_id}/transitions",
                             {"target": target, "expected_revision": expected_revision})
 
+    def start_source_to_film(self, *, job_id: str, source_id: str | None = None,
+                             language: str | None = None, target_duration_sec: int = 20,
+                             default_shot_seconds: int = 5,
+                             visual_style: list[str] | None = None,
+                             world_rules: list[str] | None = None,
+                             acceleration_profile: str = "lightx2v-h3-4step",
+                             width: int = 1280, height: int = 720) -> dict[str, Any]:
+        """Ask AI-Engineering-OS to start its authoritative source-to-film flow.
+
+        OpenWorker never calls Comfyx-Studio or ComfyX directly here. The OS Job is
+        the authority and OS owns the Studio adapter/provenance registration.
+        """
+        job_id = self._required_id(job_id, "job_id")
+        if target_duration_sec <= 0: raise ValueError("target_duration_sec must be > 0")
+        if default_shot_seconds <= 0: raise ValueError("default_shot_seconds must be > 0")
+        if width <= 0 or height <= 0: raise ValueError("width and height must be > 0")
+        payload: dict[str, Any] = {
+            "target_duration_sec": target_duration_sec,
+            "default_shot_seconds": default_shot_seconds,
+            "acceleration_profile": self._required_text(acceleration_profile, "acceleration_profile"),
+            "width": width,
+            "height": height,
+        }
+        if source_id is not None: payload["source_id"] = self._required_text(source_id, "source_id")
+        if language is not None: payload["language"] = self._required_text(language, "language")
+        if visual_style is not None: payload["visual_style"] = list(visual_style)
+        if world_rules is not None: payload["world_rules"] = list(world_rules)
+        result = self._object("POST", f"/api/v1/jobs/{job_id}/flows/source-to-film", payload)
+        required = ("os_project_id", "os_job_id", "studio_project_id", "studio_source_id", "queue_id")
+        missing = [key for key in required if not isinstance(result.get(key), str) or not result[key].strip()]
+        if missing:
+            raise EngineeringOSContractError(
+                "source-to-film response missing required provenance fields: " + ", ".join(missing)
+            )
+        if result["os_job_id"] != job_id:
+            raise EngineeringOSContractError("source-to-film response os_job_id does not match requested job")
+        if not isinstance(result.get("artifact"), dict):
+            raise EngineeringOSContractError("source-to-film response must contain OS provenance artifact")
+        return result
+
     def list_job_artifacts(self, job_id: str) -> list[dict[str, Any]]:
         return self._items(f"/api/v1/jobs/{self._required_id(job_id, 'job_id')}/artifacts", "artifact")
 

@@ -1,0 +1,120 @@
+name: Case 0004 OS Authority Repair O87
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0004-os-authority-repair-o87.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 machine
+        run: |
+          if ($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR') { throw "wrong fixed machine: $env:COMPUTERNAME" }
+          Write-Host "CASE0004_OS_AUTHORITY_REPAIR_O87_OK machine=$env:COMPUTERNAME runner=$env:RUNNER_NAME"
+
+      - name: Checkout OpenWorker
+        uses: actions/checkout@v4
+
+      - name: Add governed repair child
+        run: |
+          python scripts/case_worklist_add_repair.py `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --parent-step '0004-020' `
+            --step-id 'R-0004-020-001' `
+            --title 'Resolve persisted AI-Engineering-OS local authority on O87' `
+            --allowed-action 'openworker.source.ingress.repair.resolve-os-authority' `
+            --acceptance authority_root `
+            --acceptance authority_module `
+            --acceptance authority_commit
+
+      - name: Start governed repair
+        id: gate
+        run: |
+          $execution = "github:${{ github.run_id }}:${{ github.run_attempt }}:os-authority-repair"
+          python scripts/case_worklist_action.py start `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id 'R-0004-020-001' `
+            --action-id 'openworker.source.ingress.repair.resolve-os-authority' `
+            --execution-id $execution
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT, "execution_id=$execution`n", (New-Object System.Text.UTF8Encoding($false)))
+
+      - name: Probe bounded local OS authority locations
+        id: probe
+        run: |
+          $roots = @(
+            'C:\github-runners',
+            (Join-Path $env:ProgramData 'go-tool-runtime\work-agent\authorities')
+          )
+          $matches = New-Object System.Collections.Generic.List[string]
+          foreach ($root in $roots) {
+            if (-not (Test-Path -LiteralPath $root -PathType Container)) { continue }
+            Get-ChildItem -LiteralPath $root -Filter go.mod -File -Recurse -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -notmatch '\\node_modules\\|\\.git\\' } |
+              ForEach-Object {
+                try {
+                  $first = (Get-Content -LiteralPath $_.FullName -TotalCount 1 -ErrorAction Stop).Trim()
+                  if ($first -eq 'module github.com/liuxb99/ai-engineering-os') {
+                    $matches.Add($_.Directory.FullName)
+                  }
+                } catch {}
+              }
+          }
+          $unique = @($matches | Sort-Object -Unique)
+          if ($unique.Count -eq 0) { throw 'no cached AI-Engineering-OS authority found in bounded O87 roots' }
+          foreach ($m in $unique) { Write-Host "OS_AUTHORITY_CANDIDATE $m" }
+          $preferred = $unique | Where-Object { Test-Path -LiteralPath (Join-Path $_ '.git') -PathType Container } | Select-Object -First 1
+          if (-not $preferred) { $preferred = $unique | Select-Object -First 1 }
+          $commit = 'snapshot-no-git'
+          if (Test-Path -LiteralPath (Join-Path $preferred '.git') -PathType Container) {
+            $commit = (& git -C $preferred rev-parse HEAD).Trim()
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commit)) { throw 'cannot resolve OS authority git commit' }
+          }
+          $markerDir = Join-Path $env:ProgramData 'go-tool-runtime\work-agent\authorities'
+          New-Item -ItemType Directory -Force -Path $markerDir | Out-Null
+          $marker = [ordered]@{
+            schema_version = 'gtr-local-authority/v1'
+            authority = 'ai-engineering-os'
+            assigned_host = $env:COMPUTERNAME
+            module = 'github.com/liuxb99/ai-engineering-os'
+            root = $preferred
+            commit = $commit
+            resolved_at = [DateTime]::UtcNow.ToString('o')
+          }
+          $markerPath = Join-Path $markerDir 'ai-engineering-os-current.json'
+          [IO.File]::WriteAllText($markerPath, ($marker | ConvertTo-Json -Depth 4), [Text.UTF8Encoding]::new($false))
+          Write-Host "AI_ENGINEERING_OS_AUTHORITY_RESOLVED root=$preferred commit=$commit marker=$markerPath"
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "root=$preferred`n", [Text.UTF8Encoding]::new($false))
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "commit=$commit`n", [Text.UTF8Encoding]::new($false))
+
+      - name: Complete repair and return 020 to READY
+        run: |
+          $workspace = 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-020-001' --key authority_root --value '${{ steps.probe.outputs.root }}'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-020-001' --key authority_module --value 'github.com/liuxb99/ai-engineering-os'
+          python scripts/case_worklist_action.py record --workspace-root $workspace --step-id 'R-0004-020-001' --key authority_commit --value '${{ steps.probe.outputs.commit }}'
+          python scripts/case_worklist_action.py complete-action `
+            --workspace-root $workspace `
+            --step-id 'R-0004-020-001' `
+            --action-id 'openworker.source.ingress.repair.resolve-os-authority' `
+            --execution-id '${{ steps.gate.outputs.execution_id }}'
+          python scripts/case_worklist_action.py pass --workspace-root $workspace --step-id 'R-0004-020-001'
+
+      - name: Block repair on failure
+        if: failure() && steps.gate.outcome == 'success'
+        continue-on-error: true
+        run: |
+          python scripts/case_worklist_action.py block-active `
+            --workspace-root 'D:\AI-Work\jobs\0004-DWG-TO-3D' `
+            --step-id 'R-0004-020-001' `
+            --reason "OS authority repair failed in run $env:GITHUB_RUN_ID"

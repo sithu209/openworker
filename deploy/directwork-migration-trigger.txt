@@ -1,0 +1,5 @@
+DirectWork migration trigger
+Date: 2026-08-20
+Order: ODA -> O87 -> UL7
+Target DirectWork commit: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+Policy: acquire source and build first; only then stop OpenWorkerNode; REAL smoke must pass before retiring old service; preserve C:\ProgramData\OpenWorker as archive evidence.

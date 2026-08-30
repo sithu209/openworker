@@ -11,6 +11,7 @@ from typing import Any
 import aisuite as ai
 
 from .engineering_os import EngineeringOSClient
+from .flow_client import EngineeringOSFlowClient
 
 
 def _set_tool_contract(func: Any, *, schema: dict[str, Any], risk_level: str,
@@ -32,7 +33,7 @@ def _schema(name: str, description: str, properties: dict[str, Any],
 
 
 def engineering_os_tools(client: EngineeringOSClient | None = None) -> list[Any]:
-    api = client or EngineeringOSClient()
+    api = client or EngineeringOSFlowClient()
 
     def engineering_system_readiness() -> dict[str, Any]:
         health, readiness = api.health(), api.readiness()
@@ -93,6 +94,17 @@ def engineering_os_tools(client: EngineeringOSClient | None = None) -> list[Any]
             "metadata_json":{"type":"string"}},["project_id","code","name","user_request"]),
         risk_level="medium",capabilities=["write","engineering","job"],requires_approval=True)
 
+    def engineering_execute_rc_column_flow(job_id: str, column: dict[str, Any]) -> dict[str, Any]:
+        executor = getattr(api, "execute_rc_column_flow", None)
+        if not callable(executor):
+            raise RuntimeError("configured AI-Engineering-OS client does not expose rc-column managed flow")
+        return executor(job_id=job_id, column=column)
+    _set_tool_contract(engineering_execute_rc_column_flow,
+        schema=_schema("engineering_execute_rc_column_flow","Execute the existing AI-Engineering-OS RC-column managed flow for an already-created canonical Job. This mutates authoritative Job/Artifact state and requires approval.",{
+            "job_id":{"type":"string"},
+            "column":{"type":"object","additionalProperties":True}},["job_id","column"]),
+        risk_level="medium",capabilities=["write","engineering","job","flow"],requires_approval=True)
+
     def engineering_get_approval_status(job_id: str) -> dict[str, Any]:
         return api.approval_status(job_id)
     _set_tool_contract(engineering_get_approval_status,
@@ -135,5 +147,6 @@ def engineering_os_tools(client: EngineeringOSClient | None = None) -> list[Any]
 
     return [engineering_system_readiness,engineering_list_projects,engineering_get_project,
             engineering_list_jobs,engineering_get_job,engineering_create_job,
-            engineering_get_approval_status,engineering_list_job_reviews,
-            engineering_submit_artifact_review,engineering_list_deliveries,engineering_publish_job]
+            engineering_execute_rc_column_flow,engineering_get_approval_status,
+            engineering_list_job_reviews,engineering_submit_artifact_review,
+            engineering_list_deliveries,engineering_publish_job]

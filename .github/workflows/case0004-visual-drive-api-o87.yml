@@ -1,0 +1,112 @@
+name: Case 0004 Visual Drive API O87
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case0004-visual-drive-api-o87.yml'
+      - 'scripts/case0004_visual_review_drive_api.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case0004-visual-drive-api-o87
+  cancel-in-progress: false
+
+env:
+  CASE0004_WORKSPACE: 'D:\AI-Work\jobs\0004-DWG-TO-3D'
+  CASE0004_ASSIGNED_HOST: DESKTOP-O87PJNR
+  OPENWORKER_REVIEW_DRIVE_FOLDER_ID: ${{ vars.OPENWORKER_REVIEW_DRIVE_FOLDER_ID }}
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  publish:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed O87 and visual evidence
+        run: |
+          if($env:COMPUTERNAME -ine $env:CASE0004_ASSIGNED_HOST){ throw "wrong fixed host: $env:COMPUTERNAME" }
+          foreach($rel in @('evidence\case0004-inspect-render.json','evidence\case0004-candidate-regions.json')){
+            $p=Join-Path $env:CASE0004_WORKSPACE $rel
+            if(-not (Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){ throw "visual evidence missing/empty: $p" }
+          }
+          Write-Host "CASE0004_VISUAL_INPUT_READY host=$env:COMPUTERNAME"
+
+      - name: Checkout OpenWorker main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Install OpenWorker
+        working-directory: openworker
+        run: python -m pip install --disable-pip-version-check -e .
+
+      - name: Require configured Google Drive API credential
+        env:
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+        run: |
+          if([string]::IsNullOrWhiteSpace($env:OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN)){
+            throw 'OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN is not configured for this repository'
+          }
+          Write-Host 'CASE0004_DRIVE_CREDENTIAL_PRESENT'
+
+      - name: Probe Google Drive review root read access
+        working-directory: openworker
+        env:
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+          PYTHONPATH: ${{ github.workspace }}\openworker
+        run: |
+          $code = @'
+          import os
+          from coworker.review_cycle import DEFAULT_DRIVE_FOLDER_ID
+          from coworker.review_drive import GoogleDriveAPIClient, DRIVE_API_BASE
+          folder=(os.environ.get('OPENWORKER_REVIEW_DRIVE_FOLDER_ID') or DEFAULT_DRIVE_FOLDER_ID).strip()
+          c=GoogleDriveAPIClient.from_environment()
+          try:
+              payload=c._json_request('GET', f'{DRIVE_API_BASE}/files/{folder}', params={'fields':'id,name,mimeType,trashed'})
+              if str(payload.get('id') or '') != folder:
+                  raise SystemExit('Drive review root identity mismatch')
+              if str(payload.get('mimeType') or '') != 'application/vnd.google-apps.folder':
+                  raise SystemExit('Drive review root is not a folder')
+              if bool(payload.get('trashed')):
+                  raise SystemExit('Drive review root is trashed')
+              print('CASE0004_DRIVE_ROOT_READ_PASS folder_id='+folder+' name='+str(payload.get('name') or ''))
+          finally:
+              c.close()
+          '@
+          $env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID = if([string]::IsNullOrWhiteSpace($env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID)){'1A4BnZEcFe2WIhcperRd4QSpxoSUN_ARR'}else{$env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID}
+          $code | python -
+          if($LASTEXITCODE -ne 0){ throw "Google Drive review-root probe failed: $LASTEXITCODE" }
+
+      - name: Publish immutable visual bundle through Google Drive API
+        id: publish
+        working-directory: openworker
+        env:
+          OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.OPENWORKER_GOOGLE_DRIVE_ACCESS_TOKEN }}
+          PYTHONPATH: ${{ github.workspace }}\openworker
+        run: |
+          $args=@('scripts\case0004_visual_review_drive_api.py','--workspace',$env:CASE0004_WORKSPACE,'--run-id',$env:GITHUB_RUN_ID)
+          if(-not [string]::IsNullOrWhiteSpace($env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID)){ $args += @('--drive-folder-id',$env:OPENWORKER_REVIEW_DRIVE_FOLDER_ID) }
+          & python @args
+          if($LASTEXITCODE -ne 0){ throw "Case 0004 Drive API visual publish failed: $LASTEXITCODE" }
+          $state=Join-Path $env:CASE0004_WORKSPACE ('evidence\case0004-visual-drive-api-'+$env:GITHUB_RUN_ID+'.json')
+          if(-not (Test-Path -LiteralPath $state -PathType Leaf)){ throw "Drive API state receipt missing: $state" }
+          $r=Get-Content -LiteralPath $state -Raw -Encoding UTF8|ConvertFrom-Json
+          if([string]$r.transport -ne 'google-drive-api' -or [string]$r.status -ne 'WAITING_LLM_REVIEW'){ throw 'Drive API publication state mismatch' }
+          if([string]::IsNullOrWhiteSpace([string]$r.drive_revision_folder_id)){ throw 'Drive review folder ID missing' }
+          [System.IO.File]::AppendAllText($env:GITHUB_OUTPUT,"folder_id=$($r.drive_revision_folder_id)`nstate_path=$state`n",(New-Object System.Text.UTF8Encoding($false)))
+          Write-Host "CASE0004_VISUAL_CLOUD_READY folder_id=$($r.drive_revision_folder_id) files=$(@($r.files).Count)"
+
+      - name: Verify cloud receipt physical evidence
+        run: |
+          $p='${{ steps.publish.outputs.state_path }}'
+          if(-not (Test-Path -LiteralPath $p -PathType Leaf) -or (Get-Item -LiteralPath $p).Length -le 0){ throw "cloud receipt missing/empty: $p" }
+          Write-Host "CASE0004_VISUAL_REVIEW_WAITING_CHATGPT folder=${{ steps.publish.outputs.folder_id }} receipt=$p"

@@ -1,0 +1,2 @@
+Emergency OpenWorker GitHub Actions queue drain trigger.
+The drain workflow excludes its own run and verifies the remaining OpenWorker Actions queue is empty.

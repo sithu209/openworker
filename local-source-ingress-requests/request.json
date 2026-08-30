@@ -1,0 +1,33 @@
+{
+  "schema_version": "openworker.source-locator-request.v1",
+  "case_id": "0004",
+  "assigned_host": "DESKTOP-O87PJNR",
+  "original_name": "S1-1140926(1).dwg",
+  "canonical_name": "source.dwg",
+  "media_type": "application/acad",
+  "workspace_root": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D",
+  "user_request": "Case 0004: convert the real user DWG to validated 3D GLB and native ACIS Solid3D DWG, then complete review and delivery.",
+  "expected_size": 1385583,
+  "expected_sha256": "aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6",
+  "expected_header": "AC1032",
+  "candidate_paths": [
+    "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\input\\S1-1140926*.dwg",
+    "D:\\AI-Example\\0004\\S1-1140926*.dwg",
+    "D:\\AI-Civil\\DWG_todo\\output\\S1-1140926\\source\\S1-1140926*.dwg",
+    "D:\\AI-Civil\\DWG_todo\\S1-1140926*.dwg",
+    "D:\\AI-Civil\\DWG_todo\\input\\S1-1140926*.dwg"
+  ],
+  "search_roots": [
+    "D:\\AI-Work",
+    "D:\\AI-Example",
+    "D:\\AI-Civil",
+    "D:\\AIWork"
+  ],
+  "name_patterns": [
+    "S1-1140926*.dwg",
+    "*.dwg"
+  ],
+  "max_depth": 10,
+  "max_size_matches": 512,
+  "request_nonce": "2026-08-17T16:18:00+08:00"
+}

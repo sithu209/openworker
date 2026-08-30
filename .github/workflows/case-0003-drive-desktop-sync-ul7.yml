@@ -1,0 +1,120 @@
+name: Case 0003 Google Drive Desktop Review Sync UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-drive-desktop-sync-ul7.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0003-drive-publication-ul7
+  cancel-in-progress: false
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  sync:
+    name: Copy immutable Case 0003 review bundle into Google Drive Desktop
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Verify fixed UL7 host and immutable review bundle
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){ throw "CASE0003_DRIVE_ASSIGNED_HOST_MISMATCH host=$env:COMPUTERNAME assigned=$env:CASE0003_ASSIGNED_HOST" }
+          $state=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          if(-not (Test-Path -LiteralPath $state -PathType Leaf)){throw 'Case 0003 final acceptance state unavailable'}
+          $ev=Get-Content -LiteralPath $state -Raw|ConvertFrom-Json
+          $revision=[string]$ev.revision_id
+          if([string]::IsNullOrWhiteSpace($revision)){throw 'Case 0003 revision_id missing'}
+          if([string]$ev.status -ne 'WAITING_DRIVE_HANDOFF' -and [string]$ev.status -ne 'WAITING_LLM_REVIEW'){throw ('Case 0003 revision not publishable: '+[string]$ev.status)}
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$revision)
+          foreach($required in @('manifest.json','manifest.sha256','review-request.json')){if(-not(Test-Path -LiteralPath (Join-Path $bundle $required) -PathType Leaf)){throw ('review bundle missing '+$required)}}
+          $manifestSha=(Get-Content -LiteralPath (Join-Path $bundle 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+          if($manifestSha -notmatch '^[0-9a-f]{64}$'){throw 'invalid manifest SHA256'}
+          "CASE0003_REVISION_ID=$revision"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "CASE0003_REVIEW_BUNDLE=$bundle"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "CASE0003_MANIFEST_SHA256=$manifestSha"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_BUNDLE_VERIFIED revision=$revision manifest_sha256=$manifestSha"
+
+      - name: Discover Google Drive Desktop My Drive root
+        run: |
+          $ErrorActionPreference='Stop'
+          $candidates=@()
+          if(-not [string]::IsNullOrWhiteSpace('${{ vars.OPENWORKER_GOOGLE_DRIVE_SYNC_ROOT }}')){$candidates += '${{ vars.OPENWORKER_GOOGLE_DRIVE_SYNC_ROOT }}'}
+          foreach($d in Get-PSDrive -PSProvider FileSystem){
+            $candidates += (Join-Path $d.Root 'My Drive')
+            $candidates += (Join-Path $d.Root '我的雲端硬碟')
+          }
+          $root=$null
+          foreach($c in $candidates|Select-Object -Unique){
+            if([string]::IsNullOrWhiteSpace($c)){continue}
+            try{
+              if(Test-Path -LiteralPath $c -PathType Container -ErrorAction Stop){$root=(Resolve-Path -LiteralPath $c -ErrorAction Stop).Path;break}
+            }catch{
+              Write-Host "CASE0003_DRIVE_DISCOVERY_SKIP candidate=$c reason=$($_.Exception.Message)"
+            }
+          }
+          if([string]::IsNullOrWhiteSpace($root)){
+            Write-Host 'Available filesystem drives:'
+            Get-PSDrive -PSProvider FileSystem|Format-Table Name,Root,Description -AutoSize|Out-String|Write-Host
+            throw 'Google Drive Desktop My Drive root not found; set repository variable OPENWORKER_GOOGLE_DRIVE_SYNC_ROOT if mounted under a nonstandard path'
+          }
+          "CASE0003_DRIVE_SYNC_ROOT=$root"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_DRIVE_SYNC_ROOT_FOUND root=$root"
+
+      - name: Copy immutable bundle and verify every byte
+        run: |
+          $ErrorActionPreference='Stop'
+          $dest=Join-Path $env:CASE0003_DRIVE_SYNC_ROOT (Join-Path 'OpenWorker-ChatGPT-Review' (Join-Path 'OWJ-20260816030152-03D90D' $env:CASE0003_REVISION_ID))
+          $temp=$dest+'.partial'
+          if(Test-Path -LiteralPath $temp){Remove-Item -LiteralPath $temp -Recurse -Force}
+          New-Item -ItemType Directory -Path $temp -Force|Out-Null
+          Copy-Item -Path (Join-Path $env:CASE0003_REVIEW_BUNDLE '*') -Destination $temp -Recurse -Force
+          $sourceFiles=Get-ChildItem -LiteralPath $env:CASE0003_REVIEW_BUNDLE -File -Recurse
+          foreach($src in $sourceFiles){
+            $rel=$src.FullName.Substring($env:CASE0003_REVIEW_BUNDLE.Length).TrimStart('\')
+            $dst=Join-Path $temp $rel
+            if(-not(Test-Path -LiteralPath $dst -PathType Leaf)){throw ('Drive sync copy missing '+$rel)}
+            $a=(Get-FileHash -LiteralPath $src.FullName -Algorithm SHA256).Hash
+            $b=(Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash
+            if($a -ne $b){throw ('Drive sync SHA mismatch '+$rel)}
+          }
+          if(Test-Path -LiteralPath $dest){
+            $existing=(Get-Content -LiteralPath (Join-Path $dest 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+            if($existing -ne $env:CASE0003_MANIFEST_SHA256){throw ('Drive destination conflict existing_manifest='+$existing)}
+            Remove-Item -LiteralPath $temp -Recurse -Force
+          }else{
+            Move-Item -LiteralPath $temp -Destination $dest
+          }
+          $final=(Get-Content -LiteralPath (Join-Path $dest 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+          if($final -ne $env:CASE0003_MANIFEST_SHA256){throw 'Drive destination manifest verification failed'}
+          $receipt=[ordered]@{schema_version='openworker-drive-desktop-handoff/v1';case_id='0003';work_code='OWJ-20260816030152-03D90D';revision_id=$env:CASE0003_REVISION_ID;transport='google-drive-desktop';machine_id=$env:COMPUTERNAME;source_bundle=$env:CASE0003_REVIEW_BUNDLE;sync_root=$env:CASE0003_DRIVE_SYNC_ROOT;destination=$dest;bundle_manifest_sha256=$env:CASE0003_MANIFEST_SHA256;file_count=$sourceFiles.Count;status='WAITING_CLOUD_CONFIRMATION';github_run_id=$env:GITHUB_RUN_ID;created_at_utc=(Get-Date).ToUniversalTime().ToString('o')}
+          $receiptPath=Join-Path $env:CASE0003_REVIEW_BUNDLE 'drive-desktop-handoff.json'
+          $receipt|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $receiptPath -Encoding utf8
+          Copy-Item -LiteralPath $receiptPath -Destination (Join-Path $dest 'drive-desktop-handoff.json') -Force
+          "CASE0003_DRIVE_DESTINATION=$dest"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_DRIVE_DESKTOP_COPY_PASS revision=$env:CASE0003_REVISION_ID manifest_sha256=$env:CASE0003_MANIFEST_SHA256 files=$($sourceFiles.Count) destination=$dest"
+
+      - name: Preserve local handoff evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0003-drive-desktop-handoff-${{ github.run_id }}
+          path: D:\AI-Work\jobs\0003-YUJING-BRIDGE\.openworker\reviews\**\drive-desktop-handoff.json
+          if-no-files-found: warn
+          retention-days: 14
+
+# trigger nonce: 2026-08-17 latest-repaired-revision

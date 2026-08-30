@@ -1,0 +1,66 @@
+{
+  "schema_version": "openworker-case-spec/v1",
+  "case_id": "0004",
+  "title": "Case 0004 / REAL DWG to audited multi-story 3D",
+  "source_dwg": {
+    "workspace_path": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\input\\source.dwg",
+    "sha256": "aaadbd84e8a5b2e1b0b8f54c16901a69085c7501aeec602929fd994f3192f5b6"
+  },
+  "story_index_build_params": {
+    "name": "case0004-story-index",
+    "overview_png": "D:\\AI-Work\\jobs\\0004-DWG-TO-3D\\dwg\\exports\\default\\visual-search\\case0004-overview.png",
+    "camera_bounds": {
+      "min_x": 44443.25117281456,
+      "min_y": 35301.305011156095,
+      "max_x": 117008.65481692566,
+      "max_y": 92030.00566073845
+    },
+    "image_width": 1200,
+    "image_height": 800,
+    "stories": [
+      {
+        "story_id": "1F",
+        "pixel_bounds": [101, 533, 291, 666],
+        "confidence": 0.97,
+        "visual_basis": "2026-08-18 REAL overview round-2 left-side floor-plan region; world bounds were independently promoted by multimodal review and query evidence"
+      }
+    ],
+    "unresolved_story_ids": ["2F", "3F", "4F", "R1F"],
+    "fail_closed_note": "Only 1F has promotion-grade viewport evidence at migration time. Unresolved stories must remain unresolved and must not be guessed."
+  },
+  "execution_policy": {
+    "normal_mode": "local_supervisor",
+    "canonical_controller": "openworker-go-case-engine/v1",
+    "python_controller_allowed": false,
+    "required_execution_route": "local_supervisor",
+    "queue_endpoint": "http://127.0.0.1:8848/api/execution/local-work",
+    "route_query_endpoint": "http://127.0.0.1:8848/api/execution/route",
+    "verification_endpoint": "http://127.0.0.1:8848/api/execution/local-supervisor/verification",
+    "status_endpoint": "http://127.0.0.1:8848/api/execution/local-supervisor/status",
+    "required_verification_status": "REAL_VERIFIED",
+    "required_supervisor_status": "OPERATIONAL",
+    "required_fresh_claim_slots": 4,
+    "required_fresh_executor_slots": 4,
+    "max_parallel_actions": 4,
+    "fanout_queue_owner": "go-tool-runtime:8848",
+    "fanout_submit_all_children_before_coordinator": true,
+    "openworker_business_child_jobs_allowed": false,
+    "openworker_fanout_role": "single-coordinator-only",
+    "process_execution_authority": "OpenWorker:8787",
+    "fixed_machine_authority": "COMPUTERNAME",
+    "assigned_host": "DESKTOP-O87PJNR",
+    "approval_artifact_transport": "google-drive-api",
+    "approval_artifact_github_allowed": false,
+    "github_actions": "code_update_or_repair_only",
+    "github_actions_business_execution_allowed": false,
+    "github_actions_fallback_allowed": false,
+    "tool_authority": "go-tool-runtime",
+    "success_requires_local_route_evidence": true,
+    "success_requires_append_only_supervisor_ledger": true,
+    "success_requires_real_four_slot_verification": true,
+    "success_requires_current_operational_four_plus_four_heartbeats": true,
+    "success_requires_queue_owned_fanout": true,
+    "success_requires_physical_artifact_sha256": true,
+    "success_requires_chatgpt_visible_drive_review": true
+  }
+}

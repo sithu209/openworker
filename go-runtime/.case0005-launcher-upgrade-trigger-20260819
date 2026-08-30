@@ -1,0 +1,4 @@
+case=0005
+purpose=deploy-current-main-windows-quoted-executable-launcher
+max_local_slots=4
+business_execution=local-supervisor-only

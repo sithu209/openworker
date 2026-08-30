@@ -1,0 +1,16 @@
+﻿{
+    "schema_version":  "case0004-openworker-drive-transport-diagnostic/v1",
+    "case_id":  "0004",
+    "run_id":  "32110935657",
+    "run_attempt":  "1",
+    "slot":  "2",
+    "machine":  "DESKTOP-O87PJNR",
+    "runner_name":  "DESKTOP-O87PJNR-R003",
+    "route":  "success",
+    "evidence":  "success",
+    "publish":  "failure",
+    "receipt":  "skipped",
+    "secret_present":  false,
+    "receipt_exists":  false,
+    "observed_at":  "2026-08-18T07:20:24.4516608Z"
+}

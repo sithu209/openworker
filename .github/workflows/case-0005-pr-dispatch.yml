@@ -1,0 +1,54 @@
+name: Case 0005 PR Dispatch ODA
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  dispatch:
+    if: startsWith(github.event.pull_request.title, '[CASE0005-RUN]')
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Verify fixed ODA computer
+        shell: powershell
+        run: |
+          if($env:COMPUTERNAME -ine 'DESKTOP-ODAQN0D'){throw "wrong host $env:COMPUTERNAME"}
+      - name: Bootstrap Case 0005 through Go-native resident OpenWorker
+        shell: powershell
+        run: |
+          & .\scripts\case0005_resident_bootstrap.ps1
+          if($LASTEXITCODE -ne 0){throw "case0005 resident bootstrap failed: $LASTEXITCODE"}
+      - name: Continue Case 0005 locally
+        shell: powershell
+        run: |
+          $body=@{case_id='0005';machine='DESKTOP-ODAQN0D';workspace_root='D:\AI-Work\jobs\0005-SNOW-WHITE'}|ConvertTo-Json
+          $ack=Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8787/v1/cases/continue' -ContentType 'application/json' -Body $body -TimeoutSec 15
+          $ack|ConvertTo-Json -Depth 30
+      - name: Publish dispatch receipt
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $workspace='D:\AI-Work\jobs\0005-SNOW-WHITE'
+          $controllerPath=Join-Path $workspace '.openworker\case-controller-last.json'
+          $controller=$null
+          if(Test-Path -LiteralPath $controllerPath -PathType Leaf){$controller=Get-Content -Raw -LiteralPath $controllerPath|ConvertFrom-Json}
+          $receipt=[ordered]@{schema='openworker/case0005-pr-dispatch/v1';case_id='0005';machine=$env:COMPUTERNAME;workspace_root=$workspace;controller=$controller;run_id=$env:GITHUB_RUN_ID;pr_number=${{ github.event.pull_request.number }};observed_at=[DateTimeOffset]::UtcNow.ToString('o');github_action_used_for_business_execution=$false;authority='openworker-local-supervisor'}
+          $json=$receipt|ConvertTo-Json -Depth 30 -Compress
+          $headers=@{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28'}
+          $path='evidence/case0005/latest-pr-dispatch.json'
+          $uri="https://api.github.com/repos/$env:GITHUB_REPOSITORY/contents/$path"
+          $readUri='{0}?ref={1}' -f $uri,[uri]::EscapeDataString($env:GITHUB_REF_NAME)
+          $sha=$null
+          try{$existing=Invoke-RestMethod -Uri $readUri -Headers $headers;$sha=$existing.sha}catch{}
+          $b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+          $body=@{message='case0005: publish PR dispatch receipt';content=$b64;branch=$env:GITHUB_REF_NAME};if($sha){$body.sha=$sha}
+          Invoke-RestMethod -Method Put -Uri $uri -Headers $headers -ContentType 'application/json' -Body ($body|ConvertTo-Json -Compress)|Out-Null

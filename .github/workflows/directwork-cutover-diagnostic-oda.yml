@@ -1,0 +1,104 @@
+name: DirectWork Cutover Diagnostic ODA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/directwork-cutover-diagnostic-oda.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose-oda:
+    runs-on: [self-hosted, Windows, X64, ODA]
+    timeout-minutes: 15
+    env:
+      DIRECTWORK_COMMIT: 5c54101c34f3e1aaafcd33a354c7e7a83d7cc649
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Collect REAL ODA cutover evidence
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Continue'
+          $run='${{ github.run_id }}'
+          $out=Join-Path $env:GITHUB_WORKSPACE ("cutover-diagnostics\{0}" -f $run)
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+
+          $src=Join-Path $env:GITHUB_WORKSPACE 'migration\directwork-src'
+          $sourcePin=$null
+          try { $sourcePin=(Get-Content (Join-Path $src 'SOURCE_COMMIT.txt') -Raw).Trim() } catch {}
+
+          $goVersion=''
+          try { $goVersion=(& go version 2>&1 | Out-String).Trim() } catch { $goVersion=$_.Exception.Message }
+
+          $testExit=$null
+          $buildExit=$null
+          $buildPath=Join-Path $out 'directwork-diagnostic-node.exe'
+          if(Test-Path $src){
+            Push-Location $src
+            & go mod download *> (Join-Path $out 'go-mod-download.log')
+            & go test ./... -count=1 *> (Join-Path $out 'go-test.log')
+            $testExit=$LASTEXITCODE
+            & go build -ldflags "-X github.com/liuxb99/DirectWork/internal/buildinfo.Version=p1 -X github.com/liuxb99/DirectWork/internal/buildinfo.Commit=$env:DIRECTWORK_COMMIT -X github.com/liuxb99/DirectWork/internal/buildinfo.TargetCommit=$env:DIRECTWORK_COMMIT" -o $buildPath ./cmd/directwork-node *> (Join-Path $out 'go-build.log')
+            $buildExit=$LASTEXITCODE
+            Pop-Location
+          }
+
+          $ow=Get-Service OpenWorkerNode -ErrorAction SilentlyContinue
+          $dw=Get-Service DirectWorkNode -ErrorAction SilentlyContinue
+          $status=$null
+          $statusError=$null
+          try { $status=Invoke-RestMethod 'http://127.0.0.1:8787/v1/node/status' -TimeoutSec 5 } catch { $statusError=$_.Exception.Message }
+
+          $works=$null
+          $worksError=$null
+          try { $works=Invoke-RestMethod 'http://127.0.0.1:8787/v1/work' -TimeoutSec 5 } catch { $worksError=$_.Exception.Message }
+
+          $tcp=''
+          try { $tcp=(netstat -ano | Select-String ':8787' | Out-String).Trim() } catch {}
+
+          $payload=[ordered]@{
+            schema='directwork/cutover-diagnostic/v1'
+            run_id=$run
+            observed_at=(Get-Date).ToUniversalTime().ToString('o')
+            computername=$env:COMPUTERNAME
+            runner_name=$env:RUNNER_NAME
+            target_commit=$env:DIRECTWORK_COMMIT
+            source_pin=$sourcePin
+            source_exists=(Test-Path $src)
+            go_version=$goVersion
+            go_test_exit=$testExit
+            go_build_exit=$buildExit
+            diagnostic_binary_exists=(Test-Path $buildPath)
+            openworker_service_present=[bool]$ow
+            openworker_service_status=if($ow){$ow.Status.ToString()}else{$null}
+            directwork_service_present=[bool]$dw
+            directwork_service_status=if($dw){$dw.Status.ToString()}else{$null}
+            directwork_binary_exists=(Test-Path 'C:\ProgramData\DirectWork\bin\directwork-node.exe')
+            directwork_data_exists=(Test-Path 'C:\ProgramData\DirectWork\node')
+            openworker_data_preserved=(Test-Path 'C:\ProgramData\OpenWorker')
+            node_status=$status
+            node_status_error=$statusError
+            work_list=$works
+            work_list_error=$worksError
+            netstat_8787=$tcp
+          }
+          $payload | ConvertTo-Json -Depth 16 | Set-Content (Join-Path $out 'oda.json') -Encoding UTF8
+
+      - name: Persist diagnostic evidence
+        if: always()
+        shell: powershell
+        run: |
+          $run='${{ github.run_id }}'
+          $path="cutover-diagnostics/$run"
+          if(-not(Test-Path $path)){ throw 'diagnostic output missing' }
+          git config user.name 'directwork-diagnostic'
+          git config user.email 'directwork-diagnostic@users.noreply.github.com'
+          git add $path
+          git commit -m "diagnostic: ODA DirectWork cutover run $run"
+          git push origin HEAD:main

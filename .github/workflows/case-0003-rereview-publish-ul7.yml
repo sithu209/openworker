@@ -1,0 +1,114 @@
+name: Case 0003 Re-review Publish UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-rereview-publish-ul7.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: case-0003-rereview-publish-ul7
+  cancel-in-progress: false
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  CASE0003_REVISION_ID: rev_6e6e40bd0c5341f6b81a340bf719f237
+  CASE0003_REPAIR_STEP: R-0003-190-REVIEW-6e6e40bd0c53
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  publish-rereview:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: openworker
+
+      - name: Verify host and exact fresh revision
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw 'Case 0003 host mismatch'}
+          $state=Join-Path $env:CASE0003_WORKSPACE 'acceptance\openworker-final\work-ledger-final-acceptance.json'
+          if(-not (Test-Path -LiteralPath $state -PathType Leaf)){throw 'Case 0003 final acceptance state missing'}
+          $ev=Get-Content -LiteralPath $state -Raw|ConvertFrom-Json
+          if([string]$ev.revision_id -ne $env:CASE0003_REVISION_ID){throw ('fresh revision drift: '+[string]$ev.revision_id)}
+          if([string]$ev.status -ne 'WAITING_DRIVE_HANDOFF' -and [string]$ev.status -ne 'WAITING_LLM_REVIEW'){throw ('fresh revision not reviewable: '+[string]$ev.status)}
+          $bundle=Join-Path $env:CASE0003_WORKSPACE ('.openworker\reviews\'+$env:CASE0003_REVISION_ID)
+          foreach($required in @('manifest.json','manifest.sha256','review-request.json')){if(-not (Test-Path -LiteralPath (Join-Path $bundle $required) -PathType Leaf)){throw ('review bundle missing '+$required)}}
+          $sha=(Get-Content -LiteralPath (Join-Path $bundle 'manifest.sha256') -Raw).Trim().ToLowerInvariant()
+          if($sha -notmatch '^[0-9a-f]{64}$'){throw 'fresh manifest SHA invalid'}
+          "CASE0003_REVIEW_BUNDLE=$bundle"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "CASE0003_MANIFEST_SHA=$sha"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Resume governed re-review publication lease
+        id: govern
+        run: |
+          $ErrorActionPreference='Stop'
+          $script='openworker\scripts\case_worklist_action.py'
+          $wlPath=Join-Path $env:CASE0003_WORKSPACE '.openworker\case-worklist.json'
+          $wl=Get-Content -LiteralPath $wlPath -Raw|ConvertFrom-Json
+          $repair=@($wl.steps|Where-Object{$_.step_id -eq $env:CASE0003_REPAIR_STEP})[0]
+          if($null -eq $repair){throw 'governed re-review repair missing'}
+          if([string]$repair.status -eq 'RUNNING'){
+            if([string]$repair.evidence.__openworker_active_action -ne 'openworker.review.publish'){throw 're-review repair running another action'}
+            $exec=[string]$repair.evidence.__openworker_active_execution
+            if([string]::IsNullOrWhiteSpace($exec)){throw 'active publication execution missing'}
+          } elseif([string]$repair.status -eq 'READY'){
+            $exec='github:${{ github.run_id }}:${{ github.run_attempt }}:rereview-publish'
+            python $script start --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --action-id openworker.review.publish --execution-id $exec
+            if($LASTEXITCODE -ne 0){throw 'failed to lease re-review publication'}
+            python $script record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key rework_revision --value $env:CASE0003_REVISION_ID
+            python $script record --workspace-root $env:CASE0003_WORKSPACE --step-id $env:CASE0003_REPAIR_STEP --key review_bundle --value $env:CASE0003_REVIEW_BUNDLE
+          } else {
+            throw ('re-review repair not publishable: '+[string]$repair.status)
+          }
+          "execution_id=$exec" >> $env:GITHUB_OUTPUT
+
+      - name: Build immutable connector handoff ZIP
+        run: |
+          $ErrorActionPreference='Stop'
+          $stage=Join-Path $env:RUNNER_TEMP ('case0003-rereview-'+$env:GITHUB_RUN_ID)
+          if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage -Recurse -Force}
+          New-Item -ItemType Directory -Force $stage|Out-Null
+          $zip=Join-Path $stage ('case-0003-'+$env:CASE0003_REVISION_ID+'-review-bundle.zip')
+          Compress-Archive -Path (Join-Path $env:CASE0003_REVIEW_BUNDLE '*') -DestinationPath $zip -CompressionLevel Optimal
+          if(-not (Test-Path -LiteralPath $zip -PathType Leaf) -or (Get-Item -LiteralPath $zip).Length -le 0){throw 'connector handoff ZIP missing/empty'}
+          $zipSha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $handoff=Join-Path $stage 'connector-handoff.json'
+          $payload=[ordered]@{schema_version='openworker-review-connector-handoff/v1';case_id='0003';revision_id=$env:CASE0003_REVISION_ID;work_code='OWJ-20260816030152-03D90D';assigned_host=$env:CASE0003_ASSIGNED_HOST;runner_name=$env:RUNNER_NAME;github_run_id=$env:GITHUB_RUN_ID;bundle_manifest_sha256=$env:CASE0003_MANIFEST_SHA;zip_name=[IO.Path]::GetFileName($zip);zip_sha256=$zipSha;repair_step=$env:CASE0003_REPAIR_STEP;publication_execution='${{ steps.govern.outputs.execution_id }}';target_transport='google-drive-connector'}
+          [IO.File]::WriteAllText($handoff,($payload|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
+          "CASE0003_CONNECTOR_STAGE=$stage"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "CASE0003_CONNECTOR_ZIP=$zip"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "CASE0003_CONNECTOR_ZIP_SHA=$zipSha"|Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "CASE0003_CONNECTOR_HANDOFF_READY revision=$env:CASE0003_REVISION_ID manifest=$env:CASE0003_MANIFEST_SHA zip_sha256=$zipSha"
+
+      - name: Upload exact bundle for ChatGPT connector handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: case-0003-rereview-connector-handoff-${{ github.run_id }}
+          path: |
+            ${{ env.CASE0003_CONNECTOR_ZIP }}
+            ${{ env.CASE0003_CONNECTOR_STAGE }}\connector-handoff.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Keep delivery blocked pending connector review
+        run: |
+          $ErrorActionPreference='Stop'
+          $wl=Get-Content -LiteralPath (Join-Path $env:CASE0003_WORKSPACE '.openworker\case-worklist.json') -Raw|ConvertFrom-Json
+          $repair=@($wl.steps|Where-Object{$_.step_id -eq $env:CASE0003_REPAIR_STEP})[0]
+          if([string]$repair.status -ne 'RUNNING' -or [string]$repair.evidence.__openworker_active_action -ne 'openworker.review.publish'){throw 'connector handoff lost governed publication lease'}
+          $delivery=@($wl.steps|Where-Object{$_.step_id -eq '0003-190'})[0]
+          if([string]$delivery.status -ne 'BLOCKED'){throw 'delivery unexpectedly unblocked before connector review'}
+          Write-Host "CASE0003_WAITING_CHATGPT_CONNECTOR_UPLOAD revision=$env:CASE0003_REVISION_ID zip_sha256=$env:CASE0003_CONNECTOR_ZIP_SHA"

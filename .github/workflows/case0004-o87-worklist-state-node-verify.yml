@@ -1,0 +1,56 @@
+name: Verify Case 0004 O87 Worklist State Node Result
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Durable OpenWorker job id returned by the dispatch Action
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: [self-hosted, Windows, X64, O87]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify durable job result and local artifact
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine 'DESKTOP-O87PJNR'){throw "wrong host=$env:COMPUTERNAME"}
+          $jobId='${{ inputs.job_id }}'
+          $job=Invoke-RestMethod "http://127.0.0.1:8787/v1/jobs/$jobId"
+          if($job.status -ne 'succeeded'){throw "job not succeeded status=$($job.status)"}
+          $events=Invoke-RestMethod "http://127.0.0.1:8787/v1/jobs/$jobId/events?limit=100"
+          $local='D:\AI-Work\jobs\0004-DWG-TO-3D\.openworker\evidence\latest-worklist-state-node.json'
+          if(-not(Test-Path -LiteralPath $local -PathType Leaf)){throw "missing local evidence=$local"}
+          $artifact=Get-Content -LiteralPath $local -Raw | ConvertFrom-Json
+          if($artifact.job_id -ne $jobId){throw "artifact job mismatch artifact=$($artifact.job_id) job=$jobId"}
+          if($artifact.machine -ine $env:COMPUTERNAME){throw "artifact machine mismatch=$($artifact.machine)"}
+          $payload=[ordered]@{
+            schema='openworker.case0004.node-result.v1'
+            verified_at_utc=[DateTime]::UtcNow.ToString('o')
+            verifier_run_id=$env:GITHUB_RUN_ID
+            machine=$env:COMPUTERNAME
+            job=$job
+            events=$events.events
+            artifact=$artifact
+          }
+          $out=Join-Path $env:GITHUB_WORKSPACE 'evidence\case0004\latest-node-worklist-state-result.json'
+          New-Item -ItemType Directory -Force -Path (Split-Path $out -Parent)|Out-Null
+          [IO.File]::WriteAllText($out,($payload|ConvertTo-Json -Depth 50),(New-Object Text.UTF8Encoding($false)))
+      - name: Publish verified result evidence
+        shell: powershell
+        run: |
+          git config user.name 'openworker-case0004-node-verifier'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- evidence/case0004/latest-node-worklist-state-result.json
+          if(-not(git diff --cached --quiet)){git commit -m "evidence(case0004): verify node worklist state ${{ inputs.job_id }}"}
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'push failed'}

@@ -22,6 +22,7 @@ from .connectors import (
     make_send_message_tool,
 )
 from .engine import Approver, TurnEngine
+from .runtimes.native import NativeRuntime
 from .environment import environment_context
 from .memory import (
     MemoryStore,
@@ -465,7 +466,7 @@ def build_engine(
                 )
         return "\n\n".join(parts)
 
-    engine = TurnEngine(
+    engine = NativeRuntime(
         provider=provider,
         registry=registry,
         permissions=permissions,

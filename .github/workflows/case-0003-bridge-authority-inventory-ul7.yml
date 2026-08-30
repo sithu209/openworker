@@ -1,0 +1,64 @@
+name: Case 0003 Bridge Authority Inventory UL7
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-bridge-authority-inventory-ul7.yml'
+
+permissions:
+  contents: read
+
+env:
+  CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+  CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  inventory:
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+      - name: Find original engineering-source files only
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw ('wrong host '+$env:COMPUTERNAME)}
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          $engineeringExt=@('.pdf','.dwg','.dxf','.ifc','.dgn','.rvt','.xlsx','.xls','.docx')
+          $generatedTop=@('.openworker','delivery','acceptance','scenex','blender','terrain','consumer','streetview','os','runs')
+          $rows=@()
+          foreach($f in Get-ChildItem -LiteralPath $root -File -Recurse -ErrorAction Stop){
+            if(-not($engineeringExt -contains $f.Extension.ToLowerInvariant())){continue}
+            $rel=$f.FullName.Substring($root.Length).TrimStart([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar)
+            $top=$rel.Split([IO.Path]::DirectorySeparatorChar,[IO.Path]::AltDirectorySeparatorChar)[0]
+            if($generatedTop -contains $top){continue}
+            $rows += [ordered]@{relative_path=$rel;extension=$f.Extension.ToLowerInvariant();bytes=$f.Length;sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          Write-Host ('CASE0003_ORIGINAL_ENGINEERING_SOURCES '+([ordered]@{count=$rows.Count;files=$rows}|ConvertTo-Json -Depth 5 -Compress))
+
+      - name: Report ingress-like root metadata and source references
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=[IO.Path]::GetFullPath($env:CASE0003_WORKSPACE).TrimEnd('\')
+          $names='source|input|ingress|request|brief|project|case|manifest'
+          $candidates=Get-ChildItem -LiteralPath $root -File -ErrorAction Stop | Where-Object {$_.Name -match $names -or @('.json','.txt','.md') -contains $_.Extension.ToLowerInvariant()} | Sort-Object Name
+          foreach($f in $candidates){
+            if($f.Length -gt 1048576){continue}
+            $sha=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            Write-Host ('CASE0003_ROOT_METADATA path='+$f.Name+' bytes='+$f.Length+' sha256='+$sha)
+            if(@('.json','.txt','.md') -contains $f.Extension.ToLowerInvariant()){
+              $text=Get-Content -LiteralPath $f.FullName -Raw -Encoding utf8 -ErrorAction SilentlyContinue
+              if($text){
+                foreach($term in @('bridge','Yujing','玉井','source','input','file','document','drawing','dwg','dxf','pdf')){
+                  if($text -match [regex]::Escape($term)){Write-Host ('CASE0003_ROOT_METADATA_TERM path='+$f.Name+' term='+$term)}
+                }
+              }
+            }
+          }
+
+# trigger nonce: 2026-08-17 original-engineering-source-only

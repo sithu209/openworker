@@ -1,0 +1,1 @@
+Upgrade ODA OpenWorkerNode service to latest main and bootstrap Case 0005 through the upgraded local supervisor endpoint.

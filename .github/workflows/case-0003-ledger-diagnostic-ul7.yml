@@ -1,0 +1,58 @@
+name: Case 0003 WorkLedger Diagnostic UL7
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/case-0003-ledger-diagnostic-ul7.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Read Case 0003 WorkLedger revision evidence
+    runs-on: [self-hosted, Windows, X64, UL7]
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: powershell -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '{0}'"
+    env:
+      CASE0003_ASSIGNED_HOST: DESKTOP-UL7V2VV
+      CASE0003_WORKSPACE: 'D:\AI-Work\jobs\0003-YUJING-BRIDGE'
+      CASE0003_REVISION_ID: rev_5ef6cae51653429699783c7576e8cbc9
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Verify fixed UL7 host
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:COMPUTERNAME -ine $env:CASE0003_ASSIGNED_HOST){throw "CASE0003_DIAG_HOST_MISMATCH host=$env:COMPUTERNAME assigned=$env:CASE0003_ASSIGNED_HOST"}
+          if(-not (Test-Path -LiteralPath $env:CASE0003_WORKSPACE -PathType Container)){throw "CASE0003_DIAG_WORKSPACE_UNAVAILABLE $env:CASE0003_WORKSPACE"}
+
+      - name: Read revision checks and events without mutation
+        run: |
+          $ErrorActionPreference='Stop'
+          $code = @'
+          import json, os, sqlite3
+          from pathlib import Path
+          workspace = Path(os.environ['CASE0003_WORKSPACE'])
+          revision_id = os.environ['CASE0003_REVISION_ID']
+          db = workspace / '.openworker' / 'work-ledger.sqlite'
+          con = sqlite3.connect(db)
+          con.row_factory = sqlite3.Row
+          try:
+              revision = con.execute('SELECT * FROM work_revisions WHERE revision_id=?', (revision_id,)).fetchone()
+              if revision is None:
+                  raise SystemExit(f'revision not found: {revision_id}')
+              checks = [dict(r) for r in con.execute('SELECT name, required, status, evidence_json, reason, created_at, updated_at FROM work_checks WHERE revision_id=? ORDER BY created_at, name', (revision_id,))]
+              events = [dict(r) for r in con.execute('SELECT event_id, event_type, payload_json, created_at FROM work_events WHERE revision_id=? ORDER BY event_id', (revision_id,))]
+              payload = {'schema_version':'openworker-case0003-ledger-diagnostic/v1','revision':dict(revision),'checks':checks,'events':events}
+              print('CASE0003_LEDGER_DIAGNOSTIC_BEGIN')
+              print(json.dumps(payload, ensure_ascii=False, indent=2))
+              print('CASE0003_LEDGER_DIAGNOSTIC_END')
+          finally:
+              con.close()
+          '@
+          $code | python -
+          if($LASTEXITCODE -ne 0){throw 'Case 0003 WorkLedger diagnostic failed'}

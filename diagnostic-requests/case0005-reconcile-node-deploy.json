@@ -1,0 +1,6 @@
+{
+  "schema": "openworker.case0005-reconcile-node-deploy/v1",
+  "case_id": "0005",
+  "business_execution": false,
+  "requested_at": "2026-08-19T13:33:00+08:00"
+}

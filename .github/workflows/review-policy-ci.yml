@@ -1,0 +1,33 @@
+name: Review Policy CI
+
+on:
+  push:
+    paths:
+      - 'coworker/review_policy.py'
+      - 'tests/test_review_policy.py'
+      - '.github/workflows/review-policy-ci.yml'
+  pull_request:
+    paths:
+      - 'coworker/review_policy.py'
+      - 'tests/test_review_policy.py'
+      - '.github/workflows/review-policy-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install authoritative project dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Compile review policy
+        run: python -m py_compile coworker/review_policy.py tests/test_review_policy.py
+      - name: Run blocking review-policy tests
+        run: python -m pytest -q tests/test_review_policy.py
